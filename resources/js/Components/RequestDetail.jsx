@@ -98,6 +98,7 @@ const RequestDetail = ({auth, requestDetailData, flowApprover, statusApprover, u
                             </td>
                             <td className='m-3 border p-2'>
                                 {
+                                    value===null?"":
                                     key=="follower"||key=="id_user"?
                                     userList[value]:
                                     key=="id_template"?
