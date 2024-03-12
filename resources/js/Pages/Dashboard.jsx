@@ -233,6 +233,7 @@ export default function Dashboard({ auth ,allTemplate , userRequests ,needApprov
                                                                     </td>
                                                                     <td className='border p-3'>
                                                                         {
+                                                                            value===null?"":
                                                                             key=="follower"?
                                                                             userList[value]:
                                                                             key=="id_user"?
