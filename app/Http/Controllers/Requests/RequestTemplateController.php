@@ -43,8 +43,8 @@ class RequestTemplateController extends Controller
         // Trang chỉnh sửa request template
         $template = RequestTemplate::findOrFail($id);
 
-        $inputDetails = InputDetailRequest::where('id_request_templates', $id)->get();
-
+        $inputDetails = InputDetailRequest::where('id_request_templates', $id)->get()->sortBy('priority')->values();
+        // dd($inputDetails->toArray());
         $allLeaderAdmin = User::where('role', '1')->orWhere('role', '99')->get();
 
         return Inertia::render('Requests/Detail_request_template', compact('template','inputDetails','allLeaderAdmin'));

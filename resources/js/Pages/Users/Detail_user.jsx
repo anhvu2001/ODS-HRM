@@ -5,28 +5,34 @@ import TextInput from '@/Components/TextInput';
 import { Head,useForm } from '@inertiajs/react';
 export default function Detail_user({user,allLeaderAdmin, auth}) {
     const updateUser = (e) => {
-      e.preventDefault();
-      post(route('Update_users',{id:user.id}),{
+        e.preventDefault();
+        const updatedData = { ...data };
+        // console.log(updatedData);
+        if (updatedData.password=='') {
+          delete updatedData.password;
+        }
+        post(route('Update_users', { id: user.id }), updatedData, {
           preserveScroll: true,
           onSuccess: () => {
             console.log('ok');
           },
           onError: (errors) => {
-              console.log(errors);
+            console.log(errors);
           },
-      });
-    }
+        });
+      }
     const {
       data, setData, errors, post, reset, processing ,progress
     } =
     useForm({
-      name: user.name,
-      avatar: user.avatar,
-      email: user.email,
-      birthday: user.birthday,
-      password: '',
-      phone: user.phone,
-      role:user.role
+    name: user.name || '',
+    avatar: user.avatar || '',
+    email: user.email || '',
+    birthday: user.birthday || '',
+    password: '',
+    phone: user.phone || '',
+    direct_manager: user.direct_manager || '',
+    role: user.role || ''
     });
     return (
         <AuthenticatedLayout
@@ -169,8 +175,8 @@ export default function Detail_user({user,allLeaderAdmin, auth}) {
                               <dt className="font-medium text-gray-900">Direct Manager
                                 </dt>
                               <dd className="text-gray-700 sm:col-span-2">
-                                  <select onChange={(e) => setData('leader_admin', e.target.value)} name="leader_admin" className="block w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline">
-                                    <option disabled>Pick leader</option>
+                                  <select value={data.direct_manager} onChange={(e) => setData('direct_manager', e.target.value)} name="direct_manager" className="block w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline">
+                                    <option disabled>Pick Direct Manager</option>
                                     <option value="0">None</option>
                                     {allLeaderAdmin.map((leader_admin) => (
                                       <option key={leader_admin.id} value={leader_admin.id} >{leader_admin.name}</option>

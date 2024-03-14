@@ -13,8 +13,8 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
-            },
+                serif: ['Merriweather', 'Roboto', ...defaultTheme.fontFamily.serif],
+             }
         },
     },
 
