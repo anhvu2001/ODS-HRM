@@ -133,7 +133,7 @@ export default function Detail_template_request({ auth,template, inputDetails ,a
                                   { value: 'time', label: 'Giờ' },
                                   { value: 'file', label: 'File' },
                                   { value: 'select', label: 'Select' },
-                                  { value: 'follower', label: 'Người theo dõi' },
+                                //   { value: 'follower', label: 'Người theo dõi' },
                                   { value: 'approver', label: 'Người duyệt trực tiếp' },
                                 ]}
                               />
@@ -201,13 +201,14 @@ export default function Detail_template_request({ auth,template, inputDetails ,a
                     </div>
                     <div className="p-6">
                        <h3>Danh sách Input</h3>
-                      <table className="table-auto w-full">
+                      <table className="w-full">
                         <thead>
                           <tr>
                             <th className="px-4 py-2">Name</th>
                             <th className="px-4 py-2">Type</th>
                             <th className="px-4 py-2">Description</th>
                             <th className="px-4 py-2">Required</th>
+                            <th className="px-4 py-2">Priority</th>
                             <th className="px-4 py-2">Action</th>
                           </tr>
                         </thead>
@@ -226,6 +227,7 @@ export default function Detail_template_request({ auth,template, inputDetails ,a
                               <td className="border px-4 py-2">
                                 {(input.required)?'Bắt buộc' : 'Không bắt buộc'}
                               </td>
+                              <td className="border px-4 py-2"> {input.priority}</td>
                               <td className="border px-4 py-2">
                                 <button onClick={ ()=>openModalEditInputDetail(input)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Edit</button>
                                 <Link as='button' method='POST' href={route('Delete_input_detail',{id:template.id,input_id:input.id})} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2">Delete</Link>
@@ -260,6 +262,9 @@ export default function Detail_template_request({ auth,template, inputDetails ,a
                               <InputLabel htmlFor="leader_id" value="Chọn người duyệt" />
                               <InputError message={errors.leader_id} className="mt-2" />
                              <select name="leader_admin">
+                                <option value="qltt">Quản lý trực tiếp</option>
+                                <option value="hr">Nhân sự</option>
+                                <option value="ceo">CEO</option>
                                 {allLeaderAdmin.map((leader) => (
                                   <option key={leader.id} value={leader.id+'_'+leader.name}>{leader.name}</option>
                                 ))}
@@ -290,10 +295,10 @@ export default function Detail_template_request({ auth,template, inputDetails ,a
                       <div className="p-6">
                           <h3>Danh sách người duyệt </h3>
 
-                          <table className="table-auto">
+                          <table className="w-full">
                             <thead>
                               <tr>
-                                <th  className="px-4 py-2">Thứ tự Duyệt</th>
+                                <th className="px-4 py-2">Thứ tự Duyệt</th>
                                 <th className="px-4 py-2">User ID</th>
                                 <th className="px-4 py-2">Name</th>
                                 <th>Action</th>
