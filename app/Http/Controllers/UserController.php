@@ -15,9 +15,9 @@ class UserController extends Controller
     public function index()
     {
         // Retrieve all users from database
-        $users = User::all();
+        $users = User::with('directManager')->get();
         // Return view with users data
-        return Inertia::render('Users/Users', ['users' => $users]);
+        return Inertia::render('Users/Users', ['users' => $users ]);
     }
 
     public function view($id)
@@ -49,11 +49,13 @@ class UserController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'role' => $request->role,
-            'password' => Hash::make($request->password),
+            'direct_manager'=> $request->direct_manager,
         ]);
-
-        $user->save();
-
+        if ($request->password!==null) {
+            $user->update([
+                'password' => Hash::make($request->password),
+            ]);
+        }
         return redirect()->route('Detail_users', $user->id);
     }
 
@@ -72,7 +74,6 @@ class UserController extends Controller
     }
     public function create(Request $request)
     {
-
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -80,6 +81,7 @@ class UserController extends Controller
             'birthday'  => $request->birthday,
             'phone'=> $request->phone,
             'role'=> $request->role,
+            'direct_manager'=> $request->direct_manager,
         ]);
         return redirect()->route('dashboard');
     }

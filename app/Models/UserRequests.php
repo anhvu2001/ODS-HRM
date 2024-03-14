@@ -12,12 +12,10 @@ class UserRequests extends Model
     protected $fillable = [
         'request_name',
         'request_template',
+        'category_id',
         'content_request',
+        'status',
         'flow_approvers',
         'id_user',
     ];
-    public function users()
-    {
-        return $this->belongsToMany(User::class)->withPivot('order')->withTimestamps();
-    }
 }

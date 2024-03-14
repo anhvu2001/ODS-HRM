@@ -134,7 +134,7 @@ return (
                             </div>
                             <div className="mt-6">
                                 <select value={data.role} required className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" onChange={(e) => setData('role', e.target.value)}>
-                                    <option selected disabled>Pick role</option>
+                                    <option defaultValue>Pick role</option>
                                     <option value="0">Member</option>
                                     <option value="1">Leader</option>
                                     <option value="99">Admin</option>
@@ -149,7 +149,7 @@ return (
                             </div>
                         </form>
                     </Modal>
-                    <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
+                    <table className="w-full border min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
                         <thead className="ltr:text-left rtl:text-right">
                             <tr>
                                 <th className="whitespace-nowrap px-4 py-2 font-medium text-gray-900">
@@ -182,7 +182,7 @@ return (
                                                 <span
                                                 className="whitespace-nowrap rounded-full bg-purple-100 px-2.5 py-0.5 text-sm text-purple-700"
                                                 > Leader</span>
-                                                :user.role == 0?
+                                                :user.role == null?
                                                 <span className="whitespace-nowrap rounded-full bg-black px-2.5 py-0.5 text-sm text-white"
                                                 >  Member</span>
                                                 :user.role == 99?
@@ -195,15 +195,23 @@ return (
 
                                     </td>
 
-                                    <td></td>
+                                    <td>
+                                        <p className="">
+                                            {
+                                                (user.direct_manager )?
+                                                <span
+                                                className="whitespace-nowrap rounded-full bg-purple-100 px-2.5 py-0.5 text-sm text-purple-700"
+                                                > {user.direct_manager.name }</span>
+                                                :'Unknown'
+                                            }
+                                        </p>
+                                    </td>
 
                                     <td className="p-4 space-x-2 whitespace-nowrap lg:p-5">
                                         <Link href={'users/detail/'+user.id} as="button" className="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 hover:text-gray-900 hover:scale-[1.02] transition-all">
                                         Edit user
                                         </Link>
-
                                         <Link href="users/delete" as="button" method="post" data={{ id: user.id }} className="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-white bg-gradient-to-br from-red-400 to-red-600 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform" >Delete user</Link>
-
                                     </td>
                                 </tr>
                             ))}

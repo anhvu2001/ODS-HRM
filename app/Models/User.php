@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'birthday',
         'phone',
+        'direct_manager',
         'role'
     ];
 
@@ -49,5 +50,8 @@ class User extends Authenticatable
     public function userTemplates()
     {
         return $this->belongsToMany(UserTemplate::class)->withPivot('order')->withTimestamps();
+    }
+    public function directManager() {
+        return $this->belongsTo(User::class, 'direct_manager');
     }
 }
