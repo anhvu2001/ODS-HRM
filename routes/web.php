@@ -11,6 +11,11 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Requests\UserRequestController;
 
 use App\Models\UserRequests;
+use App\Models\User;
+
+use App\Mail\HelloWorldEmail;
+use Illuminate\Support\Facades\Mail;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -52,22 +57,20 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('/user_requests')->group(function () {
         Route::get('/', [UserRequestController::class, 'index'])->name('Request_list');
         Route::get('/detail/{id}', [UserRequestController::class, 'view'])->name('Request_Detail_Screen');
+        Route::get('/edit/{id}', [UserRequestController::class, 'update_request_screen'])->name('Edit_Detail_Screen');
         Route::get('/create', [UserRequestController::class, 'add_new_request_screen'])->name('Create_User_Request_Screen');
         Route::post('/create-user-request', [UserRequestController::class, 'create'])->name('Create_User_Request');
+        Route::post('/update-request-field', [UserRequestController::class, 'update_request_field'])->name('Update_Request_Field');
+        Route::post('/update', [UserRequestController::class, 'update'])->name('Update_Request');
+
+        Route::delete('/delete/{id}', [UserRequestController::class, 'delete'])->name('Delete_User_Request');
         // Route::get('', [UserRequestController::class, 'index'])->name('Requests_list');
     });
 });
 
-Route::get('/test', function () {
-    // $json_data = json_encode([
-    //     'name' => 'Nguyen Van A',
-    //     'email' => 'email',
-    // ]);
-    // $userRequest = UserRequests::create([
-    //     'id_user' => '1',
-    //     'id_request_templates' => '4',
-    //     'content_request' => $json_data,
-    // ]);
+Route::get('/reset-password-danh', function () {
+    // User::find(1)->update(['password' => Hash::make('Abc@123456')]);
+    return response()->json(Hash::make('Abc@123456'));
 });
 
 Route::middleware('auth')->group(function () {
