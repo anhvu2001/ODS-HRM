@@ -8,12 +8,13 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\Requests\InputDetailController;
 use App\Http\Controllers\Requests\RequestTemplateController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Firebase\FirebaseController;
 use App\Http\Controllers\Requests\UserRequestController;
-
 use App\Models\UserRequests;
 use App\Models\User;
 
 use App\Mail\HelloWorldEmail;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
 /*
@@ -29,7 +30,7 @@ use Illuminate\Support\Facades\Mail;
 
 Route::middleware(['auth'])->group(function () {
     // User Managerment
-    Route::get('/', [DashboardController::class,'index'])->middleware(['auth', 'verified'])->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
     Route::prefix('/users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('Users');
@@ -77,6 +78,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    //Firebase
+    Route::post('/send-to-firebase/{id}', [FirebaseController::class, 'sendToFirebase'])->name('send-to-firebase');
+    Route::get('/receive-to-firebase/{id}', [FirebaseController::class, 'index'])->name('receive-to-firebase');
+    Route::post('/update-to-firebase/{id}', [FirebaseController::class, 'updateToFirebase'])->name('update-to-firebase');
+    Route::post('/update-status-read/{id}', [FirebaseController::class, 'updateStatusRead'])->name('update-status-read');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

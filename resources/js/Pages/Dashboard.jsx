@@ -6,6 +6,7 @@ import { useState } from 'react';
 import DangerButton from '@/Components/DangerButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import RequestDetail from '@/Components/RequestDetail';
+import CommentSection from '@/Components/CommentSection';
 export default function Dashboard({ auth ,allTemplate , userRequests ,needApprove, inputDetailRequests, userList}) {
     const [showModalNewRequest, setShowModalNewRequest] = useState(false);
     const openModal = () => {
@@ -55,37 +56,49 @@ export default function Dashboard({ auth ,allTemplate , userRequests ,needApprov
             }
         });
     }
-    const handleApprove = (id_request) => () => {
-
+    const handleApprove = (id_request, id_follower,id_user) => () => {
         const field = auth.user.id === 36 ? 'fully_accept' : 'status';
         const field_value = 1;
-        axios
-            .post(route('Update_Request_Field'), { id_request, field, field_value })
-            .then((response) => {
-                // Handle response if needed
-                console.log(response);
-                window.location.reload(); // Reload the page
-            })
-            .catch((error) => {
-                // Handle error if needed
-                console.log(error);
-            });
+    
+        // Sử dụng Promise.all() để gọi hai yêu cầu axios đồng thời
+        Promise.all([
+            axios.post(route('Update_Request_Field'), { id_request, field, field_value }),
+            axios.post(route("update-to-firebase", { id: id_request }), { idUser: id_user, 
+                idFollower: id_follower, statusRequest: auth.user.id === 36 ? 3 : 1,statusRead:0  })
+        ])
+        .then(([response1, response2]) => {
+            // Xử lý kết quả từ cả hai yêu cầu axios ở đây
+            console.log("Response from Update_Request_Field:", response1.data);
+            console.log("Response from update-to-firebase:", response2.data);
+            window.location.reload(); // Reload trang
+        })
+        .catch((error) => {
+            // Xử lý lỗi nếu cần
+            console.error("Error:", error);
+        });
     };
-    const handleReject = (id_request)=>() => {
+    
+    const handleReject = (id_request, id_follower,id_user) => () => {
         const field = auth.user.id === 36 ? 'fully_accept' : 'status';
         const field_value = 2;
-        axios.post(route('Update_Request_Field'), { id_request,field, field_value })
-            .then(response => {
-                // Handle response if needed
-                console.log(response.data.status);
-                window.location.reload(); // Reload the page
-            })
-            .catch(error => {
-                // Handle error if needed
-                console.log(error);
-            });
-    }
-
+    
+        // Sử dụng Promise.all() để gọi hai yêu cầu axios đồng thời
+        Promise.all([
+            axios.post(route('Update_Request_Field'), { id_request, field, field_value }),
+            axios.post(route("update-to-firebase", { id: id_request }), { idUser:id_user, idFollower: id_follower, statusRequest: 2,statusRead:0 })
+        ])
+        .then(([response1, response2]) => {
+            // Xử lý kết quả từ cả hai yêu cầu axios ở đây
+            console.log("Response from Update_Request_Field:", response1.data);
+            console.log("Response from update-to-firebase:", response2.data);
+            window.location.reload(); // Reload trang
+        })
+        .catch((error) => {
+            // Xử lý lỗi nếu cần
+            console.error("Error:", error);
+        });
+    };
+    
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -173,7 +186,7 @@ export default function Dashboard({ auth ,allTemplate , userRequests ,needApprov
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {userRequests.map((request, index) => (
+                                            {userRequests.slice().reverse().map((request, index) => (
                                                 <tr key={index}>
                                                     <td className="border px-4 py-2">{index+1}</td>
                                                     <td className="border px-4 py-2"><span className='font-bold'>{request.request_name}</span>{request.user_name}</td>
@@ -208,12 +221,13 @@ export default function Dashboard({ auth ,allTemplate , userRequests ,needApprov
                                 </div>
                             </Modal>
                             <Modal show={showDetailRequestApprover} onClose={closeDetailRequestApprover}>
-                                <div className="p-6">
+                                <div className="p-6 overflow-y-auto h-[600px]">
                                     <h2 className="font-bold">Nội dung Request cần duyệt</h2>
                                     <hr />
                                     <div className='p-2'>
                                         {requestDetailNeedApprover && (() => {
                                             const jsonObject = JSON.parse(requestDetailNeedApprover);
+                                            console.log(jsonObject,idRequestDetail)
                                             return (
                                                 <div>
                                                     <table className="w-full border">
@@ -252,19 +266,18 @@ export default function Dashboard({ auth ,allTemplate , userRequests ,needApprov
                                                         </tbody>
                                                     </table>
                                                     <div className='flex justify-center my-4'>
-                                                        <PrimaryButton className='mr-4' onClick={handleApprove(idRequestDetail)}>Approve</PrimaryButton>
-                                                        <DangerButton onClick={handleReject(idRequestDetail)}>Reject</DangerButton>
+                                                        <PrimaryButton className='mr-4' onClick={handleApprove(idRequestDetail,jsonObject.follower,jsonObject.id_user)}>Approve</PrimaryButton>
+                                                        <DangerButton onClick={handleReject(idRequestDetail,jsonObject.follower,jsonObject.id_user)}>Reject</DangerButton>
                                                     </div>
                                                 </div>
                                             );
                                         })()}
                                     </div>
-
+                                    <CommentSection/>
                                 </div>
                             </Modal>
                             <Modal show={showModalDetailRequest} onClose={closeModalDetailRequest}>
                                 <RequestDetail auth={auth} requestDetailData={requestDetailData} flowApprover={flowApprover} userList={userList} inputDetailRequests={inputDetailRequests}/>
-
                             </Modal>
                         </div>
                     </div>

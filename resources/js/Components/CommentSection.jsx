@@ -14,7 +14,6 @@ export default function CommentSection() {
             <div className="space-y-4">
                 {/* Another comment */}
                 <div className="flex space-x-4">
-                    <img className="w-10 h-10 rounded-full" src="avatar.jpg" alt="User Avatar" />
                     <div>
                         <h3 className="font-bold">Jane Smith</h3>
                         <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
@@ -28,7 +27,6 @@ export default function CommentSection() {
 
                 {/* Reply comment */}
                 <div className="flex space-x-4 ml-8">
-                    <img className="w-10 h-10 rounded-full" src="avatar.jpg" alt="User Avatar" />
                     <div>
                         <h3 className="font-bold">Reply User</h3>
                         <p>Reply comment content</p>
@@ -37,7 +35,6 @@ export default function CommentSection() {
                 {/* Reply form */}
                 {showReplyForm && (
                     <form className="flex space-x-4 ml-8">
-                        <img className="w-10 h-10 rounded-full" src="avatar.jpg" alt="User Avatar" />
                         <input className="flex-grow border rounded-lg px-4 py-2" type="text" placeholder="Write a reply..." />
                         <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Submit</button>
                     </form>
@@ -45,7 +42,6 @@ export default function CommentSection() {
 
                 {/* Add comment form */}
                 <form className="flex space-x-4">
-                    <img className="w-10 h-10 rounded-full" src="avatar.jpg" alt="User Avatar" />
                     <input className="flex-grow border rounded-lg px-4 py-2" type="text" placeholder="Write a comment..." />
                     <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Submit</button>
                 </form>

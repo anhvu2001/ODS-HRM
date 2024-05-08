@@ -115,7 +115,7 @@ const RequestDetail = ({auth, requestDetailData, flowApprover, statusApprover, u
 
                 </tbody>
             </table>
-            {/* <CommentSection /> */}
+            <CommentSection />
         </div>
 
     </div>
