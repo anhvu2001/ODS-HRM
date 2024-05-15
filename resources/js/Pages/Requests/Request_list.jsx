@@ -9,6 +9,7 @@ import axios from 'axios';
 import SecondaryButton from '@/Components/SecondaryButton';
 export default function Request_list({ auth ,userRequests,userList,inputDetailRequests}) {
     const [flowApprover,setFlowApprover] = useState([]);
+    const [idRequest,setIdRequest] = useState(null);
     const [statusApprover,setStatusApprover] = useState({
         status:0,
         fully_accept:0,
@@ -17,8 +18,9 @@ export default function Request_list({ auth ,userRequests,userList,inputDetailRe
     const [userRequestsData, setUserRequests] = useState(userRequests);
     const [showModalDetailRequest, setShowModalDetailRequest] = useState(false);
     const [requestDetailData, setRequestDetailData] = useState(null);
-    const openModal = (request,flow_of_approvers,status,fully_accept,hr_status) => {
+    const openModal = (request,flow_of_approvers,status,fully_accept,hr_status,id_request) => {
         setRequestDetailData(request);
+        setIdRequest(id_request)
         setStatusApprover({
             status:status,
             fully_accept:fully_accept,
@@ -96,7 +98,7 @@ export default function Request_list({ auth ,userRequests,userList,inputDetailRe
                                             <td className="border px-4 py-2">
                                                 <div className="flex flex-col space-y-4">
                                                     <div className="flex overflow-hidden bg-white border divide-x rounded-lg rtl:flex-row-reverse">
-                                                        <PrimaryButton onClick={() => { openModal(request.content_request, request.flow_of_approvers, request.status, request.fully_accept, request.hr_status) }} as="button" className="text-blue-500">Chi tiết</PrimaryButton>
+                                                        <PrimaryButton onClick={() => { openModal(request.content_request, request.flow_of_approvers, request.status, request.fully_accept, request.hr_status,request.id) }} as="button" className="text-blue-500">Chi tiết</PrimaryButton>
                                                         <Link className="text-blue-500 p-6 bg-yellow" href={route('Edit_Detail_Screen',{id:request.id})} as="button">Sửa</Link>
                                                         <DangerButton onClick={() => handleDeleteRequest(request.id)} as="button" className="text-500">Xóa</DangerButton>
                                                     </div>
@@ -111,7 +113,7 @@ export default function Request_list({ auth ,userRequests,userList,inputDetailRe
                 </div>
             </div>
             <Modal show={showModalDetailRequest} onClose={closeModal}>
-                <RequestDetail auth={auth} requestDetailData={requestDetailData} flowApprover={flowApprover} statusApprover={statusApprover} userList={userList} inputDetailRequests={inputDetailRequests}/>
+                <RequestDetail id={idRequest} auth={auth} requestDetailData={requestDetailData} flowApprover={flowApprover} statusApprover={statusApprover} userList={userList} inputDetailRequests={inputDetailRequests}/>
             </Modal>
         </AuthenticatedLayout>
     );
