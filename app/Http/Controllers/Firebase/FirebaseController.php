@@ -19,14 +19,14 @@ class FirebaseController extends Controller
         $this->database = Firebase::database();
         $this->tableName = "notification/user";
     }
-    public function index($id_user)
-    {
-        $snapshot = $this->database->getReference($this->tableName . '/' . $id_user)->getSnapshot();
+    // public function index($id_user)
+    // {
+    //     $snapshot = $this->database->getReference($this->tableName . '/' . $id_user)->getSnapshot();
 
-        $data = $snapshot->getValue();
+    //     $data = $snapshot->getValue();
 
-        return response()->json(["dataRequest" =>  $data]);
-    }
+    //     return response()->json(["dataRequest" =>  $data]);
+    // }
     public function sendToFirebase(Request $request, $id)
     {
         $dt = Carbon::now('Asia/Ho_Chi_Minh');

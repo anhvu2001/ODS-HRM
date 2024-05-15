@@ -6,6 +6,8 @@ import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { Link } from "@inertiajs/react";
 import PushNotification from "@/Components/PushNotification";
 import axios from "axios";
+import { onValue, ref } from "firebase/database";
+import { database } from "@/Firebase/firebase";
 
 export default function Authenticated({ user, header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
@@ -18,7 +20,26 @@ export default function Authenticated({ user, header, children }) {
     const handleShowNotification = () => {
         setIsShowNotification((prev) => !prev);
     };
+    const calculateNotificationCount = (data) => {
+        const values = Object.values(data || {});
+        let notificationCount = 0;
 
+        values.forEach((obj) => {
+            const statusRecive = obj?.receive?.statusRead;
+            const statusSend = obj?.send?.statusRead;
+            const nameRecive = obj?.receive?.name;
+            const nameSend = obj?.send?.name;
+
+            if (
+                (statusRecive === 0 && nameRecive) ||
+                (statusSend === 0 && nameSend)
+            ) {
+                notificationCount++;
+            }
+        });
+
+        setNumberNotification(notificationCount);
+    };
     useEffect(() => {
         const handleClickOutside = (event) => {
             const outsideElement = document.getElementById("notifiaction");
@@ -26,38 +47,13 @@ export default function Authenticated({ user, header, children }) {
                 setIsShowNotification(false);
             }
         };
-
+        const starCountRef = ref(database, `notification/user/${user.id}`);
+        onValue(starCountRef, (snapshot) => {
+            const data = snapshot.val();
+            setDataRequest(data);
+            calculateNotificationCount(data);
+        });
         document.addEventListener("click", handleClickOutside);
-
-        const fetchData = async () => {
-            try {
-                const { data } = await axios.get(
-                    route("receive-to-firebase", user.id)
-                );
-                setDataRequest(data?.dataRequest);
-                const values = Object.values(data?.dataRequest || {});
-                let notificationCount = 0;
-                values.forEach((obj) => {
-                    const statusRecive = obj?.receive?.statusRead;
-                    const statusSend = obj?.send?.statusRead;
-                    const nameRecive = obj?.receive?.name;
-                    const nameSend = obj?.send?.name;
-
-                    if (
-                        (statusRecive === 0 && nameRecive) ||
-                        (statusSend === 0 && nameSend)
-                    ) {
-                        notificationCount++;
-                    }
-                });
-                setNumberNotification(notificationCount);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
-        };
-
-        fetchData();
-
         return () => {
             document.removeEventListener("click", handleClickOutside);
         };
@@ -156,8 +152,11 @@ export default function Authenticated({ user, header, children }) {
                             >
                                 <i className="fa-solid fa-bell cursor-pointer"></i>
                                 <p className="absolute top-[-10px] right-[-10px] text-red-500 text-[12px] font-bold cursor-pointer">
-                                    {numberNotification}
+                                    {numberNotification > 5
+                                        ? "5+"
+                                        : numberNotification}
                                 </p>
+
                                 {isShowNotifaction && (
                                     <PushNotification
                                         data={arrayDataRequest}

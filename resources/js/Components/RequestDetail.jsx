@@ -1,7 +1,7 @@
 import React from 'react';
 import CommentSection from './CommentSection';
 
-const RequestDetail = ({auth, requestDetailData, flowApprover, statusApprover, userList, inputDetailRequests }) => {
+const RequestDetail = ({auth, requestDetailData, flowApprover, statusApprover, userList, inputDetailRequests,id }) => {
   if (!requestDetailData) {
     return null;
   }
@@ -54,7 +54,7 @@ const RequestDetail = ({auth, requestDetailData, flowApprover, statusApprover, u
         );
     };
     return (
-    <div className='p-8 flex'>
+    <div className='p-8 flex h-[500px] overflow-y-hidden'>
         <div className="w-1/6 flex-1 bg-white rounded-lg mt-4">
             <h4 className="text-xl text-gray-900 font-bold mb-4">Thứ tự duyệt</h4>
             <div className="relative px-4">
@@ -115,7 +115,7 @@ const RequestDetail = ({auth, requestDetailData, flowApprover, statusApprover, u
 
                 </tbody>
             </table>
-            <CommentSection />
+            <CommentSection auth={auth} idRequest={id} />
         </div>
 
     </div>

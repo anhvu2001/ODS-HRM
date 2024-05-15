@@ -9,6 +9,7 @@ import RequestDetail from '@/Components/RequestDetail';
 import CommentSection from '@/Components/CommentSection';
 export default function Dashboard({ auth ,allTemplate , userRequests ,needApprove, inputDetailRequests, userList}) {
     const [showModalNewRequest, setShowModalNewRequest] = useState(false);
+    const [idRequest,setIdRequest] = useState(null);
     const openModal = () => {
         setShowModalNewRequest(true);
     }
@@ -19,7 +20,8 @@ export default function Dashboard({ auth ,allTemplate , userRequests ,needApprov
     const [requestDetailData, setRequestDetailData] = useState(null);
     // {openModalDetailRequest(request.flow_of_approvers,request.content_request)}}
     const [flowApprover,setFlowApprover] = useState([]);
-    const openModalDetailRequest = (flow_of_approvers,request) => {
+    const openModalDetailRequest = (flow_of_approvers,request,id_request) => {
+        setIdRequest(id_request)
         setRequestDetailData(request);
         // console.log(flow_of_approvers);
         if(typeof(flow_of_approvers)==='string'){
@@ -50,7 +52,6 @@ export default function Dashboard({ auth ,allTemplate , userRequests ,needApprov
             return;
         }
         axios.delete(route('Delete_User_Request', id)).then(response => {
-            console.log(response.data);
             if (response.data.status === true) {
                 window.location.reload();
             }
@@ -197,7 +198,7 @@ export default function Dashboard({ auth ,allTemplate , userRequests ,needApprov
                                                     <td className="border px-4 py-2">{request.created_at}</td>
                                                     <td className="border px-4 py-2">
                                                         <div className="flex divide-x divide-blue-600 row">
-                                                        <PrimaryButton onClick={()=>{openModalDetailRequest(request.flow_of_approvers,request.content_request)}} method="get" as="button"  className="block text-blue-500 mr-3">Chi tiết</PrimaryButton>
+                                                        <PrimaryButton onClick={()=>{openModalDetailRequest(request.flow_of_approvers,request.content_request,request.id)}} method="get" as="button"  className="block text-blue-500 mr-3">Chi tiết</PrimaryButton>
                                                         <Link href={ route('Edit_Detail_Screen',{id:request.id})} className="inline-flex items-center px-4 py-2 mr-3 bg-white border-solid border-radius rounded">Sửa</Link>
                                                         <DangerButton onClick={()=>{handleDeleteRequest(request.id)}}> Xóa Request </DangerButton>
                                                         </div>
@@ -227,7 +228,6 @@ export default function Dashboard({ auth ,allTemplate , userRequests ,needApprov
                                     <div className='p-2'>
                                         {requestDetailNeedApprover && (() => {
                                             const jsonObject = JSON.parse(requestDetailNeedApprover);
-                                            console.log(jsonObject,idRequestDetail)
                                             return (
                                                 <div>
                                                     <table className="w-full border">
@@ -269,15 +269,16 @@ export default function Dashboard({ auth ,allTemplate , userRequests ,needApprov
                                                         <PrimaryButton className='mr-4' onClick={handleApprove(idRequestDetail,jsonObject.follower,jsonObject.id_user)}>Approve</PrimaryButton>
                                                         <DangerButton onClick={handleReject(idRequestDetail,jsonObject.follower,jsonObject.id_user)}>Reject</DangerButton>
                                                     </div>
+                                                    <CommentSection auth={auth} idRequest={idRequestDetail} />
+
                                                 </div>
                                             );
                                         })()}
                                     </div>
-                                    <CommentSection/>
                                 </div>
                             </Modal>
                             <Modal show={showModalDetailRequest} onClose={closeModalDetailRequest}>
-                                <RequestDetail auth={auth} requestDetailData={requestDetailData} flowApprover={flowApprover} userList={userList} inputDetailRequests={inputDetailRequests}/>
+                                <RequestDetail id={idRequest} auth={auth} requestDetailData={requestDetailData} flowApprover={flowApprover} userList={userList} inputDetailRequests={inputDetailRequests}/>
                             </Modal>
                         </div>
                     </div>

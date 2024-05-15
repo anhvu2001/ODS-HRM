@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Comment\CommentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,10 @@ use Illuminate\Support\Facades\Mail;
 | contains the "web" middleware group. Now create something great!
 |
 */
+Route::get('/get-all-comment/{id}', [CommentController::class, 'getCommentsByRequestId'])->name('Get-All-Comment');
+Route::post('/create-new-comment', [CommentController::class, 'storeComment'])->name('Create-New-Comment');
+Route::delete('/delete-comment/{id}', [CommentController::class, 'deleteComment'])->name('Delete-Comment');
+Route::post('/update-comment/{id}', [CommentController::class, 'update'])->name('Update-Comment');
 
 Route::middleware(['auth'])->group(function () {
     // User Managerment
