@@ -33,6 +33,7 @@ export default function Edit_request({ auth ,inputDetailRequests,id_template,tem
             const formData = new FormData(e.target);
             await axios.post(route('Update_Request'), formData);
             alert("Cập nhập đề xuất thành công");
+            window.location.href="/"
         } catch (error) {
             console.error(error);
         }

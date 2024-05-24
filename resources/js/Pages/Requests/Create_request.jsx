@@ -237,7 +237,7 @@ export default function Create_request({
                                     <PrimaryButton type="submit">
                                         Tạo mới
                                     </PrimaryButton>
-                                    <DangerButton type="reset">
+                                    <DangerButton className="ml-5" type="reset">
                                         Reset
                                     </DangerButton>
                                 </form>

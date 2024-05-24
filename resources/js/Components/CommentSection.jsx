@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 
-export default function CommentSection({ idRequest, auth }) {
-    if(!idRequest || !auth){
+export default function CommentSection({ idRequest, auth ,idFollower}) {
+    if (!idRequest || !auth) {
         return null;
     }
     const [dataComment, setDataComment] = useState([]);
@@ -38,13 +38,22 @@ export default function CommentSection({ idRequest, auth }) {
         if (!commentContent) return;
 
         try {
-            await axios.post(route("Create-New-Comment"), {
+            const { data } = await axios.post(route("Create-New-Comment"), {
                 content: commentContent,
                 user_id: id,
                 request_id: idRequest,
                 parent_comment_id: replyCommentId || null,
                 level: levelComment,
             });
+            if (data.status) {
+                const dataCmt = await axios.post(
+                    route("Create-Notificaton-Comment", data.id ),
+                    {
+                        idFollower: idFollower,
+                    }
+                );
+                console.log(dataCmt)
+            }
             resetForm();
             fetchDataComment();
         } catch (error) {

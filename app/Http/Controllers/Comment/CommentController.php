@@ -69,8 +69,8 @@ class CommentController extends Controller
         $comment->updated_at = $now;
         // Lưu comment vào cơ sở dữ liệu
         $comment->save();
-
-        return response()->json(['status' => true]);
+        $newlyCommentId = $comment->id;
+        return response()->json(['status' => true, 'id' => $newlyCommentId]);
     }
     public function deleteComment($id)
     {

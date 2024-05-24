@@ -6,6 +6,7 @@ const RequestDetail = ({auth, requestDetailData, flowApprover, statusApprover, u
     return null;
   }
   const jsonObject = JSON.parse(requestDetailData);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -54,7 +55,7 @@ const RequestDetail = ({auth, requestDetailData, flowApprover, statusApprover, u
         );
     };
     return (
-    <div className='p-8 flex h-[500px] overflow-y-hidden'>
+    <div className='p-8 flex h-[90vh] overflow-y-hidden'>
         <div className="w-1/6 flex-1 bg-white rounded-lg mt-4">
             <h4 className="text-xl text-gray-900 font-bold mb-4">Thứ tự duyệt</h4>
             <div className="relative px-4">
@@ -115,7 +116,7 @@ const RequestDetail = ({auth, requestDetailData, flowApprover, statusApprover, u
 
                 </tbody>
             </table>
-            <CommentSection auth={auth} idRequest={id} />
+            <CommentSection auth={auth} idRequest={id} idFollower={jsonObject?.follower} />
         </div>
 
     </div>

@@ -10,6 +10,7 @@ use App\Http\Controllers\Requests\InputDetailController;
 use App\Http\Controllers\Requests\RequestTemplateController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Firebase\FirebaseController;
+use App\Http\Controllers\Firebase\NotificationCommentController;
 use App\Http\Controllers\Requests\UserRequestController;
 use App\Models\UserRequests;
 use App\Models\User;
@@ -28,10 +29,8 @@ use Illuminate\Support\Facades\Mail;
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::get('/get-all-comment/{id}', [CommentController::class, 'getCommentsByRequestId'])->name('Get-All-Comment');
-Route::post('/create-new-comment', [CommentController::class, 'storeComment'])->name('Create-New-Comment');
-Route::delete('/delete-comment/{id}', [CommentController::class, 'deleteComment'])->name('Delete-Comment');
-Route::post('/update-comment/{id}', [CommentController::class, 'update'])->name('Update-Comment');
+
+
 
 Route::middleware(['auth'])->group(function () {
     // User Managerment
@@ -88,6 +87,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/receive-to-firebase/{id}', [FirebaseController::class, 'index'])->name('receive-to-firebase');
     Route::post('/update-to-firebase/{id}', [FirebaseController::class, 'updateToFirebase'])->name('update-to-firebase');
     Route::post('/update-status-read/{id}', [FirebaseController::class, 'updateStatusRead'])->name('update-status-read');
+
+    // comment
+    Route::get('/get-all-comment/{id}', [CommentController::class, 'getCommentsByRequestId'])->name('Get-All-Comment');
+    Route::post('/create-new-comment', [CommentController::class, 'storeComment'])->name('Create-New-Comment');
+    Route::delete('/delete-comment/{id}', [CommentController::class, 'deleteComment'])->name('Delete-Comment');
+    Route::post('/update-comment/{id}', [CommentController::class, 'update'])->name('Update-Comment');
+
+    // notitfaction có người bình luận vào request
+    Route::post('/create-notificaton-comment/{id}', [NotificationCommentController::class, 'sendCommentToFirebase'])->name('Create-Notificaton-Comment');
+    Route::post('/update-notificaton-comment/{id}', [NotificationCommentController::class, 'updateStatusRead'])->name('Update-Notificaton-Comment');
 });
 
 require __DIR__ . '/auth.php';

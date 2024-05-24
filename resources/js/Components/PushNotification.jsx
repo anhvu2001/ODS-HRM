@@ -1,119 +1,159 @@
-import React from "react";
+import React, { useState } from "react";
+import axios from "axios";
 
-export default function PushNotification({ data, userId }) {
-    if (!data) return null;
-    const getStatusText = (statusRequest) => {
-        if (statusRequest === 0) {
-            return "đã nhận được đề xuất";
-        } else if (statusRequest === 1) {
-            return "đã duyệt đề xuất";
-        } else if (statusRequest === 2) {
-            return "từ chối đề xuất";
-        } else if (statusRequest === 3) {
-            return "đã duyệt hoàn toàn đề xuất";
-        } else return "trạng thái không xác định";
+const NotificationItem = ({ item, userId, handleUpdateToFirebase }) => {
+    const { receive, send } = item?.value || {};
+    const { name, tieuDe, timeStamp, statusRead, statusRequest, nameQltt } =
+        receive || send || {};
+
+    const isReceive = Boolean(receive && name);
+    const isRead = statusRead === 1;
+    const statusColor =
+        statusRequest === 2
+            ? "text-red-600"
+            : statusRequest === 1 || statusRequest === 3
+            ? "text-green-600"
+            : "text-black";
+
+    return name ? (
+        <div
+            onClick={() => handleUpdateToFirebase(item?.key, !isReceive)}
+            className="flex justify-between items-center font-normal text-base gap-2.5 mt-5 cursor-pointer"
+        >
+            <i className="fa-regular fa-envelope text-2xl fa-solid fa-square-envelope text-red-600"></i>
+            <div className="w-[227px] flex flex-col gap-1 text-sm">
+                <div className="overflow-hidden line-clamp-3">
+                    <strong>
+                        {isReceive
+                            ? name
+                            : `${nameQltt}${
+                                  statusRequest === 3 ? " và CEO" : ""
+                              }`}
+                    </strong>
+                    <span className={`ml-1 ${isReceive ? "" : statusColor}`}>
+                        {isReceive
+                            ? "đã tạo một đề xuất mới:"
+                            : getStatusText(statusRequest)}
+                    </span>
+                    <strong className="ml-1">{tieuDe}</strong>
+                </div>
+                <p className="text-xs text-blue-600">{timeStamp}</p>
+            </div>
+            <span
+                className={`w-2.5 h-2.5 ${
+                    isRead ? "bg-transparent" : "bg-blue-800"
+                } rounded-[50%]`}
+            ></span>
+        </div>
+    ) : null;
+};
+
+const CommentItem = ({ item, userId }) => {
+    const handleUpdateToFirebaseCmt = async () => {
+        try {
+            await axios.post(
+                route("Update-Notificaton-Comment", { id: item.idComment }),
+                {
+                    idUser: userId,
+                    isRequest: item.idRequest,
+                }
+            );
+        } catch (error) {
+            console.error("Error:", error);
+        }
     };
     return (
-        <div className="absolute bg-[#fff]  h-[auto] w-[350px] top-[45px] p-[20px] left-[-100px] rounded-xl shadow-xl max-h-[588px] overflow-y-auto">
-            <p className="font-semibold text-lg ">Thông báo</p>
-            {data.reverse().map((item, index) => {
-                const { receive, send } = item?.value || {};
-                const {
-                    name,
-                    tieuDe,
-                    timeStamp,
-                    idFollower,
-                    idUser,
-                    statusRead,
-                    statusRequest,
-                    nameQltt,
-                } = receive || send || {};
-                const handleUpdateToFirebase = async (isUserSend) => {
-                    try {
-                        const response = await axios.post(
-                            route("update-status-read", {
-                                id: item?.key,
-                            }),
-                            {
-                                idUser: userId,
-                                isUserSend,
-                            }
-                        );
-                    } catch (error) {
-                        console.error("Error:", error);
-                    }
-                };
-                // Sử dụng hàm handleUpdateToFirebase khi cần
+        <div onClick={handleUpdateToFirebaseCmt} className="flex justify-between items-center font-normal text-base gap-2.5 mt-5 cursor-pointer">
+            <i className="fa-solid fa-comment text-2xl text-blue-600"></i>
+            <div className="w-[227px] flex flex-col gap-1 text-sm">
+                <div className="overflow-hidden line-clamp-3">
+                    <strong>{item.nameComment}</strong>
+                    <span className="ml-1">đã bình luận vô đề xuất:</span>
+                    <strong className="ml-1">{item.requestName}</strong>
+                </div>
+                <p className="text-xs text-blue-600">{item.timeStamp}</p>
+            </div>
+            <span
+                className={`w-2.5 h-2.5 ${
+                    item.statusRead === 1 ? "bg-transparent" : "bg-blue-800"
+                } rounded-[50%]`}
+            ></span>
+        </div>
+    );
+};
 
-                if (receive && name) {
-                    return (
-                        <div
-                            key={index}
-                            onClick={() => handleUpdateToFirebase(false)}
-                            className="flex justify-between items-center font-normal text-base gap-2.5 mt-5 cursor-pointer"
-                        >
-                            <i className="fa-regular fa-envelope text-2xl fa-solid fa-square-envelope text-red-600"></i>
-                            <div className="w-[227px] flex flex-col gap-1 text-sm">
-                                <div className="overflow-hidden line-clamp-3">
-                                    <strong>{name}</strong>
-                                    <span className="ml-1">
-                                        đã tạo một đề xuất mới:
-                                    </span>
-                                    <strong className="ml-1">{tieuDe}</strong>
-                                </div>
-                                <p className="text-xs text-blue-600">
-                                    {timeStamp}
-                                </p>
-                            </div>
-                            <span
-                                className={`w-2.5 h-2.5 ${
-                                    statusRead === 1
-                                        ? "bg-transparent"
-                                        : "bg-blue-800"
-                                } rounded-[50%]`}
-                            ></span>
-                        </div>
-                    );
-                } else if (name) {
-                    return (
-                        <div
-                            key={index}
-                            onClick={() => handleUpdateToFirebase(true)}
-                            className="flex justify-between items-center font-normal text-base gap-2.5 mt-5 cursor-pointer"
-                        >
-                            <i className="fa-regular fa-envelope text-2xl fa-solid fa-square-envelope text-red-600"></i>
-                            <div className="w-[227px] flex flex-col gap-1 text-sm">
-                                <div className="overflow-hidden line-clamp-3">
-                                <strong>{`${nameQltt}${statusRequest === 3 ? ' và CEO' : ''}`}</strong>
-                                    <span
-                                        className={`ml-1 ${
-                                            statusRequest === 2
-                                                ? "text-red-600"
-                                                : statusRequest === 1 || statusRequest === 3
-                                                ? "text-green-600"
-                                                : "text-black"
-                                        }`}
-                                    >
-                                        {getStatusText(statusRequest)}
-                                    </span>
+const getStatusText = (statusRequest) => {
+    switch (statusRequest) {
+        case 0:
+            return "đã nhận được đề xuất";
+        case 1:
+            return "đã duyệt đề xuất";
+        case 2:
+            return "từ chối đề xuất";
+        case 3:
+            return "đã duyệt hoàn toàn đề xuất";
+        default:
+            return "trạng thái không xác định";
+    }
+};
 
-                                    <strong className="ml-1">{tieuDe}</strong>
-                                </div>
-                                <p className="text-xs text-blue-600">
-                                    {timeStamp}
-                                </p>
-                            </div>
-                            <span
-                                className={`w-2.5 h-2.5 ${
-                                    statusRead === 1
-                                        ? "bg-transparent"
-                                        : "bg-blue-800"
-                                } rounded-[50%]`}
-                            ></span>
-                        </div>
-                    );
-                }
-            })}
+export default function PushNotification({ data, userId, dataCmt }) {
+    const [activeTab, setActiveTab] = useState("requests");
+
+    if (!data) return null;
+
+    const handleUpdateToFirebase = async (id, isUserSend) => {
+        try {
+            await axios.post(route("update-status-read", { id }), {
+                idUser: userId,
+                isUserSend,
+            });
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    };
+
+    return (
+        <div className="absolute bg-[#fff] h-auto w-[350px] top-[45px] p-[20px] left-[-100px] rounded-xl shadow-xl max-h-[588px] overflow-y-auto">
+            <p className="font-semibold text-lg mb-3">Thông báo</p>
+            <div className="flex gap-4 mb-4">
+                <button
+                    className={`rounded-3xl px-4 py-1 ${
+                        activeTab === "requests"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-200"
+                    }`}
+                    onClick={() => setActiveTab("requests")}
+                >
+                    Requests
+                </button>
+                <button
+                    className={`rounded-3xl px-4 py-2 ${
+                        activeTab === "comments"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-200"
+                    }`}
+                    onClick={() => setActiveTab("comments")}
+                >
+                    Comments
+                </button>
+            </div>
+            {activeTab === "requests" &&
+                data
+                    .reverse()
+                    .map((item, index) => (
+                        <NotificationItem
+                            key={index}
+                            item={item}
+                            userId={userId}
+                            handleUpdateToFirebase={handleUpdateToFirebase}
+                        />
+                    ))}
+            {activeTab === "comments" &&
+                dataCmt &&
+                dataCmt.reverse().map((item, index) => (
+                    <CommentItem key={index} item={item} userId={userId} />
+                ))}
         </div>
     );
 }

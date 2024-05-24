@@ -15,31 +15,31 @@ export default function Authenticated({ user, header, children }) {
     const [numberNotification, setNumberNotification] = useState(0);
     const [isShowNotifaction, setIsShowNotification] = useState(false);
     const [dataRequest, setDataRequest] = useState({});
+    const [dataNotificationCmt, setDataNotificationCmt] = useState(null);
 
     let arrayDataRequest = [];
     const handleShowNotification = () => {
         setIsShowNotification((prev) => !prev);
     };
-    const calculateNotificationCount = (data) => {
-        const values = Object.values(data || {});
-        let notificationCount = 0;
-
-        values.forEach((obj) => {
-            const statusRecive = obj?.receive?.statusRead;
-            const statusSend = obj?.send?.statusRead;
-            const nameRecive = obj?.receive?.name;
-            const nameSend = obj?.send?.name;
-
+    const calculateNotificationCount = (data, comments) => {
+        let count = 0;
+        Object.values(data || {}).forEach((obj) => {
             if (
-                (statusRecive === 0 && nameRecive) ||
-                (statusSend === 0 && nameSend)
+                (obj?.receive?.statusRead === 0 && obj?.receive?.name) ||
+                (obj?.send?.statusRead === 0 && obj?.send?.name)
             ) {
-                notificationCount++;
+                count++;
+            }
+        });
+        comments.forEach((comment) => {
+            if (comment.statusRead === 0) {
+                count++;
             }
         });
 
-        setNumberNotification(notificationCount);
+        return count;
     };
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             const outsideElement = document.getElementById("notifiaction");
@@ -47,12 +47,34 @@ export default function Authenticated({ user, header, children }) {
                 setIsShowNotification(false);
             }
         };
-        const starCountRef = ref(database, `notification/user/${user.id}`);
-        onValue(starCountRef, (snapshot) => {
-            const data = snapshot.val();
-            setDataRequest(data);
-            calculateNotificationCount(data);
-        });
+
+        const fetchNotifications = () => {
+            const notificationRef = ref(
+                database,
+                `notification/user/${user.id}`
+            );
+            const commentRef = ref(database, `comments/IdUser/${user.id}`);
+
+            onValue(notificationRef, (snapshot) => {
+                const notificationData = snapshot.val();
+                setDataRequest(notificationData);
+
+                onValue(commentRef, (commentSnapshot) => {
+                    const commentData = commentSnapshot.val();
+                    const comments = commentData
+                        ? Object.values(commentData).flatMap(Object.values)
+                        : [];
+                    setDataNotificationCmt(comments);
+                    const totalNotifications = calculateNotificationCount(
+                        notificationData,
+                        comments
+                    );
+                    setNumberNotification(totalNotifications);
+                });
+            });
+        };
+
+        fetchNotifications();
         document.addEventListener("click", handleClickOutside);
         return () => {
             document.removeEventListener("click", handleClickOutside);
@@ -145,13 +167,14 @@ export default function Authenticated({ user, header, children }) {
                         </div>
 
                         <div className="hidden sm:flex sm:items-center sm:ms-6 relative">
-                            <div
-                                onClick={handleShowNotification}
-                                className="ms-3 relative"
-                                id="notifiaction"
-                            >
-                                <i className="fa-solid fa-bell cursor-pointer"></i>
-                                <p className="absolute top-[-10px] right-[-10px] text-red-500 text-[12px] font-bold cursor-pointer">
+                            <div className="ms-3 relative" id="notifiaction">
+                                <i
+                                    onClick={handleShowNotification}
+                                    className={`fa-solid fa-bell cursor-pointer text-2xl ${
+                                        numberNotification > 0 ? "shake" : ""
+                                    }`}
+                                ></i>
+                                <p className="absolute top-[-10px] right-[-10px] text-red-500 text-[13px] font-bold cursor-pointer">
                                     {numberNotification > 5
                                         ? "5+"
                                         : numberNotification}
@@ -161,6 +184,7 @@ export default function Authenticated({ user, header, children }) {
                                     <PushNotification
                                         data={arrayDataRequest}
                                         userId={user.id}
+                                        dataCmt={dataNotificationCmt}
                                     />
                                 )}
                             </div>

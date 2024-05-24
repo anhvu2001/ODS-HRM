@@ -45,7 +45,7 @@ export default function Modal({ children, show = false, maxWidth = '2xl', closea
                     leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                     leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 >
-                    <Dialog.Panel style={{ width: '80%' }}
+                    <Dialog.Panel style={{ width: '70%' }}
                         className={`bg-white rounded-lg shadow-xl transform transition-all sm:w-full sm:mx-auto overflow-wrap break-words`}
                     >
                         {children}

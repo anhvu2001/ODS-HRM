@@ -7,6 +7,7 @@ import DangerButton from '@/Components/DangerButton';
 import SecondaryButton from '@/Components/SecondaryButton';
 import RequestDetail from '@/Components/RequestDetail';
 import CommentSection from '@/Components/CommentSection';
+import { nameRequest } from '@/utils/nameRequest';
 export default function Dashboard({ auth ,allTemplate , userRequests ,needApprove, inputDetailRequests, userList}) {
     const [showModalNewRequest, setShowModalNewRequest] = useState(false);
     const [idRequest,setIdRequest] = useState(null);
@@ -252,8 +253,8 @@ export default function Dashboard({ auth ,allTemplate , userRequests ,needApprov
                                                                             userList[value]:
                                                                             key=="id_user"?
                                                                             userList[value]:
-                                                                            key=="id_template"?
-                                                                            value:
+                                                                            key=="id_template"? nameRequest[value]
+                                                                            :
                                                                             typeof value === 'object'?
                                                                             <a className='text-green-500' href={value.file_path} download>
                                                                                 Tải file
@@ -269,7 +270,7 @@ export default function Dashboard({ auth ,allTemplate , userRequests ,needApprov
                                                         <PrimaryButton className='mr-4' onClick={handleApprove(idRequestDetail,jsonObject.follower,jsonObject.id_user)}>Approve</PrimaryButton>
                                                         <DangerButton onClick={handleReject(idRequestDetail,jsonObject.follower,jsonObject.id_user)}>Reject</DangerButton>
                                                     </div>
-                                                    <CommentSection auth={auth} idRequest={idRequestDetail} />
+                                                    <CommentSection auth={auth} idRequest={idRequestDetail} idFollower={jsonObject?.follower} />
 
                                                 </div>
                                             );
