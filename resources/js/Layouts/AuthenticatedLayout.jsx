@@ -107,6 +107,16 @@ export default function Authenticated({ user, header, children }) {
                                     Trang chủ
                                 </NavLink>
                             </div>
+                            {(user.role === "99" || user.role === "1") && (
+                                <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                                    <NavLink
+                                        href={route("List-Approved-Request")}
+                                        active={route().current("List-Approved-Request")}
+                                    >
+                                       Danh sách request đã duyệt
+                                    </NavLink>
+                                </div>
+                            )}
                             {user.role === "99" && (
                                 <>
                                     <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">

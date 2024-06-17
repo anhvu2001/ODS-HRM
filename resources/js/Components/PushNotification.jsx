@@ -63,7 +63,10 @@ const CommentItem = ({ item, userId }) => {
         }
     };
     return (
-        <div onClick={handleUpdateToFirebaseCmt} className="flex justify-between items-center font-normal text-base gap-2.5 mt-5 cursor-pointer">
+        <div
+            onClick={handleUpdateToFirebaseCmt}
+            className="flex justify-between items-center font-normal text-base gap-2.5 mt-5 cursor-pointer"
+        >
             <i className="fa-solid fa-comment text-2xl text-blue-600"></i>
             <div className="w-[227px] flex flex-col gap-1 text-sm">
                 <div className="overflow-hidden line-clamp-3">
@@ -114,7 +117,7 @@ export default function PushNotification({ data, userId, dataCmt }) {
     };
 
     return (
-        <div className="absolute bg-[#fff] h-auto w-[350px] top-[45px] p-[20px] left-[-100px] rounded-xl shadow-xl max-h-[588px] overflow-y-auto">
+        <div className="z-20 absolute bg-[#fff] h-auto w-[350px] top-[45px] p-[20px] left-[-100px] rounded-xl shadow-xl max-h-[588px] overflow-y-auto">
             <p className="font-semibold text-lg mb-3">Thông báo</p>
             <div className="flex gap-4 mb-4">
                 <button
@@ -151,9 +154,11 @@ export default function PushNotification({ data, userId, dataCmt }) {
                     ))}
             {activeTab === "comments" &&
                 dataCmt &&
-                dataCmt.reverse().map((item, index) => (
-                    <CommentItem key={index} item={item} userId={userId} />
-                ))}
+                dataCmt
+                    .reverse()
+                    .map((item, index) => (
+                        <CommentItem key={index} item={item} userId={userId} />
+                    ))}
         </div>
     );
 }

@@ -15,9 +15,13 @@ use Illuminate\Support\Facades\Storage;
 
 class UserRequestController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         // $userRequests = UserRequests::all();
+        $query = $request->input('query');
+        $categoryId = $request->input('category');
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
         $allLeaderAdmin = User::whereIn('role', ['1', '99'])->get();
         $userList = User::pluck('name', 'id')->all();
         $inputDetailRequests = InputDetailRequest::get(['input_description', 'input_name', 'input_type']);
@@ -25,8 +29,24 @@ class UserRequestController extends Controller
         $userRequests = UserRequests::join('users', 'user_requests.id_user', '=', 'users.id')
             ->join('request_templates', 'user_requests.request_template', '=', 'request_templates.id')
             ->select('user_requests.*', 'users.name as user_name', 'request_templates.template_name', 'request_templates.flow_of_approvers')
+            ->when($categoryId, function ($queryBuilder, $categoryId) {
+                return $queryBuilder->where('request_templates.id', $categoryId);
+            })
+            ->when($startDate, function ($queryBuilder, $startDate) {
+                return $queryBuilder->where('user_requests.created_at', '>=', $startDate);
+            })
+            ->when($endDate, function ($queryBuilder, $endDate) {
+                return $queryBuilder->where('user_requests.created_at', '<=', $endDate);
+            })
+            ->when($query, function ($queryBuilder, $query) {
+                return $queryBuilder->where(function ($q) use ($query) {
+                    $q->where('user_requests.request_name', 'like', '%' . $query . '%')
+                        ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(user_requests.content_request, '$.ho_va_ten')) LIKE ?", ['%' . $query . '%']);
+                });
+            })
             ->orderBy('user_requests.id', 'DESC')
-            ->get();
+            ->paginate(10);
+
 
         // Format the created_at field
         // foreach ($userRequests as $userRequest) {
