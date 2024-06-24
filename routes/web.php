@@ -12,6 +12,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Firebase\FirebaseController;
 use App\Http\Controllers\Firebase\NotificationCommentController;
 use App\Http\Controllers\Requests\ApprovedRequestsController;
+use App\Http\Controllers\Requests\ExcelController;
 use App\Http\Controllers\Requests\SearchRequestController;
 use App\Http\Controllers\Requests\UserRequestController;
 use App\Models\UserRequests;
@@ -32,12 +33,15 @@ use Illuminate\Support\Facades\Mail;
 |
 */
 
+Route::get('/export-requests', [ExcelController::class, 'index'])->name('Export-User-Requests');
+Route::post('/export-requests', [ExcelController::class, 'filterData'])->name('Export-Data-UserRequest');
+Route::post('/export-requests-excel', [ExcelController::class, 'exportUserRequests'])->name('Export-UserRequest-Excel');
 
 Route::middleware(['auth'])->group(function () {
     // User Managerment
     Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
-    Route::prefix('/users')->middleware('check.role:99')->group(function () {
+    Route::prefix('/users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('Users');
         Route::get('/detail/{id}', [UserController::class, 'view'])->name('Detail_users');
         Route::post('/update/{id}', [UserController::class, 'update'])->name('Update_users');
@@ -46,7 +50,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Request Templates
-    Route::prefix('/request-templates')->middleware('check.role:99')->group(function () {
+    Route::prefix('/request-templates')->group(function () {
         Route::get('/', [RequestTemplateController::class, 'index'])->name('Request_templates');
         Route::post('/create', [RequestTemplateController::class, 'create'])->name('Create_Request_template');
         Route::get('/{id}', [RequestTemplateController::class, 'edit'])->name('Detail_request_template');
@@ -61,7 +65,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // User Request routes
-    Route::prefix('/user_requests')->middleware('check.role:1,99')->group(function () {
+    Route::prefix('/user_requests')->group(function () {
         Route::get('/', [UserRequestController::class, 'index'])->name('Request_list');
         Route::get('/detail/{id}', [UserRequestController::class, 'view'])->name('Request_Detail_Screen');
         Route::get('/edit/{id}', [UserRequestController::class, 'update_request_screen'])->name('Edit_Detail_Screen');

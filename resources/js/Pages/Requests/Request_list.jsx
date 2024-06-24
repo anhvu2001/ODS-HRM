@@ -16,7 +16,6 @@ export default function Request_list({
     userList,
     inputDetailRequests,
 }) {
-    console.log(userRequests);
     const [flowApprover, setFlowApprover] = useState([]);
     const [idRequest, setIdRequest] = useState(null);
     const [statusApprover, setStatusApprover] = useState({

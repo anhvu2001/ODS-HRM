@@ -61,10 +61,10 @@ const RequestDetail = ({auth, requestDetailData, flowApprover, statusApprover, u
             <div className="relative px-4">
                 <div>
                     <div className="absolute h-full border border-dashed border-opacity-20 border-secondary"></div>
-                    {flowApprover.map((approver, index) => (
+                    {flowApprover && flowApprover.map((approver, index) => (
                         <div key={index}>
                             <div className="flex items-center w-full my-6 -ml-1.5">
-                                {renderStatus(approver, statusApprover)}
+                                {statusApprover && renderStatus(approver, statusApprover)}
                             </div>
                         </div>
                     ))}

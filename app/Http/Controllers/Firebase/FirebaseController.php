@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Firebase;
 
 use App\Http\Controllers\Controller;
+use App\Models\InputDetailRequest;
 use App\Models\User;
+use App\Models\UserRequests;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -114,8 +116,20 @@ class FirebaseController extends Controller
             $postReceiverRef = $this->database->getReference($this->tableName . '/' . (int)$requestData['idUser'] . '/' . (int)$id . '/receive');
             $postReceiverRef->update($postData);
         }
+        $userList = User::pluck('name', 'id')->all();
+        $inputDetailRequests = InputDetailRequest::get(['input_description', 'input_name', 'input_type']);
+        $userRequests = UserRequests::join('users', 'user_requests.id_user', '=', 'users.id')
+            ->join('request_templates', 'user_requests.request_template', '=', 'request_templates.id')
+            ->select('user_requests.*', 'users.name as user_name', 'request_templates.template_name', 'request_templates.flow_of_approvers')
+            ->where('user_requests.id', $id)
+            ->orderBy('user_requests.id', 'DESC')
+            ->first();
 
-
-        return response()->json(["status" => true]);
+        return response()->json([
+            "userList" => $userList,
+            "inputDetailRequests" => $inputDetailRequests,
+            "userRequests" => $userRequests,
+            "status" => true
+        ]);
     }
 }

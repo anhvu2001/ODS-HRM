@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import axios from "axios";
+import Modal from "./Modal";
+import RequestDetail from "./RequestDetail";
 
 const NotificationItem = ({ item, userId, handleUpdateToFirebase }) => {
     const { receive, send } = item?.value || {};
@@ -51,7 +53,7 @@ const NotificationItem = ({ item, userId, handleUpdateToFirebase }) => {
 const CommentItem = ({ item, userId }) => {
     const handleUpdateToFirebaseCmt = async () => {
         try {
-            await axios.post(
+            const response = await axios.post(
                 route("Update-Notificaton-Comment", { id: item.idComment }),
                 {
                     idUser: userId,
@@ -100,21 +102,50 @@ const getStatusText = (statusRequest) => {
     }
 };
 
-export default function PushNotification({ data, userId, dataCmt }) {
-    const [activeTab, setActiveTab] = useState("requests");
-
+export default function PushNotification({ data, user, dataCmt }) {
     if (!data) return null;
+
+    const auth = { user };
+    const userId = user?.id;
+    const [activeTab, setActiveTab] = useState("requests");
+    const [showModalDetailRequest, setShowModalDetailRequest] = useState(false);
+    const [requestDetailData, setRequestDetailData] = useState(null);
+    const [idRequest, setIdRequest] = useState(null);
+
+    const closeModal = () => {
+        setShowModalDetailRequest(false);
+    };
 
     const handleUpdateToFirebase = async (id, isUserSend) => {
         try {
-            await axios.post(route("update-status-read", { id }), {
-                idUser: userId,
-                isUserSend,
-            });
+            const response = await axios.post(
+                route("update-status-read", { id }),
+                {
+                    idUser: userId,
+                    isUserSend,
+                }
+            );
+            setIdRequest(id);
+            setRequestDetailData(response?.data);
+            setShowModalDetailRequest(true);
         } catch (error) {
             console.error("Error:", error);
         }
     };
+
+    const userRequests = useMemo(
+        () => requestDetailData?.userRequests || null,
+        [requestDetailData]
+    );
+    const inputDetailRequests = useMemo(
+        () => requestDetailData?.inputDetailRequests || null,
+        [requestDetailData]
+    );
+
+    const userList = useMemo(
+        () => requestDetailData?.userList || null,
+        [requestDetailData]
+    );
 
     return (
         <div className="z-20 absolute bg-[#fff] h-auto w-[350px] top-[45px] p-[20px] left-[-100px] rounded-xl shadow-xl max-h-[588px] overflow-y-auto">
@@ -143,6 +174,7 @@ export default function PushNotification({ data, userId, dataCmt }) {
             </div>
             {activeTab === "requests" &&
                 data
+                    .slice(0)
                     .reverse()
                     .map((item, index) => (
                         <NotificationItem
@@ -155,10 +187,26 @@ export default function PushNotification({ data, userId, dataCmt }) {
             {activeTab === "comments" &&
                 dataCmt &&
                 dataCmt
+                    .slice(0)
                     .reverse()
                     .map((item, index) => (
                         <CommentItem key={index} item={item} userId={userId} />
                     ))}
+            <Modal show={showModalDetailRequest} onClose={closeModal}>
+                {userRequests ? (
+                    <RequestDetail
+                        id={idRequest}
+                        auth={auth}
+                        requestDetailData={userRequests.content_request}
+                        userList={userList}
+                        inputDetailRequests={inputDetailRequests}
+                    />
+                ) : (
+                    <p className="py-5 text-center text-lg font-bold text-red-500">
+                        Yêu cầu này đã bị xóa
+                    </p>
+                )}
+            </Modal>
         </div>
     );
 }

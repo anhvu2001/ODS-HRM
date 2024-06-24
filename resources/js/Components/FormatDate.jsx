@@ -2,7 +2,6 @@ import React from "react";
 
 export const FormatDate = ( createdAt ) => {
     if (!createdAt) return null; // Kiểm tra nếu không có createdAt, trả về null
-console.log(createdAt)
     // Tạo một đối tượng Date từ chuỗi createdAt
     const dateObj = new Date(createdAt);
 

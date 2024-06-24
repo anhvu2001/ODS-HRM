@@ -168,6 +168,13 @@ export default function Authenticated({ user, header, children }) {
                                                     >
                                                         Request List
                                                     </Dropdown.Link>
+                                                    <Dropdown.Link
+                                                        href={route(
+                                                            "Export-User-Requests"
+                                                        )}
+                                                    >
+                                                        Export Data
+                                                    </Dropdown.Link>
                                                 </Dropdown.Content>
                                             </Dropdown>
                                         </div>
@@ -193,7 +200,7 @@ export default function Authenticated({ user, header, children }) {
                                 {isShowNotifaction && (
                                     <PushNotification
                                         data={arrayDataRequest}
-                                        userId={user.id}
+                                        user={user}
                                         dataCmt={dataNotificationCmt}
                                     />
                                 )}
