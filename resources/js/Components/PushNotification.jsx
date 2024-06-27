@@ -3,7 +3,7 @@ import axios from "axios";
 import Modal from "./Modal";
 import RequestDetail from "./RequestDetail";
 
-const NotificationItem = ({ item, userId, handleUpdateToFirebase }) => {
+const NotificationItem = ({ item, handleUpdateToFirebase }) => {
     const { receive, send } = item?.value || {};
     const { name, tieuDe, timeStamp, statusRead, statusRequest, nameQltt } =
         receive || send || {};
@@ -104,7 +104,6 @@ const getStatusText = (statusRequest) => {
 
 export default function PushNotification({ data, user, dataCmt }) {
     if (!data) return null;
-
     const auth = { user };
     const userId = user?.id;
     const [activeTab, setActiveTab] = useState("requests");
@@ -174,7 +173,6 @@ export default function PushNotification({ data, user, dataCmt }) {
             </div>
             {activeTab === "requests" &&
                 data
-                    .slice(0)
                     .reverse()
                     .map((item, index) => (
                         <NotificationItem

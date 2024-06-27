@@ -17,3 +17,5 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 // Export the database instance
 export const database = getDatabase(app);
+
+

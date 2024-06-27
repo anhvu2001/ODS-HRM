@@ -103,8 +103,36 @@ class FirebaseController extends Controller
     }
     public function updateStatusRead(Request $request, $id)
     {
-        $dt = Carbon::now('Asia/Ho_Chi_Minh');
-        $requestData = $request->only(['idUser', 'isUserSend',]);
+        // Lấy dữ liệu từ yêu cầu
+        $requestData = $request->only(['idUser', 'isUserSend']);
+
+        // Kiểm tra xem dữ liệu yêu cầu có đầy đủ không
+        if (!isset($requestData['idUser']) || !isset($requestData['isUserSend'])) {
+            return response()->json([
+                "status" => false,
+                "message" => "Invalid request data"
+            ], 400);
+        }
+
+        // Lấy danh sách người dùng
+        $userList = User::pluck('name', 'id')->all();
+        $inputDetailRequests = InputDetailRequest::get(['input_description', 'input_name', 'input_type']);
+        $userRequests = UserRequests::join('users', 'user_requests.id_user', '=', 'users.id')
+            ->join('request_templates', 'user_requests.request_template', '=', 'request_templates.id')
+            ->select('user_requests.*', 'users.name as user_name', 'request_templates.template_name', 'request_templates.flow_of_approvers')
+            ->where('user_requests.id', $id)
+            ->orderBy('user_requests.id', 'DESC')
+            ->first();
+
+        // Trả về phản hồi JSON
+        $response = response()->json([
+            "userList" => $userList,
+            "inputDetailRequests" => $inputDetailRequests,
+            "userRequests" => $userRequests,
+            "status" => true
+        ]);
+
+        // Cập nhật trạng thái đọc
         $postData = [
             "statusRead" => 1,
         ];
@@ -116,20 +144,7 @@ class FirebaseController extends Controller
             $postReceiverRef = $this->database->getReference($this->tableName . '/' . (int)$requestData['idUser'] . '/' . (int)$id . '/receive');
             $postReceiverRef->update($postData);
         }
-        $userList = User::pluck('name', 'id')->all();
-        $inputDetailRequests = InputDetailRequest::get(['input_description', 'input_name', 'input_type']);
-        $userRequests = UserRequests::join('users', 'user_requests.id_user', '=', 'users.id')
-            ->join('request_templates', 'user_requests.request_template', '=', 'request_templates.id')
-            ->select('user_requests.*', 'users.name as user_name', 'request_templates.template_name', 'request_templates.flow_of_approvers')
-            ->where('user_requests.id', $id)
-            ->orderBy('user_requests.id', 'DESC')
-            ->first();
 
-        return response()->json([
-            "userList" => $userList,
-            "inputDetailRequests" => $inputDetailRequests,
-            "userRequests" => $userRequests,
-            "status" => true
-        ]);
+        return $response;
     }
 }

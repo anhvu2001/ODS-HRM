@@ -28,7 +28,11 @@ class ApprovedRequestsController extends Controller
         // Get requests for the members of the current user
         $memberUserIds = $memberUser->pluck('id')->toArray();
         $approvedRequests = UserRequests::whereIn('id_user', $memberUserIds)
-            ->whereIn('status', [1, 2])
+            ->when($userId == 36, function ($queryBuilder) {
+                return $queryBuilder->whereIn('fully_accept', [1, 2]);
+            }, function ($queryBuilder) {
+                return $queryBuilder->whereIn('status', [1, 2]);
+            })
             ->join('users', 'users.id', '=', 'user_requests.id_user')
             ->join('request_templates', 'user_requests.request_template', '=', 'request_templates.id')
             ->select('user_requests.*', 'request_templates.template_name', 'users.name as user_name', 'request_templates.flow_of_approvers')

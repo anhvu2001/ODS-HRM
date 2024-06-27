@@ -14,6 +14,7 @@ export default function Approved_requests({
     approvedRequests,
     userList,
     inputDetailRequests,
+    
 }) {
     const [showModalDetailRequest, setShowModalDetailRequest] = useState(false);
     const [idRequest, setIdRequest] = useState(null);
