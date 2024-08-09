@@ -213,6 +213,20 @@ export default function Create_request({
                                                     }
                                                 ></NumberInput>
                                             </div>
+                                        ) : input.input_type === "file" ? (
+                                            <div className="my-6" key={index}>
+                                                <label>
+                                                    {input.input_description}
+                                                </label>
+                                                <input
+                                                    required={input.required}
+                                                    type="file"
+                                                    name={`${input.input_name}[]`} // Cập nhật tên input để nhận diện nhiều file
+                                                    id={input.input_name}
+                                                    multiple // Cho phép chọn nhiều file
+                                                    className="block w-full p-2 border border-gray-300 rounded-md"
+                                                />
+                                            </div>
                                         ) : (
                                             // Nếu là input thông thường
                                             <div className="my-6" key={index}>

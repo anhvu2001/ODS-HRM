@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
+
 class UserController extends Controller
 {
     public function index()
@@ -17,7 +19,7 @@ class UserController extends Controller
         // Retrieve all users from database
         $users = User::with('directManager')->get();
         // Return view with users data
-        return Inertia::render('Users/Users', ['users' => $users ]);
+        return Inertia::render('Users/Users', ['users' => $users]);
     }
 
     public function view($id)
@@ -49,9 +51,9 @@ class UserController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'role' => $request->role,
-            'direct_manager'=> $request->direct_manager,
+            'direct_manager' => $request->direct_manager,
         ]);
-        if ($request->password!==null) {
+        if ($request->password !== null) {
             $user->update([
                 'password' => Hash::make($request->password),
             ]);
@@ -61,7 +63,7 @@ class UserController extends Controller
 
     public function delete(Request $request)
     {
-        $id= $request->id;
+        $id = $request->id;
 
         $user = User::find($id);
 
@@ -70,7 +72,6 @@ class UserController extends Controller
 
         // Redirect to user list page
         return redirect()->route('Users');
-
     }
     public function create(Request $request)
     {
@@ -79,10 +80,19 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'birthday'  => $request->birthday,
-            'phone'=> $request->phone,
-            'role'=> $request->role,
-            'direct_manager'=> $request->direct_manager,
+            'phone' => $request->phone,
+            'role' => $request->role,
+            'direct_manager' => $request->direct_manager,
         ]);
         return redirect()->route('dashboard');
+    }
+    public function search(Request $request)
+    {
+        $keyname = $request->query('name');
+
+        // Tìm kiếm người dùng dựa trên tên
+        $users = User::where('name', 'like', "%$keyname%")->get();
+
+        return response()->json($users);
     }
 }

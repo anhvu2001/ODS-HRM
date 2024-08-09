@@ -30,7 +30,7 @@ class CommentController extends Controller
     // Hàm xây dựng cây bình luận với đệ quy
     private function buildCommentTree($comments, $parentId = null)
     {
-     
+
         $commentTree = [];
 
         foreach ($comments as $comment) {
@@ -70,7 +70,9 @@ class CommentController extends Controller
         // Lưu comment vào cơ sở dữ liệu
         $comment->save();
         $newlyCommentId = $comment->id;
-        return response()->json(['status' => true, 'id' => $newlyCommentId]);
+        $newlyUserIdComment = $comment->user_id;
+
+        return response()->json(['status' => true, 'id' => $newlyCommentId, 'userId' => $newlyUserIdComment]);
     }
     public function deleteComment($id)
     {

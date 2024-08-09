@@ -73,7 +73,7 @@ export default function Dashboard({
     const handleApprove = (id_request, id_follower, id_user) => () => {
         const field = auth.user.id === 36 ? "fully_accept" : "status";
         const field_value = 1;
-
+        setShowDetailRequestApprover(false)
         // Sử dụng Promise.all() để gọi hai yêu cầu axios đồng thời
         Promise.all([
             axios.post(route("Update_Request_Field"), {
@@ -101,7 +101,7 @@ export default function Dashboard({
     const handleReject = (id_request, id_follower, id_user) => () => {
         const field = auth.user.id === 36 ? "fully_accept" : "status";
         const field_value = 2;
-
+        setShowDetailRequestApprover(false)
         // Sử dụng Promise.all() để gọi hai yêu cầu axios đồng thời
         Promise.all([
             axios.post(route("Update_Request_Field"), {
@@ -117,15 +117,7 @@ export default function Dashboard({
             }),
         ])
             .then(([response1, response2]) => {
-                // Xử lý kết quả từ cả hai yêu cầu axios ở đây
-                console.log(
-                    "Response from Update_Request_Field:",
-                    response1.data
-                );
-                console.log(
-                    "Response from update-to-firebase:",
-                    response2.data
-                );
+               
                 window.location.reload(); // Reload trang
             })
             .catch((error) => {
@@ -133,7 +125,6 @@ export default function Dashboard({
                 console.error("Error:", error);
             });
     };
-
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -391,8 +382,7 @@ export default function Dashboard({
                                                                         );
                                                                     }}
                                                                 >
-                                                                    {" "}
-                                                                    Xóa Request{" "}
+                                                                    Xóa Request
                                                                 </DangerButton>
                                                             </div>
                                                         </td>
@@ -548,6 +538,7 @@ export default function Dashboard({
                                                             idFollower={
                                                                 jsonObject?.follower
                                                             }
+                                                            ownerIdRequest={jsonObject?.id_user}
                                                         />
                                                     </div>
                                                 );

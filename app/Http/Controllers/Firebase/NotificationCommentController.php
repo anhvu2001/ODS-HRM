@@ -22,16 +22,18 @@ class NotificationCommentController extends Controller
     public function sendCommentToFirebase(Request $request, $id)
     {
         // Lấy các dữ liệu cần thiết từ request
-        $requestData = $request->only(['idFollower']);
+        $requestData = $request->only(['idFollower','type']);
         $dt = Carbon::now('Asia/Ho_Chi_Minh');
         $follower = isset($requestData["idFollower"]) ? (int)$requestData["idFollower"] : 36;
-        $userId = Auth::id();
+
+
         // Tìm comment và join với bảng user_requests và users
         $comment = Comment::select(
             'comments.user_id as comment_user_id',
             'comments.request_id',
             'comments.level',
             'comments.content',
+            'parent_comment_id',
             'user_requests.id_user as request_user_id',
             'users.name as comment_user_name',
             'user_requests.request_name as request_name'
@@ -55,19 +57,24 @@ class NotificationCommentController extends Controller
             "content" => $comment->content,
             "statusRead" => 0,
             "idComment" => $id,
+            "parentCommentId" => $comment->parent_comment_id ?? "null",
             "idRequest" => $comment->request_id,
             "timeStamp" => $dt->toDateTimeString(),
-            "timeStampUpdate" => $dt->toDateTimeString()
+            "timeStampUpdate" => $dt->toDateTimeString(),
         ];
-
-        // Thực hiện ghi dữ liệu vào Firebase cho người gửi hoặc người theo dõi
-        if ($comment->comment_user_id == $comment->request_user_id) {
-            $postSenderRef = $this->database->getReference($this->tableName . '/' . $follower . '/' . $comment->request_id . '/' . $id);
-            $postSenderRef->set($postData);
-        } else if ($follower == $comment->comment_user_id) {
+        // gửi thông báo đến những người đã bình luận đến người tạo ra request đó
+        if ($comment->request_user_id != $comment->comment_user_id) {
             $postSenderRef = $this->database->getReference($this->tableName . '/' . $comment->request_user_id . '/' . $comment->request_id . '/' . $id);
             $postSenderRef->set($postData);
         }
+        // // Thực hiện ghi dữ liệu vào Firebase cho người gửi hoặc người theo dõi
+        // if ($comment->comment_user_id == $comment->request_user_id) {
+        //     $postSenderRef = $this->database->getReference($this->tableName . '/' . $follower . '/' . $comment->request_id . '/' . $id);
+        //     $postSenderRef->set($postData);
+        // } else if ($follower == $comment->comment_user_id) {
+        //     $postSenderRef = $this->database->getReference($this->tableName . '/' . $comment->request_user_id . '/' . $comment->request_id . '/' . $id);
+        //     $postSenderRef->set($postData);
+        // }
 
         return response()->json(["status" => true, "comment" => $postData], 200);
     }

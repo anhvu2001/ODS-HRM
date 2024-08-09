@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Requests;
 
+use App\Helpers\HelperFunctions;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\UserRequests;
@@ -12,6 +13,7 @@ use App\Models\UserRequestsApprover;
 use DateTime;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use ZipArchive;
 
 class UserRequestController extends Controller
 {
@@ -107,21 +109,17 @@ class UserRequestController extends Controller
         // Xóa request_name và category_id khỏi $requestAll
         unset($requestAll['request_name']);
         unset($requestAll['category_id']);
-        // Xử lý file
-        $uploadedFiles = [];
-        if ($request->allFiles()) {
-            $allFiles = $request->allFiles();
-            foreach ($allFiles as $name_input => $file) {
-                $fileName = $file->getClientOriginalName();
-                $path = $file->store('public/files');
 
-                $requestAll[$name_input] = [
-                    'file_name' => $fileName,
-                    'file_path' => Storage::url($path),
-                ];
-            }
+        // Xử lý file
+        $files = $request->allFiles();
+        $fileResult = HelperFunctions::handleUploadsFiles($files);
+        // Thêm dữ liệu file vào $requestAll
+        if (!empty($fileResult)) {
+            $requestAll = array_merge($requestAll, $fileResult);
         }
         $json_data = json_encode($requestAll, JSON_UNESCAPED_UNICODE);
+
+
         // Lưu vào cơ sở dữ liệu
 
         $userRequest = UserRequests::create([
@@ -144,7 +142,7 @@ class UserRequestController extends Controller
             }
         }
         $newlyCreatedId = $userRequest->id;
-        return response()->json(['status' => true, 'id' => $newlyCreatedId]);
+        return response()->json(['status' => true, 'id' => $newlyCreatedId,]);
     }
     public function update(Request $request)
     {
@@ -153,24 +151,44 @@ class UserRequestController extends Controller
         $requestDetail = UserRequests::find($id_request);
 
         $requestName = $requestAll['request_name'];
+        $requestContentOriginal = $requestDetail['content_request'];
         unset($requestAll['request_name']);
+
         // Xử lý file
-        $uploadedFiles = [];
         if ($request->allFiles()) {
             $allFiles = $request->allFiles();
-            foreach ($allFiles as $name_input => $file) {
-                $fileName = $file->getClientOriginalName();
-                $path = $file->store('public/files');
 
-                $requestAll[$name_input] = [
-                    'file_name' => $fileName,
-                    'file_path' => Storage::url($path),
-                ];
+            // Xử lý tất cả các file và lấy kết quả trả về
+            $fileResult = HelperFunctions::handleUploadsFiles($allFiles);
+
+            // Gán kết quả vào $requestAll với đúng key
+            foreach ($fileResult as $name_input => $fileData) {
+                $requestAll[$name_input] = $fileData;
             }
         }
-        $json_data = json_encode($requestAll, JSON_UNESCAPED_UNICODE);
-        // Lưu vào cơ sở dữ liệu
 
+        $arrayOriginal = json_decode($requestContentOriginal, true);
+
+        // Xóa các key dư thừa trong $requestAll không có trong $arrayOriginal
+        foreach (array_keys($requestAll) as $key) {
+            if (!array_key_exists($key, $arrayOriginal)) {
+                unset($requestAll[$key]);
+            }
+        }
+
+        // Cập nhật các giá trị từ $requestAll vào $arrayOriginal nếu có sự thay đổi
+        foreach ($requestAll as $key => $value) {
+            if (is_array($value) && isset($arrayOriginal[$key]) && is_array($arrayOriginal[$key])) {
+                $arrayOriginal[$key] = array_merge($arrayOriginal[$key], $value);
+            } else {
+                $arrayOriginal[$key] = $value;
+            }
+        }
+
+        // Kết quả sau khi cập nhật
+        $json_data = json_encode($arrayOriginal, JSON_UNESCAPED_UNICODE);
+
+        // Lưu vào cơ sở dữ liệu
         $requestDetail->update([
             'request_name' => $requestName,
             'content_request' => $json_data,
@@ -178,6 +196,7 @@ class UserRequestController extends Controller
 
         return response()->json(['status' => true]);
     }
+
     public function delete(Request $request)
     {
         $id = $request->id;
