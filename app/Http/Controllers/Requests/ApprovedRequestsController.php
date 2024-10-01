@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Requests;
 
 use App\Http\Controllers\Controller;
 use App\Models\InputDetailRequest;
+use App\Models\RequestApproval;
 use App\Models\RequestTemplate;
 use App\Models\User;
 use App\Models\UserRequests;
@@ -25,17 +26,16 @@ class ApprovedRequestsController extends Controller
         $inputDetailRequests = InputDetailRequest::get(['input_description', 'input_name', 'input_type']);
         $memberUser = User::where('direct_manager', $userId)->get();
 
-        // Get requests for the members of the current user
-        $memberUserIds = $memberUser->pluck('id')->toArray();
-        $approvedRequests = UserRequests::whereIn('id_user', $memberUserIds)
-            ->when($userId == 36, function ($queryBuilder) {
-                return $queryBuilder->whereIn('fully_accept', [1, 2]);
-            }, function ($queryBuilder) {
-                return $queryBuilder->whereIn('status', [1, 2]);
-            })
+        // Lấy danh sách request_id từ request_approval dựa trên user_id và status = 1
+        $approvedRequestIds = RequestApproval::where('user_id', $userId)
+            ->where('status', 1)
+            ->pluck('request_id');
+
+        // Truy vấn bảng UserRequests bằng cách kiểm tra request_id nằm trong danh sách approvedRequestIds
+        $approvedRequests = UserRequests::whereIn('user_requests.id', $approvedRequestIds) // Thêm user_requests trước cột id
             ->join('users', 'users.id', '=', 'user_requests.id_user')
             ->join('request_templates', 'user_requests.request_template', '=', 'request_templates.id')
-            ->select('user_requests.*', 'request_templates.template_name', 'users.name as user_name', 'request_templates.flow_of_approvers')
+            ->select('user_requests.*', 'request_templates.template_name', 'users.name as user_name',)
             ->when($categoryId, function ($queryBuilder, $categoryId) {
                 return $queryBuilder->where('request_templates.id', $categoryId);
             })
@@ -53,6 +53,7 @@ class ApprovedRequestsController extends Controller
             })
             ->orderBy('user_requests.created_at', 'desc')
             ->paginate(10);
+
 
         return Inertia::render('Requests/Approved_requests', compact('approvedRequests', 'userList', 'inputDetailRequests'));
     }

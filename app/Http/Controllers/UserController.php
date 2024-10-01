@@ -52,6 +52,8 @@ class UserController extends Controller
             'phone' => $request->phone,
             'role' => $request->role,
             'direct_manager' => $request->direct_manager,
+            'role_code' => $request->role_code,
+
         ]);
         if ($request->password !== null) {
             $user->update([
@@ -82,6 +84,7 @@ class UserController extends Controller
             'birthday'  => $request->birthday,
             'phone' => $request->phone,
             'role' => $request->role,
+            'role_code' => $request->role_code,
             'direct_manager' => $request->direct_manager,
         ]);
         return redirect()->route('dashboard');

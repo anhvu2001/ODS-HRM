@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\UserRequests;
 use App\Models\RequestTemplate;
 use App\Models\InputDetailRequest;
+use App\Models\RequestApproval;
 use App\Models\User;
 use App\Models\UserRequestsApprover;
 use DateTime;
@@ -94,56 +95,178 @@ class UserRequestController extends Controller
     {
         $requestAll = $request->all();
         $id_request = $requestAll['id_request'];
-        $field = $requestAll['field'];
-        $field_value = $requestAll['field_value'];
-        $userRequest = UserRequests::find($id_request);
-        $userRequest->$field = $field_value;
-        $userRequest->save();
+        $status = $requestAll['status']; // Trạng thái mới
+        $user_id = auth()->id(); // ID của người dùng đang đăng nhập
+
+        // Tìm bản ghi cần cập nhật trong bảng request_approval
+        $requestApproval = RequestApproval::where('request_id', $id_request)
+            ->where('user_id', $user_id)
+            ->first();
+
+        if ($requestApproval) {
+            // Cập nhật trạng thái trong bảng request_approval
+            $requestApproval->status = $status;
+            $requestApproval->save();
+
+            // Lấy thông tin yêu cầu và luồng phê duyệt
+            $userRequest = UserRequests::find($id_request);
+            $flowOfApprovers = json_decode($userRequest->flow_approvers, true);
+
+            // Kiểm tra và cập nhật status trong flow_approvers
+            foreach ($flowOfApprovers as &$approver) {
+                if ($approver['user_id'] == $user_id) {
+                    // Cập nhật status của người duyệt hiện tại
+                    $approver['status'] = $status;
+                    break; // Dừng vòng lặp sau khi tìm thấy user_id
+                }
+            }
+
+            // Cập nhật lại trường flow_approvers sau khi thay đổi
+            $userRequest->flow_approvers = json_encode($flowOfApprovers);
+            $userRequest->save();
+
+            // Lấy danh sách user_id từ flowOfApprovers
+            $approverIds = array_column($flowOfApprovers, 'user_id');
+
+            // Kiểm tra nếu có bất kỳ người nào từ chối
+            $anyRejected = RequestApproval::where('request_id', $id_request)
+                ->whereIn('user_id', $approverIds)
+                ->where('status', 2) // Trạng thái từ chối
+                ->exists();
+
+            if ($anyRejected) {
+                // Nếu có bất kỳ người nào từ chối
+                $userRequest->fully_accept = 2;
+            } else {
+                // Nếu không có ai từ chối, kiểm tra xem tất cả đã duyệt chưa
+                $allApproved = RequestApproval::where('request_id', $id_request)
+                    ->whereIn('user_id', $approverIds)
+                    ->where('status', 1) // Trạng thái đồng ý
+                    ->count() === count($approverIds);
+
+                if ($allApproved) {
+                    // Nếu tất cả đã duyệt
+                    $userRequest->fully_accept = 1;
+                } else {
+                    // Nếu chưa tất cả đã duyệt và không có ai từ chối
+                    $userRequest->fully_accept = 0;
+                }
+            }
+
+            $userRequest->save();
+
+            return response()->json(['success' => true, 'message' => 'Status updated successfully.']);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Request or user not found.']);
+        }
     }
+
+
     public function create(Request $request)
     {
         $requestAll = $request->all();
-        // Tách request_name và category_id ra khỏi $requestAll
+        $userId = auth()->id(); // ID của người tạo đề xuất
         $requestName = $requestAll['request_name'];
-        $categoryId = $requestAll['category_id'];
-        // Xóa request_name và category_id khỏi $requestAll
-        unset($requestAll['request_name']);
-        unset($requestAll['category_id']);
+        $idTemplate = $requestAll['id_template'];
 
-        // Xử lý file
-        $files = $request->allFiles();
-        $fileResult = HelperFunctions::handleUploadsFiles($files);
-        // Thêm dữ liệu file vào $requestAll
-        if (!empty($fileResult)) {
-            $requestAll = array_merge($requestAll, $fileResult);
+        // Lấy thông tin từ bảng request_templates dựa trên id_template
+        $template = RequestTemplate::find($idTemplate);
+
+        if (!$template) {
+            return response()->json(['status' => false, 'message' => 'Template not found'], 404);
         }
-        $json_data = json_encode($requestAll, JSON_UNESCAPED_UNICODE);
 
+        // Lấy flow_of_approvers từ bảng request_templates
+        $flowOfApprovers = json_decode($template->flow_of_approvers, true);
 
-        // Lưu vào cơ sở dữ liệu
+        // Xử lý file (nếu có)
+        $fileResult = HelperFunctions::handleUploadsFiles($request->allFiles());
 
+        // Thêm dữ liệu file vào $requestAll nếu có file
+        $requestAll = array_merge($requestAll, $fileResult);
+
+        $existingApprovers = [];
+
+        foreach ($flowOfApprovers as $approver) {
+            if (!isset($approver['user_id'])) continue;
+            $approverId = $approver['user_id'];
+            if ($approverId === 'qltt') {
+                $creator = User::find($userId);
+                if ($creator && $creator->direct_manager) {
+                    $approverId = $creator->direct_manager; // Gán id của quản lý trực tiếp
+                    // Kiểm tra nếu quản lý trực tiếp tồn tại trong bảng User
+                    $manager = User::find($approverId);
+                    if ($manager) {
+                        // Nếu tìm thấy quản lý trực tiếp, gán thông tin name và role_code
+                        $approverId = (int)$manager->id; // Gán id của quản lý trực tiếp và chuyển sang kiểu số nguyên
+                        $approver['role'] = $manager->role_code; // Thêm role của quản lý trực tiếp
+                        $approver['name'] = $manager->name; // Thêm tên của quản lý trực tiếp
+                    }
+                }
+            } else {
+                $user = User::where('role_code', $approverId)
+                    ->whereIn('role', [1, 99])
+                    ->first();
+                if ($user) {
+                    $approverId = $user->id; // Gán id thực tế của người dùng
+                    $approver['role'] = $user->role_code; // Thêm role vào approver
+                    $approver['name'] = $user->name; // Thêm role vào approver
+                }
+            }
+            if ($approverId == $userId) {
+                continue; // Bỏ qua nếu người tạo đề xuất trùng với người duyệt
+            }
+
+            if (!isset($existingApprovers[$approverId])) {
+                $approver['user_id'] = $approverId; // Cập nhật user_id thực tế
+                $existingApprovers[$approverId] = $approver;
+            }
+        }
+
+        // Chuyển đổi mảng associatives thành mảng index
+        $flowOfApprovers = array_values($existingApprovers);
+
+        // Cập nhật lại trường 'flow_approvers' sau khi đã thay thế user_id thành ID thực tế
         $userRequest = UserRequests::create([
             'request_name' => $requestName,
-            'category_id' => $categoryId,
-            'id_user' => $request->id_user,
-            'request_template' => $request->id_template,
-            'content_request' => $json_data,
+            'category_id' => $idTemplate,
+            'id_user' => $userId,
+            'request_template' => $idTemplate,
+            'content_request' => json_encode($requestAll, JSON_UNESCAPED_UNICODE),
+            'flow_approvers' => json_encode($flowOfApprovers, JSON_UNESCAPED_UNICODE),
         ]);
 
-        if ($request->input('follower')) {
-            $followerValue = $request->input('follower');
+
+        $newlyCreatedId = $userRequest->id;
+
+        // Lưu dữ liệu vào bảng request_approval
+        foreach ($flowOfApprovers as $approver) {
+            RequestApproval::create([
+                'request_id' => $newlyCreatedId,
+                'user_id' => $approver['user_id'] ?? null,
+                'order' => $approver['order'] ?? null,
+                'status' => $approver['status'] ?? 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        // Xử lý follower (nếu có)
+        if ($followerValue = $request->input('follower')) {
             try {
                 UserRequestsApprover::create([
                     'user_id' => $followerValue,
-                    'id_request' => $userRequest->id,
+                    'id_request' => $newlyCreatedId,
                 ]);
             } catch (\Throwable $th) {
                 throw $th;
             }
         }
-        $newlyCreatedId = $userRequest->id;
-        return response()->json(['status' => true, 'id' => $newlyCreatedId,]);
+
+        return response()->json(['status' => true, 'id' => $newlyCreatedId]);
     }
+
+
     public function update(Request $request)
     {
         $requestAll = $request->all();
@@ -152,38 +275,33 @@ class UserRequestController extends Controller
 
         $requestName = $requestAll['request_name'];
         $requestContentOriginal = $requestDetail['content_request'];
+
+        // Giải mã dữ liệu JSON trước khi xử lý
+        $arrayOriginal = json_decode($requestContentOriginal, true);
+
         unset($requestAll['request_name']);
 
         // Xử lý file
         if ($request->allFiles()) {
             $allFiles = $request->allFiles();
 
-            // Xử lý tất cả các file và lấy kết quả trả về
+            // Xử lý file mới và nhận kết quả
             $fileResult = HelperFunctions::handleUploadsFiles($allFiles);
-
-            // Gán kết quả vào $requestAll với đúng key
+            // Xóa file cũ và thay thế bằng file mới
             foreach ($fileResult as $name_input => $fileData) {
-                $requestAll[$name_input] = $fileData;
+                // Kiểm tra nếu $fileData không trống thì mới thực hiện
+                if (!empty($fileData)) {
+                    // Xóa dữ liệu file cũ nếu tồn tại
+                    if (isset($arrayOriginal[$name_input])) {
+                        unset($arrayOriginal[$name_input]);
+                    }
+
+                    // Thêm file mới vào mảng
+                    $arrayOriginal[$name_input] = $fileData;  // Thay thế trực tiếp không sử dụng mảng lồng nhau
+                }
             }
         }
 
-        $arrayOriginal = json_decode($requestContentOriginal, true);
-
-        // Xóa các key dư thừa trong $requestAll không có trong $arrayOriginal
-        foreach (array_keys($requestAll) as $key) {
-            if (!array_key_exists($key, $arrayOriginal)) {
-                unset($requestAll[$key]);
-            }
-        }
-
-        // Cập nhật các giá trị từ $requestAll vào $arrayOriginal nếu có sự thay đổi
-        foreach ($requestAll as $key => $value) {
-            if (is_array($value) && isset($arrayOriginal[$key]) && is_array($arrayOriginal[$key])) {
-                $arrayOriginal[$key] = array_merge($arrayOriginal[$key], $value);
-            } else {
-                $arrayOriginal[$key] = $value;
-            }
-        }
 
         // Kết quả sau khi cập nhật
         $json_data = json_encode($arrayOriginal, JSON_UNESCAPED_UNICODE);

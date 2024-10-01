@@ -16,34 +16,23 @@ export default function Request_list({
     userList,
     inputDetailRequests,
 }) {
+    console.log(userRequests.data);
     const [flowApprover, setFlowApprover] = useState([]);
     const [idRequest, setIdRequest] = useState(null);
-    const [statusApprover, setStatusApprover] = useState({
-        status: 0,
-        fully_accept: 0,
-        hr_status: 0,
-    });
     const [userRequestsData, setUserRequests] = useState(userRequests.data);
     const [showModalDetailRequest, setShowModalDetailRequest] = useState(false);
     const [requestDetailData, setRequestDetailData] = useState(null);
     const openModal = (
         request,
-        flow_of_approvers,
-        status,
-        fully_accept,
-        hr_status,
+        flow_approvers,
         id_request
     ) => {
         setRequestDetailData(request);
         setIdRequest(id_request);
-        setStatusApprover({
-            status: status,
-            fully_accept: fully_accept,
-            hr_status: hr_status,
-        });
-        if (typeof flow_of_approvers === "string") {
-            flow_of_approvers = JSON.parse(flow_of_approvers);
-            setFlowApprover(flow_of_approvers);
+       
+        if (typeof flow_approvers === "string") {
+            flow_approvers = JSON.parse(flow_approvers);
+            setFlowApprover(flow_approvers);
         }
         setShowModalDetailRequest(true);
     };
@@ -98,9 +87,8 @@ export default function Request_list({
                                         <th className="px-4 py-2">Tiêu đề</th>
                                         <th className="px-4 py-2">Người tạo</th>
                                         <th className="px-4 py-2">
-                                            QLTT Duyệt
+                                            Trạng thái
                                         </th>
-                                        <th className="px-4 py-2">CEO Duyệt</th>
                                         <th className="px-4 py-2">Ngày tạo</th>
                                         <th className="px-4 py-2">Chi tiết</th>
                                     </tr>
@@ -124,23 +112,7 @@ export default function Request_list({
                                             <td className="border px-4 py-2">
                                                 {request.user_name}
                                             </td>
-                                            <td className="border px-4 py-2">
-                                                {request.status === 0 && (
-                                                    <span className="text-yellow-500 ">
-                                                        Chờ duyệt
-                                                    </span>
-                                                )}
-                                                {request.status === 1 && (
-                                                    <span className="text-green-500 ">
-                                                        Đã duyệt
-                                                    </span>
-                                                )}
-                                                {request.status === 2 && (
-                                                    <span className="text-red-500 ">
-                                                        Từ chối
-                                                    </span>
-                                                )}
-                                            </td>
+
                                             <td className="border px-4 py-2">
                                                 {request.fully_accept === 0 && (
                                                     <span className="text-yellow-500 font-bold">
@@ -168,10 +140,7 @@ export default function Request_list({
                                                             onClick={() => {
                                                                 openModal(
                                                                     request.content_request,
-                                                                    request.flow_of_approvers,
-                                                                    request.status,
-                                                                    request.fully_accept,
-                                                                    request.hr_status,
+                                                                    request.flow_approvers,
                                                                     request.id
                                                                 );
                                                             }}
@@ -221,7 +190,6 @@ export default function Request_list({
                     auth={auth}
                     requestDetailData={requestDetailData}
                     flowApprover={flowApprover}
-                    statusApprover={statusApprover}
                     userList={userList}
                     inputDetailRequests={inputDetailRequests}
                 />

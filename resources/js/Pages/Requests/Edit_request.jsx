@@ -40,9 +40,8 @@ export default function Edit_request({
         try {
             const formData = new FormData(e.target);
            const rp =await axios.post(route("Update_Request"), formData);
-           console.log(rp)
             alert("Cập nhập đề xuất thành công");
-            // window.location.href="/"
+            window.location.href="/"
         } catch (error) {
             console.error(error);
         }

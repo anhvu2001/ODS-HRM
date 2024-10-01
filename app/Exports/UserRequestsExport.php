@@ -50,8 +50,7 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
             'Loại đề xuất',
             'Người theo dõi',
             'Tên đề xuất',
-            'Quản lý trực tiếp',
-            'CEO',
+            'Trạng thái đề xuất',
             'Ngày tạo đề xuất',
             'File đính kèm'
         ];
@@ -63,18 +62,30 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
             $defaultHeadings = array_merge($defaultHeadings, ['Loại nghỉ phép', 'Lý do nghỉ', 'Ngày nghỉ', 'Ngày kết thúc', 'Số ngày nghỉ']);
         } elseif ($this->categoryId == 5) {
             $defaultHeadings = array_merge($defaultHeadings, [
-                'Chức vụ', 'Lý do thanh toán', 'Chi nhánh ngân hàng',
-                'Số tài khoản', 'Tiền tệ', 'Số tiền', 'Nội dung chuyển khoản'
+                'Chức vụ',
+                'Lý do thanh toán',
+                'Chi nhánh ngân hàng',
+                'Số tài khoản',
+                'Tiền tệ',
+                'Số tiền',
+                'Nội dung chuyển khoản'
             ]);
         } elseif ($this->categoryId == 8) {
             $defaultHeadings = array_merge($defaultHeadings, [
-                'Nội dung', 'Tiền tạm ứng', 'Tiền đã thanh toán',
-                'Số tiền còn thiếu', 'Hình thức thanh toán'
+                'Nội dung',
+                'Tiền tạm ứng',
+                'Tiền đã thanh toán',
+                'Số tiền còn thiếu',
+                'Hình thức thanh toán'
             ]);
         } elseif ($this->categoryId == 6) {
             $defaultHeadings = array_merge($defaultHeadings, [
-                'Lý do nghỉ', 'Loại nghỉ phép', 'Ngày nghỉ',  'Giờ bắt đầu',
-                'Giờ kết thúc', 'Tổng số tiếng nghỉ'
+                'Lý do nghỉ',
+                'Loại nghỉ phép',
+                'Ngày nghỉ',
+                'Giờ bắt đầu',
+                'Giờ kết thúc',
+                'Tổng số tiếng nghỉ'
             ]);
         }
         // Thêm các cột tùy chỉnh cho các category khác nếu cần
@@ -86,19 +97,41 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
     {
         $content = json_decode($request->content_request, true);
         $follower_name = HelperFunctions::getFollowerName($content['follower'] ?? '');
-        $download_link = HelperFunctions::getDownloadLink($content['hoa_don_chung_tu'] ?? $content['chung_tu'] ?? $content['giay_to_xac_minh'] ?? $content['giay_to']  ?? '');
-        $file_text = $download_link ? "=HYPERLINK(\"$download_link\", \"Link File\")" : 'No File';
+        $download_links = HelperFunctions::getDownloadLink($content['hoa_don_chung_tu']
+            ?? $content['chung_tu']
+            ?? $content['giay_to_xac_minh']
+            ?? $content['giay_to']
+            ?? '');
+
+            if (is_array($download_links)) {
+                $file_texts = array_map(function($link) {
+                    // Sử dụng dấu phẩy làm dấu phân cách cho hàm HYPERLINK
+                    return "=HYPERLINK(\"" . $link . "\", \"Link File\")";
+                }, $download_links);
+            
+                // Tạo chuỗi hoặc mảng các hyperlink
+                $download_links_string = implode("\n", $file_texts);
+            } else {
+                $download_links_string = 'No File';
+            }
+            
+            
+                    
+            
         $mappedData = [
             $request->id,
             $request->user_name,
             $request->template_name,
             $follower_name,
             $request->request_name,
-            HelperFunctions::mapStatus($request->status),
             HelperFunctions::mapStatus($request->fully_accept),
             $request->created_at,
-            $file_text,
+            $download_links_string // Đặt chuỗi URL đã được nối vào mảng xuất ra Excel
         ];
+
+
+
+
 
         // Thêm dữ liệu cho các cột tùy chỉnh cho từng category
         if ($this->categoryId == 7) {
@@ -162,7 +195,7 @@ class UserRequestsExport implements FromCollection, WithHeadings, WithMapping, W
         return $mappedData;
     }
 
-  
+
 
     // Triển khai phương thức styles từ giao diện WithStyles
     public function styles(Worksheet $sheet)

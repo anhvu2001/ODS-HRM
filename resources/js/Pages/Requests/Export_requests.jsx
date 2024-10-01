@@ -198,10 +198,7 @@ export default function Export_requests({ auth, userRequests }) {
                                                 Người tạo
                                             </th>
                                             <th className="px-4 py-2">
-                                                QLTT Duyệt
-                                            </th>
-                                            <th className="px-4 py-2">
-                                                CEO Duyệt
+                                                Trạng thái
                                             </th>
                                             <th className="px-4 py-2">
                                                 Ngày tạo
@@ -227,23 +224,7 @@ export default function Export_requests({ auth, userRequests }) {
                                                 <td className="border px-4 py-2">
                                                     {request.user_name}
                                                 </td>
-                                                <td className="border px-4 py-2">
-                                                    {request.status === 0 && (
-                                                        <span className="text-yellow-500 ">
-                                                            Chờ duyệt
-                                                        </span>
-                                                    )}
-                                                    {request.status === 1 && (
-                                                        <span className="text-green-500 ">
-                                                            Đã duyệt
-                                                        </span>
-                                                    )}
-                                                    {request.status === 2 && (
-                                                        <span className="text-red-500 ">
-                                                            Từ chối
-                                                        </span>
-                                                    )}
-                                                </td>
+                                              
                                                 <td className="border px-4 py-2">
                                                     {request.fully_accept ===
                                                         0 && (

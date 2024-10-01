@@ -35,15 +35,15 @@ export default function Dashboard({
     };
     const [showModalDetailRequest, setShowModalDetailRequest] = useState(false);
     const [requestDetailData, setRequestDetailData] = useState(null);
-    // {openModalDetailRequest(request.flow_of_approvers,request.content_request)}}
+    // {openModalDetailRequest(request.flow_approvers,request.content_request)}}
     const [flowApprover, setFlowApprover] = useState([]);
-    const openModalDetailRequest = (flow_of_approvers, request, id_request) => {
+    const openModalDetailRequest = (flow_approvers, request, id_request) => {
         setIdRequest(id_request);
         setRequestDetailData(request);
-        // console.log(flow_of_approvers);
-        if (typeof flow_of_approvers === "string") {
-            flow_of_approvers = JSON.parse(flow_of_approvers);
-            setFlowApprover(flow_of_approvers);
+        // console.log(flow_approvers);
+        if (typeof flow_approvers === "string") {
+            flow_approvers = JSON.parse(flow_approvers);
+            setFlowApprover(flow_approvers);
         }
         setShowModalDetailRequest(true);
     };
@@ -71,15 +71,14 @@ export default function Dashboard({
         });
     };
     const handleApprove = (id_request, id_follower, id_user) => () => {
-        const field = auth.user.id === 36 ? "fully_accept" : "status";
         const field_value = 1;
-        setShowDetailRequestApprover(false)
+        setShowDetailRequestApprover(false);
         // Sử dụng Promise.all() để gọi hai yêu cầu axios đồng thời
+        window.location.reload();
         Promise.all([
             axios.post(route("Update_Request_Field"), {
-                id_request,
-                field,
-                field_value,
+                id_request: id_request,
+                status: field_value,
             }),
             axios.post(route("update-to-firebase", { id: id_request }), {
                 idUser: id_user,
@@ -89,25 +88,20 @@ export default function Dashboard({
             }),
         ])
             .then(([response1, response2]) => {
-                // Xử lý kết quả từ cả hai yêu cầu axios ở đây
-                window.location.reload(); // Reload trang
             })
             .catch((error) => {
-                // Xử lý lỗi nếu cần
                 console.error("Error:", error);
             });
     };
 
     const handleReject = (id_request, id_follower, id_user) => () => {
-        const field = auth.user.id === 36 ? "fully_accept" : "status";
         const field_value = 2;
-        setShowDetailRequestApprover(false)
+        setShowDetailRequestApprover(false);
         // Sử dụng Promise.all() để gọi hai yêu cầu axios đồng thời
         Promise.all([
             axios.post(route("Update_Request_Field"), {
-                id_request,
-                field,
-                field_value,
+                id_request: id_request,
+                status: field_value,
             }),
             axios.post(route("update-to-firebase", { id: id_request }), {
                 idUser: id_user,
@@ -117,7 +111,6 @@ export default function Dashboard({
             }),
         ])
             .then(([response1, response2]) => {
-               
                 window.location.reload(); // Reload trang
             })
             .catch((error) => {
@@ -293,7 +286,7 @@ export default function Dashboard({
                                                     Request Name
                                                 </th>
                                                 <th className="px-4 py-2">
-                                                    Quản lý trực tiếp
+                                                    Trạng thái
                                                 </th>
                                                 <th className="px-4 py-2">
                                                     Ngày tạo
@@ -320,29 +313,27 @@ export default function Dashboard({
                                                             {request.user_name}
                                                         </td>
                                                         <td className="border px-4 py-2">
-                                                            {auth.user.role ==
-                                                                1 ||
-                                                            auth.user.role == 99
-                                                                ? request.fully_accept ==
-                                                                  0
+                                                            <span
+                                                                className={
+                                                                    request.fully_accept ===
+                                                                    1
+                                                                        ? "text-green-500" // Màu xanh cho "Đã duyệt"
+                                                                        : request.fully_accept ===
+                                                                          2
+                                                                        ? "text-red-500" // Màu đỏ cho "Từ chối"
+                                                                        : "text-white-500" // Màu mặc định cho "Chờ duyệt"
+                                                                }
+                                                            >
+                                                                {request.fully_accept ===
+                                                                0
                                                                     ? "Chờ duyệt"
-                                                                    : request.fully_accept ==
+                                                                    : request.fully_accept ===
                                                                       1
                                                                     ? "Đã duyệt"
-                                                                    : "Từ chối"
-                                                                : ""}
-                                                            {auth.user.role !=
-                                                                1 &&
-                                                            auth.user.role != 99
-                                                                ? request.status ==
-                                                                  0
-                                                                    ? "Chờ duyệt"
-                                                                    : request.status ==
-                                                                      1
-                                                                    ? "Đã duyệt"
-                                                                    : "Từ chối"
-                                                                : null}
+                                                                    : "Từ chối"}
+                                                            </span>
                                                         </td>
+
                                                         <td className="border px-4 py-2">
                                                             {FormatDate(
                                                                 request.created_at
@@ -353,7 +344,7 @@ export default function Dashboard({
                                                                 <PrimaryButton
                                                                     onClick={() => {
                                                                         openModalDetailRequest(
-                                                                            request.flow_of_approvers,
+                                                                            request.flow_approvers,
                                                                             request.content_request,
                                                                             request.id
                                                                         );
@@ -434,79 +425,128 @@ export default function Dashboard({
                                                 const jsonObject = JSON.parse(
                                                     requestDetailNeedApprover
                                                 );
+                                                console.log(jsonObject);
                                                 return (
                                                     <div>
                                                         <table className="w-full border">
                                                             <tbody>
                                                                 {Object.entries(
                                                                     jsonObject
-                                                                ).map(
-                                                                    ([
-                                                                        key,
-                                                                        value,
-                                                                    ]) => (
-                                                                        <tr
-                                                                            key={
-                                                                                key
-                                                                            }
-                                                                        >
-                                                                            <td className="font-bold border p-3">
-                                                                                {key ==
-                                                                                "follower"
-                                                                                    ? "Quản lý trực tiếp:"
-                                                                                    : key ==
-                                                                                      "id_user"
-                                                                                    ? "Người tạo"
-                                                                                    : key ==
-                                                                                      "id_template"
-                                                                                    ? "Loại đề xuất"
-                                                                                    : inputDetailRequests.find(
-                                                                                          (
-                                                                                              input
-                                                                                          ) =>
-                                                                                              input.input_name ===
-                                                                                              key
-                                                                                      )
-                                                                                          ?.input_description}
-                                                                            </td>
-                                                                            <td className="border p-3">
-                                                                                {value ===
-                                                                                null ? (
-                                                                                    ""
-                                                                                ) : key ==
-                                                                                  "follower" ? (
-                                                                                    userList[
+                                                                )
+                                                                    .filter(
+                                                                        ([
+                                                                            key,
+                                                                            value,
+                                                                        ]) =>
+                                                                            value !==
+                                                                                null &&
+                                                                            value !==
+                                                                                undefined
+                                                                    ) // Loại bỏ các mục có giá trị null hoặc undefined
+                                                                    .map(
+                                                                        ([
+                                                                            key,
+                                                                            value,
+                                                                        ]) => (
+                                                                            <tr
+                                                                                key={
+                                                                                    key
+                                                                                }
+                                                                            >
+                                                                                <td className="font-bold border p-3">
+                                                                                    {key ==
+                                                                                    "follower"
+                                                                                        ? "Quản lý trực tiếp:"
+                                                                                        : key ==
+                                                                                          "id_user"
+                                                                                        ? "Người tạo"
+                                                                                        : key ==
+                                                                                          "id_template"
+                                                                                        ? "Loại đề xuất"
+                                                                                        : key ==
+                                                                                          "request_name"
+                                                                                        ? "Tiêu đề"
+                                                                                        : inputDetailRequests.find(
+                                                                                              (
+                                                                                                  input
+                                                                                              ) =>
+                                                                                                  input.input_name ===
+                                                                                                  key
+                                                                                          )
+                                                                                              ?.input_description}
+                                                                                </td>
+                                                                                <td className="border p-3">
+                                                                                    {value ===
+                                                                                    null ? (
+                                                                                        ""
+                                                                                    ) : key ==
+                                                                                      "follower" ? (
+                                                                                        userList[
+                                                                                            value
+                                                                                        ]
+                                                                                    ) : key ==
+                                                                                      "id_user" ? (
+                                                                                        userList[
+                                                                                            value
+                                                                                        ]
+                                                                                    ) : key ==
+                                                                                      "id_template" ? (
+                                                                                        nameRequest[
+                                                                                            value
+                                                                                        ]
+                                                                                    ) : Array.isArray(
+                                                                                          value
+                                                                                      ) ? (
+                                                                                        value.map(
+                                                                                            (
+                                                                                                file,
+                                                                                                index
+                                                                                            ) => (
+                                                                                                <div
+                                                                                                    key={
+                                                                                                        index
+                                                                                                    }
+                                                                                                >
+                                                                                                    {file.file_path ? (
+                                                                                                        <a
+                                                                                                            className="text-green-500 font-bold"
+                                                                                                            href={
+                                                                                                                file.file_path
+                                                                                                            }
+                                                                                                            download
+                                                                                                        >
+                                                                                                            Tải
+                                                                                                            file{" "}
+                                                                                                            {index +
+                                                                                                                1}
+                                                                                                        </a>
+                                                                                                    ) : (
+                                                                                                        ""
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            )
+                                                                                        )
+                                                                                    ) : typeof value ===
+                                                                                          "object" &&
+                                                                                      value.file_path !==
+                                                                                          null ? (
+                                                                                        <a
+                                                                                            className="text-green-500 font-bold"
+                                                                                            href={
+                                                                                                value.file_path
+                                                                                            }
+                                                                                            download
+                                                                                        >
+                                                                                            Tải
+                                                                                            file
+                                                                                        </a>
+                                                                                    ) : (
                                                                                         value
-                                                                                    ]
-                                                                                ) : key ==
-                                                                                  "id_user" ? (
-                                                                                    userList[
-                                                                                        value
-                                                                                    ]
-                                                                                ) : key ==
-                                                                                  "id_template" ? (
-                                                                                    nameRequest[
-                                                                                        value
-                                                                                    ]
-                                                                                ) : typeof value ===
-                                                                                  "object" ? (
-                                                                                    <a
-                                                                                        className="text-green-500"
-                                                                                        href={
-                                                                                            value.file_path
-                                                                                        }
-                                                                                        download
-                                                                                    >
-                                                                                        Tải
-                                                                                        file
-                                                                                    </a>
-                                                                                ) : (
-                                                                                    value
-                                                                                )}
-                                                                            </td>
-                                                                        </tr>
-                                                                    )
-                                                                )}
+                                                                                    )}
+                                                                                </td>
+                                                                            </tr>
+                                                                        )
+                                                                    )}
                                                             </tbody>
                                                         </table>
                                                         <div className="flex justify-center my-4">
@@ -538,7 +578,9 @@ export default function Dashboard({
                                                             idFollower={
                                                                 jsonObject?.follower
                                                             }
-                                                            ownerIdRequest={jsonObject?.id_user}
+                                                            ownerIdRequest={
+                                                                jsonObject?.id_user
+                                                            }
                                                         />
                                                     </div>
                                                 );

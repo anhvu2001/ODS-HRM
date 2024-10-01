@@ -48,17 +48,30 @@ class HelperFunctions
             return round($total_hours, 2); // Làm tròn đến 2 chữ số thập phân
         }
     }
-    public static function getDownloadLink($file_info)
+    public static function getDownloadLink($files_info)
     {
-        $file_path = $file_info['file_path'] ?? '';
-
-        if (!empty($file_path)) {
-            // Sử dụng hàm url() để lấy URL đầy đủ của file
-            return url($file_path);
+        // Kiểm tra nếu $files_info là một mảng
+        if (is_array($files_info)) {
+            $links = [];
+    
+            // Duyệt qua từng file
+            foreach ($files_info as $file_info) {
+                $file_path = $file_info['file_path'] ?? '';
+    
+                if (!empty($file_path)) {
+                    // Lấy URL đầy đủ và thêm vào danh sách $links
+                    $links[] = url($file_path);
+                } else {
+                    // Nếu không có file_path, thêm thông tin gốc
+                    $links[] = $file_info;
+                }
+            }
+            return $links; // Trả về danh sách các link
         }
-
-        return $file_info;
+        // Nếu không phải là mảng, xử lý như cũ
+        return $files_info;
     }
+    
     public static function mapStatus($status)
     {
         switch ($status) {
@@ -86,45 +99,29 @@ class HelperFunctions
             }
         }
 
+        // Nếu có file nào được upload
         if ($filesCount > 0) {
-            if ($filesCount > 1) {
-                // Nén các file thành một file zip
-                $zip = new ZipArchive();
-                $zipFileName = 'uploads_' . time() . '.zip';
-                $zipFilePath = storage_path('app/public/files/' . $zipFileName);
+            foreach ($files as $name_input => $inputFiles) {
+                if (is_array($inputFiles)) {
+                    foreach ($inputFiles as $file) {
+                        $fileName = $file->getClientOriginalName(); // Lấy tên gốc của file
+                        $path = $file->store('public/files'); // Lưu file vào thư mục 'public/files'
 
-                if ($zip->open($zipFilePath, ZipArchive::CREATE) === TRUE) {
-                    foreach ($files as $name_input => $inputFiles) {
-                        if (is_array($inputFiles)) {
-                            foreach ($inputFiles as $file) {
-                                $fileName = $file->getClientOriginalName();
-                                $filePath = $file->store('public/files');
-                                $zip->addFile(storage_path('app/' . $filePath), $fileName);
-                            }
-                        }
+                        // Lưu thông tin file vào mảng
+                        $requestAll[$name_input][] = [
+                            'file_name' => $fileName,
+                            'file_path' => Storage::url($path),
+                        ];
                     }
-                    $zip->close();
+                } else {
+                    // Trường hợp chỉ upload một file (không phải mảng file)
+                    $fileName = $inputFiles->getClientOriginalName();
+                    $path = $inputFiles->store('public/files');
 
-                    // Cập nhật dữ liệu với file zip
                     $requestAll[$name_input] = [
-                        'file_name' => $zipFileName,
-                        'file_path' => Storage::url('files/' . $zipFileName),
+                        'file_name' => $fileName,
+                        'file_path' => Storage::url($path),
                     ];
-                }
-            } else {
-                // Xử lý từng file một
-                foreach ($files as $name_input => $inputFiles) {
-                    if (is_array($inputFiles)) {
-                        foreach ($inputFiles as $file) {
-                            $fileName = $file->getClientOriginalName();
-                            $path = $file->store('public/files');
-
-                            $requestAll[$name_input] = [
-                                'file_name' => $fileName,
-                                'file_path' => Storage::url($path),
-                            ];
-                        }
-                    }
                 }
             }
         }

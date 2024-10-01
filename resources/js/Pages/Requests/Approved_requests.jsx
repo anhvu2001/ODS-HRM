@@ -20,27 +20,14 @@ export default function Approved_requests({
     const [idRequest, setIdRequest] = useState(null);
     const [requestDetailData, setRequestDetailData] = useState(null);
     const [flowApprover, setFlowApprover] = useState([]);
-    const [statusApprover, setStatusApprover] = useState({
-        status: 0,
-        fully_accept: 0,
-        hr_status: 0,
-    });
     const openDetailRequestApprover = (
       request,
       flow_of_approvers,
-      status,
-      fully_accept,
-      hr_status,
       id_request
     ) => {
         setIdRequest(id_request);
         setRequestDetailData(request);
-        setStatusApprover({
-          status: status,
-          fully_accept: fully_accept,
-          hr_status: hr_status,
-      });
-        // console.log(flow_of_approvers);
+        console.log(flow_of_approvers);
         if (typeof flow_of_approvers === "string") {
             flow_of_approvers = JSON.parse(flow_of_approvers);
             setFlowApprover(flow_of_approvers);
@@ -74,10 +61,7 @@ export default function Approved_requests({
                                         </th>
                                         <th className="px-4 py-2">Tiêu đề</th>
                                         <th className="px-4 py-2">Người tạo</th>
-                                        <th className="px-4 py-2">
-                                            QLTT Duyệt
-                                        </th>
-                                        <th className="px-4 py-2">CEO Duyệt</th>
+                                        <th className="px-4 py-2">Trạng thái</th>
                                         <th className="px-4 py-2">Ngày tạo</th>
                                         <th className="px-4 py-2">Chi tiết</th>
                                     </tr>
@@ -101,23 +85,6 @@ export default function Approved_requests({
                                                 </td>
                                                 <td className="border px-4 py-2">
                                                     {request.user_name}
-                                                </td>
-                                                <td className="border px-4 py-2">
-                                                    {request.status === 0 && (
-                                                        <span className="text-yellow-500 ">
-                                                            Chờ duyệt
-                                                        </span>
-                                                    )}
-                                                    {request.status === 1 && (
-                                                        <span className="text-green-500 ">
-                                                            Đã duyệt
-                                                        </span>
-                                                    )}
-                                                    {request.status === 2 && (
-                                                        <span className="text-red-500 ">
-                                                            Từ chối
-                                                        </span>
-                                                    )}
                                                 </td>
                                                 <td className="border px-4 py-2">
                                                     {request.fully_accept ===
@@ -151,10 +118,7 @@ export default function Approved_requests({
                                                                 onClick={() => {
                                                                     openDetailRequestApprover(
                                                                       request.content_request,
-                                                                      request.flow_of_approvers,
-                                                                      request.status,
-                                                                      request.fully_accept,
-                                                                      request.hr_status,
+                                                                      request.flow_approvers                                                                      ,
                                                                       request.id
                                                                     );
                                                                 }}
@@ -185,7 +149,6 @@ export default function Approved_requests({
                     auth={auth}
                     requestDetailData={requestDetailData}
                     flowApprover={flowApprover}
-                    statusApprover={statusApprover}
                     userList={userList}
                     inputDetailRequests={inputDetailRequests}
                 />
