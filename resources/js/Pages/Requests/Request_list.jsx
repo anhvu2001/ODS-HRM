@@ -16,7 +16,6 @@ export default function Request_list({
     userList,
     inputDetailRequests,
 }) {
-    console.log(userRequests.data);
     const [flowApprover, setFlowApprover] = useState([]);
     const [idRequest, setIdRequest] = useState(null);
     const [userRequestsData, setUserRequests] = useState(userRequests.data);
@@ -51,7 +50,7 @@ export default function Request_list({
                     // Handle response if needed
                     if (response.data.status) {
                         // Remove the line below
-                        const updatedUserRequests = userRequests.filter(
+                        const updatedUserRequests = userRequests?.data.filter(
                             (request) => request.id !== id
                         );
                         setUserRequests(updatedUserRequests);

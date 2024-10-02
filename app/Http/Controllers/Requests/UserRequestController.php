@@ -265,26 +265,30 @@ class UserRequestController extends Controller
 
         return response()->json(['status' => true, 'id' => $newlyCreatedId]);
     }
-
-
     public function update(Request $request)
     {
+        // Lấy tất cả dữ liệu từ request
         $requestAll = $request->all();
         $id_request = $requestAll['id'];
+    
+        // Lấy chi tiết đề xuất dựa trên id
         $requestDetail = UserRequests::find($id_request);
     
+        // Tên đề xuất mới (nếu có)
         $requestName = $requestAll['request_name'];
+        
+        // Giải mã nội dung request ban đầu
         $requestContentOriginal = $requestDetail['content_request'];
-    
-        // Giải mã dữ liệu JSON trước khi xử lý
-        $arrayOriginal = json_decode($requestContentOriginal, true);
-    
-        unset($requestAll['request_name']);
-    
-        // Xử lý file
+        $arrayOriginal = json_decode($requestContentOriginal, true);    
+       // Cập nhật các trường 
+       foreach ($requestAll as $key => $value) {
+        if ($key !== 'id' && $key !== 'request_name') {
+            $arrayOriginal[$key] = $value; // Cập nhật giá trị mới cho các trường
+        }
+    }
+        // Xử lý file nếu có file mới
         if ($request->allFiles()) {
             $allFiles = $request->allFiles();
-    
             // Xử lý file mới và nhận kết quả
             $fileResult = HelperFunctions::handleUploadsFiles($allFiles);
             // Xóa file cũ và thay thế bằng file mới
@@ -297,7 +301,6 @@ class UserRequestController extends Controller
                 }
             }
         }
-    
         // Cập nhật lại flow_of_approvers nếu cần
         $idTemplate = $requestDetail->request_template;
         $template = RequestTemplate::find($idTemplate);
@@ -308,7 +311,7 @@ class UserRequestController extends Controller
             foreach ($flowOfApprovers as $approver) {
                 if (!isset($approver['user_id'])) continue;
                 $approverId = $approver['user_id'];
-                // Xử lý nếu là quản lý trực tiếp
+                // Xử lý nếu là quản lý trực tiếp (qltt)
                 if ($approverId === 'qltt') {
                     $creator = User::find($requestDetail->id_user);
                     if ($creator && $creator->direct_manager) {
@@ -330,27 +333,29 @@ class UserRequestController extends Controller
                         $approver['name'] = $user->name;
                     }
                 }
+    
+                // Bỏ qua nếu người tạo đề xuất trùng với người duyệt
                 if ($approverId == $requestDetail->id_user) {
-                    continue; // Bỏ qua nếu người tạo đề xuất trùng với người duyệt
+                    continue;
                 }
+    
                 if (!isset($existingApprovers[$approverId])) {
                     $approver['user_id'] = $approverId;
                     $existingApprovers[$approverId] = $approver;
                 }
             }
-            $flowOfApprovers = array_values($existingApprovers);
+            $flowOfApprovers = array_values($existingApprovers); // Cập nhật lại flow
         }
     
-        // Kết quả sau khi cập nhật
+        // Mã hóa dữ liệu đã cập nhật thành JSON
         $json_data = json_encode($arrayOriginal, JSON_UNESCAPED_UNICODE);
     
-        // Lưu vào cơ sở dữ liệu
+        // Cập nhật lại dữ liệu trong cơ sở dữ liệu
         $requestDetail->update([
             'request_name' => $requestName,
             'content_request' => $json_data,
             'flow_approvers' => json_encode($flowOfApprovers, JSON_UNESCAPED_UNICODE),  // Cập nhật flow_approvers
         ]);
-    
         // Cập nhật lại bảng request_approval
         RequestApproval::where('request_id', $id_request)->delete();  // Xóa các bản ghi phê duyệt cũ
         foreach ($flowOfApprovers as $approver) {
@@ -363,11 +368,8 @@ class UserRequestController extends Controller
                 'updated_at' => now(),
             ]);
         }
-    
         return response()->json(['status' => true, 'data'=>$requestAll]);
     }
-    
-
     public function delete(Request $request)
     {
         $id = $request->id;
