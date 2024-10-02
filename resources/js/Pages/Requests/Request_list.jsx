@@ -38,6 +38,7 @@ export default function Request_list({
     };
     const closeModal = () => {
         setShowModalDetailRequest(false);
+        setFlowApprover([]);
     };
     const handleDeleteRequest = (id) => {
         const confirmed = window.confirm(

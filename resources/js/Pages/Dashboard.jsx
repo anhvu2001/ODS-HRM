@@ -49,10 +49,15 @@ export default function Dashboard({
     };
     const closeModalDetailRequest = () => {
         setShowModalDetailRequest(false);
+        setFlowApprover([])
     };
 
-    const openDetailRequestApprover = (request, id_request) => {
+    const openDetailRequestApprover = (request, flow_approvers, id_request) => {
         setRequestDetailNeedApprover(request);
+        if (typeof flow_approvers === "string") {
+            flow_approvers = JSON.parse(flow_approvers);
+            setFlowApprover(flow_approvers);
+        }
         setIdRequestDetail(id_request);
         setShowDetailRequestApprover(true);
     };
@@ -74,7 +79,6 @@ export default function Dashboard({
         const field_value = 1;
         setShowDetailRequestApprover(false);
         // Sử dụng Promise.all() để gọi hai yêu cầu axios đồng thời
-        window.location.reload();
         Promise.all([
             axios.post(route("Update_Request_Field"), {
                 id_request: id_request,
@@ -88,6 +92,8 @@ export default function Dashboard({
             }),
         ])
             .then(([response1, response2]) => {
+                console.log(response1, response2);
+                window.location.reload(); // Reload trang
             })
             .catch((error) => {
                 console.error("Error:", error);
@@ -117,6 +123,40 @@ export default function Dashboard({
                 // Xử lý lỗi nếu cần
                 console.error("Error:", error);
             });
+    };
+    const renderStatus = (approver) => {
+        let color, title, statusText, role;
+
+        color =
+            approver.status === 1
+                ? "bg-green-600"
+                : approver.status === 2
+                ? "bg-red-600"
+                : "bg-yellow-600";
+
+        title = approver.name; // Tên người duyệt
+        role = approver.role; // role người duyệt
+
+        statusText =
+            approver.status === 1
+                ? "Đã duyệt"
+                : approver.status === 2
+                ? "Từ chối"
+                : "Chờ duyệt";
+
+        return (
+            <div className="flex items-center w-full my-4 -ml-1.5">
+                <div className="w-1/12 z-10 mr-2">
+                    <div className={`w-3.5 h-3.5 ${color} rounded-full`}></div>
+                </div>
+                <div className="w-11/12">
+                    <p className="text-sm">{`${title}${
+                        role ? ` (${role.toUpperCase()})` : ""
+                    }`}</p>
+                    <p className="text-xs text-gray-500">{statusText}</p>
+                </div>
+            </div>
+        );
     };
     return (
         <AuthenticatedLayout
@@ -160,7 +200,7 @@ export default function Dashboard({
                                             <p>Họ và tên: {auth.user.name}</p>
                                             <p>Email: {auth.user.email}</p>
                                             <p>
-                                                Chức vụ:{" "}
+                                                Chức vụ:
                                                 {auth.user.role == 99
                                                     ? "Admin"
                                                     : "User"}
@@ -253,6 +293,7 @@ export default function Dashboard({
                                                                         onClick={() => {
                                                                             openDetailRequestApprover(
                                                                                 request.content_request,
+                                                                                request.flow_approvers,
                                                                                 request.id
                                                                             );
                                                                         }}
@@ -419,7 +460,31 @@ export default function Dashboard({
                                         Nội dung Request cần duyệt
                                     </h2>
                                     <hr />
-                                    <div className="p-2">
+                                    <div className="p-2 flex">
+                                        <div>
+                                            <h2>Thứ tự duyệt</h2>
+                                            <div className="relative px-4">
+                                                <div>
+                                                    <div className="absolute h-full border border-dashed border-opacity-20 border-secondary"></div>
+                                                    {flowApprover &&
+                                                        flowApprover.map(
+                                                            (
+                                                                approver,
+                                                                index
+                                                            ) => (
+                                                                <div
+                                                                    key={index}
+                                                                    className="flex items-center w-full my-6 -ml-1.5"
+                                                                >
+                                                                    {renderStatus(
+                                                                        approver
+                                                                    )}
+                                                                </div>
+                                                            )
+                                                        )}
+                                                </div>
+                                            </div>
+                                        </div>
                                         {requestDetailNeedApprover &&
                                             (() => {
                                                 const jsonObject = JSON.parse(
@@ -427,7 +492,7 @@ export default function Dashboard({
                                                 );
                                                 console.log(jsonObject);
                                                 return (
-                                                    <div>
+                                                    <div className="w-[80%]">
                                                         <table className="w-full border">
                                                             <tbody>
                                                                 {Object.entries(
