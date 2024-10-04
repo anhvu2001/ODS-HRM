@@ -19,6 +19,7 @@ export default function Dashboard({
     inputDetailRequests,
     userList,
 }) {
+    console.log(userRequests);
     const [showModalNewRequest, setShowModalNewRequest] = useState(false);
     const [idRequest, setIdRequest] = useState(null);
     const [dataUserRequests, setDataUserRequests] = useState(userRequests);
@@ -49,7 +50,7 @@ export default function Dashboard({
     };
     const closeModalDetailRequest = () => {
         setShowModalDetailRequest(false);
-        setFlowApprover([])
+        setFlowApprover([]);
     };
 
     const openDetailRequestApprover = (request, flow_approvers, id_request) => {
@@ -435,20 +436,24 @@ export default function Dashboard({
                                         Add new request
                                     </h3>
                                     <hr />
-                                    {allTemplate.map((template, index) => (
-                                        <Link
-                                            key={index}
-                                            method="get"
-                                            as="button"
-                                            href={route(
-                                                "Create_User_Request_Screen"
-                                            )}
-                                            data={{ id_template: template.id }}
-                                            className="block mt-4 text-blue-500"
-                                        >
-                                            {template.template_name}
-                                        </Link>
-                                    ))}
+                                    {allTemplate
+                                        .filter((template) => template.id !== 6) // Bỏ qua template có id là 6
+                                        .map((template, index) => (
+                                            <Link
+                                                key={index}
+                                                method="get"
+                                                as="button"
+                                                href={route(
+                                                    "Create_User_Request_Screen"
+                                                )}
+                                                data={{
+                                                    id_template: template.id,
+                                                }}
+                                                className="block mt-4 text-blue-500"
+                                            >
+                                                {template.template_name}
+                                            </Link>
+                                        ))}
                                 </div>
                             </Modal>
                             <Modal
