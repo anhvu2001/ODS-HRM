@@ -15,6 +15,7 @@ use App\Http\Controllers\Requests\ApprovedRequestsController;
 use App\Http\Controllers\Requests\ExcelController;
 use App\Http\Controllers\Requests\SearchRequestController;
 use App\Http\Controllers\Requests\UserRequestController;
+use App\Http\Controllers\Requests\PdfUserRequestController;
 use App\Models\UserRequests;
 use App\Models\User;
 
@@ -37,9 +38,12 @@ Route::get('/export-requests', [ExcelController::class, 'index'])->name('Export-
 Route::post('/export-requests', [ExcelController::class, 'filterData'])->name('Export-Data-UserRequest');
 Route::post('/export-requests-excel', [ExcelController::class, 'exportUserRequests'])->name('Export-UserRequest-Excel');
 
+
 Route::middleware(['auth'])->group(function () {
     // User Managerment
     Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+     // Export PDF request detail
+    Route::get('/export-pdf/{id}', [PdfUserRequestController::class, 'index'])->name('Export-Pdf-UserRequest');
 
     Route::prefix('/users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('Users');

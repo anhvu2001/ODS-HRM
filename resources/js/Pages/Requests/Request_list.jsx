@@ -21,14 +21,10 @@ export default function Request_list({
     const [userRequestsData, setUserRequests] = useState(userRequests.data);
     const [showModalDetailRequest, setShowModalDetailRequest] = useState(false);
     const [requestDetailData, setRequestDetailData] = useState(null);
-    const openModal = (
-        request,
-        flow_approvers,
-        id_request
-    ) => {
+    const openModal = (request, flow_approvers, id_request) => {
         setRequestDetailData(request);
         setIdRequest(id_request);
-       
+
         if (typeof flow_approvers === "string") {
             flow_approvers = JSON.parse(flow_approvers);
             setFlowApprover(flow_approvers);
@@ -60,6 +56,30 @@ export default function Request_list({
                     // Handle error if needed
                     console.log(error);
                 });
+        }
+    };
+    const handleDownloadPDF = async (id) => {
+        try {
+            // Gọi API tải xuống PDF
+            const response = await axios.get(
+                route("Export-Pdf-UserRequest", id),
+                {
+                    responseType: "blob", // Đặt kiểu dữ liệu trả về là blob
+                }
+            );
+
+            // Tạo URL blob
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+
+            // Tạo thẻ <a> ẩn để thực hiện việc tải xuống
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", `request-${id}.pdf`); // Đặt tên file
+            document.body.appendChild(link);
+            link.click(); // Kích hoạt việc tải xuống
+            link.remove(); // Xóa thẻ <a> sau khi tải xuống
+        } catch (error) {
+            console.error("Failed to download PDF:", error);
         }
     };
     return (
@@ -135,7 +155,7 @@ export default function Request_list({
                                             </td>
                                             <td className="border px-4 py-2">
                                                 <div className="flex flex-col space-y-4">
-                                                    <div className="flex overflow-hidden bg-white border divide-x rounded-lg rtl:flex-row-reverse">
+                                                    <div className="flex overflow-hidden gap-2 bg-white border divide-x rounded-lg rtl:flex-row-reverse">
                                                         <PrimaryButton
                                                             onClick={() => {
                                                                 openModal(
@@ -145,12 +165,12 @@ export default function Request_list({
                                                                 );
                                                             }}
                                                             as="button"
-                                                            className="text-blue-500"
+                                                            className="text-blue-500 rounded-lg"
                                                         >
                                                             Chi tiết
                                                         </PrimaryButton>
                                                         <Link
-                                                            className="text-blue-500 p-6 bg-yellow"
+                                                            className="text-white p-4 bg-[#1E3E62] rounded-lg"
                                                             href={route(
                                                                 "Edit_Detail_Screen",
                                                                 {
@@ -168,10 +188,20 @@ export default function Request_list({
                                                                 )
                                                             }
                                                             as="button"
-                                                            className="text-500"
+                                                            className="text-500 rounded-lg"
                                                         >
                                                             Xóa
                                                         </DangerButton>
+                                                        <button
+                                                            onClick={() =>
+                                                                handleDownloadPDF(
+                                                                    request.id
+                                                                )
+                                                            } 
+                                                            className="text-white p-4 bg-[#FF6500] rounded-lg"
+                                                        >
+                                                            PDF
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </td>

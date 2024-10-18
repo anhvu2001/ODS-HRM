@@ -19,7 +19,6 @@ export default function Dashboard({
     inputDetailRequests,
     userList,
 }) {
-    console.log(userRequests);
     const [showModalNewRequest, setShowModalNewRequest] = useState(false);
     const [idRequest, setIdRequest] = useState(null);
     const [dataUserRequests, setDataUserRequests] = useState(userRequests);
@@ -257,11 +256,9 @@ export default function Dashboard({
                                                                 </td>
                                                                 <td className="border px-4 py-2">
                                                                     <span className="font-bold">
-                                                                        [
                                                                         {
                                                                             request.request_name
                                                                         }
-                                                                        ]
                                                                     </span>
                                                                 </td>
                                                                 <td className="border px-4 py-2">
@@ -348,9 +345,7 @@ export default function Dashboard({
                                                         </td>
                                                         <td className="border px-4 py-2">
                                                             <span className="font-bold">
-                                                                {
-                                                                    request.request_name
-                                                                }
+                                                                {request.request_name}
                                                             </span>
                                                             {request.user_name}
                                                         </td>
@@ -404,7 +399,7 @@ export default function Dashboard({
                                                                             id: request.id,
                                                                         }
                                                                     )}
-                                                                    className="inline-flex items-center px-4 py-2 mr-3 bg-white border-solid border-radius rounded"
+                                                                    className="bg-[#1E3E62] inline-flex items-center px-4 py-2 mr-3 text-white border-solid border-radius rounded"
                                                                 >
                                                                     Sửa
                                                                 </Link>
@@ -495,7 +490,6 @@ export default function Dashboard({
                                                 const jsonObject = JSON.parse(
                                                     requestDetailNeedApprover
                                                 );
-                                                console.log(jsonObject);
                                                 return (
                                                     <div className="w-[80%]">
                                                         <table className="w-full border">
