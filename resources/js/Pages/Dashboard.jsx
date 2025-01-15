@@ -158,6 +158,8 @@ export default function Dashboard({
             </div>
         );
     };
+    // dvh 13/01/2025 duplicate request handling
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -345,7 +347,9 @@ export default function Dashboard({
                                                         </td>
                                                         <td className="border px-4 py-2">
                                                             <span className="font-bold">
-                                                                {request.request_name}
+                                                                {
+                                                                    request.request_name
+                                                                }
                                                             </span>
                                                             {request.user_name}
                                                         </td>
@@ -402,6 +406,22 @@ export default function Dashboard({
                                                                     className="bg-[#1E3E62] inline-flex items-center px-4 py-2 mr-3 text-white border-solid border-radius rounded"
                                                                 >
                                                                     Sửa
+                                                                </Link>
+                                                                <Link
+                                                                    href={route(
+                                                                        "Duplicate_Request",
+                                                                        {
+                                                                            id: request.id,
+                                                                        }
+                                                                    )}
+                                                                    method="get"
+                                                                    as="button"
+                                                                    className="bg-[#4A90E2] leading-4 inline-flex items-center text-center mr-3 px-3 text-white border-solid rounded"
+                                                                    onSuccess={() =>
+                                                                        window.location.reload()
+                                                                    }
+                                                                >
+                                                                    Sao chép
                                                                 </Link>
                                                                 <DangerButton
                                                                     onClick={() => {

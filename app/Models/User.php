@@ -26,7 +26,8 @@ class User extends Authenticatable
         'phone',
         'direct_manager',
         'role',
-        'role_code'
+        'role_code',
+        'department'
     ];
 
     /**
@@ -50,10 +51,14 @@ class User extends Authenticatable
     ];
     public function userTemplates()
     {
-        return $this->belongsToMany(UserTemplate::class)->withPivot('order')->withTimestamps();
+        // return $this->belongsToMany(UserTemplate::class)->withPivot('order')->withTimestamps();
     }
     public function directManager()
     {
         return $this->belongsTo(User::class, 'direct_manager');
+    }
+    public function departmentModel()
+    {
+        return $this->belongsTo(Department::class, "department");
     }
 }

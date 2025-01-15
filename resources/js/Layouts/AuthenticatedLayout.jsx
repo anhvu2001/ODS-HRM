@@ -111,9 +111,11 @@ export default function Authenticated({ user, header, children }) {
                                 <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                     <NavLink
                                         href={route("List-Approved-Request")}
-                                        active={route().current("List-Approved-Request")}
+                                        active={route().current(
+                                            "List-Approved-Request"
+                                        )}
                                     >
-                                       Danh sách request đã duyệt
+                                        Danh sách request đã duyệt
                                     </NavLink>
                                 </div>
                             )}
@@ -127,6 +129,7 @@ export default function Authenticated({ user, header, children }) {
                                             Quản lý người dùng
                                         </NavLink>
                                     </div>
+
                                     <div className="hidden sm:flex sm:items-center sm:ms-6">
                                         <div className="ms-3 relative">
                                             <Dropdown>
@@ -178,6 +181,16 @@ export default function Authenticated({ user, header, children }) {
                                                 </Dropdown.Content>
                                             </Dropdown>
                                         </div>
+                                    </div>
+                                    <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                                        <NavLink
+                                            href={route("Departments")}
+                                            active={route().current(
+                                                "Departments"
+                                            )}
+                                        >
+                                            Quản lý phòng ban
+                                        </NavLink>
                                     </div>
                                 </>
                             )}

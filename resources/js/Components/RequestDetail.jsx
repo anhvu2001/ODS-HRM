@@ -50,8 +50,10 @@ const RequestDetail = ({
                     <div className={`w-3.5 h-3.5 ${color} rounded-full`}></div>
                 </div>
                 <div className="w-11/12">
-                <p className="text-sm">{`${title}${role ? ` (${role.toUpperCase()})` : ''}`}</p>
-                <p className="text-xs text-gray-500">{statusText}</p>
+                    <p className="text-sm">{`${title}${
+                        role ? ` (${role.toUpperCase()})` : ""
+                    }`}</p>
+                    <p className="text-xs text-gray-500">{statusText}</p>
                 </div>
             </div>
         );

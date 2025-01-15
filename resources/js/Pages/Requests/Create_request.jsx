@@ -4,6 +4,7 @@ import PrimaryButton from "@/Components/PrimaryButton";
 import NumberInput from "@/Components/NumberInput";
 import DangerButton from "@/Components/DangerButton";
 import axios from "axios";
+import { useState } from "react";
 
 export default function Create_request({
     auth,
@@ -11,8 +12,35 @@ export default function Create_request({
     id_template,
     userList,
     request_template,
+    duplicatedRequest,
 }) {
+    let content;
+    if (duplicatedRequest) {
+        content = JSON.parse(duplicatedRequest.content_request);
+    }
+    const [values, setValues] = useState(content);
+
+    // const result = {
+    //     id: duplicatedRequest.id,
+    //     name: duplicatedRequest.request_name,
+    // };
+    // const [values, setValues] = useState(result);
+    // const result = {
+    //     id: duplicatedRequest.id,
+    //     request_name: duplicatedRequest.request_name,
+    // };
+    // const [values, setValues] = useState(result);
+    function handleChange(e) {
+        const key = e.target.id;
+        const value = e.target.value;
+        console.log(key, value, values);
+        setValues((values) => ({
+            ...values,
+            [key]: value,
+        }));
+    }
     const handleSubmit = async (e) => {
+        // console.log(values);
         e.preventDefault();
         try {
             const formData = new FormData(e.target);
@@ -80,10 +108,15 @@ export default function Create_request({
                                     <div className="my-6">
                                         <label htmlFor="">Tiêu đề</label>
                                         <input
+                                            onChange={handleChange}
+                                            value={
+                                                values?.request_name +
+                                                    " (copy)" || ""
+                                            }
                                             required=""
                                             type="text"
                                             name="request_name"
-                                            id=""
+                                            id="request_name"
                                             placeholder=""
                                             className="block w-full p-2 border border-gray-300 rounded-md"
                                         />
@@ -97,8 +130,24 @@ export default function Create_request({
                                                 <select
                                                     required={input.required}
                                                     name={input.input_name}
-                                                    id=""
+                                                    id={input.input_name}
                                                     className="block w-full p-2 border border-gray-300 rounded-md"
+                                                    // value={
+                                                    //     values[
+                                                    //         input.input_name
+                                                    //     ] !== null
+                                                    //         ? values[
+                                                    //               input
+                                                    //                   .input_name
+                                                    //           ]
+                                                    //         : ""
+                                                    // }
+                                                    value={
+                                                        values?.[
+                                                            input.input_name
+                                                        ] ?? ""
+                                                    }
+                                                    onChange={handleChange}
                                                 >
                                                     <option>Chọn</option>
                                                     {input.default_value &&
@@ -140,9 +189,25 @@ export default function Create_request({
                                                 <textarea
                                                     required={input.required}
                                                     name={input.input_name}
-                                                    id=""
+                                                    id={input.input_name}
                                                     cols="30"
                                                     rows="10"
+                                                    // value={
+                                                    //     values[
+                                                    //         input.input_name
+                                                    //     ] !== null
+                                                    //         ? values[
+                                                    //               input
+                                                    //                   .input_name
+                                                    //           ]
+                                                    //         : ""
+                                                    // }
+                                                    value={
+                                                        values?.[
+                                                            input.input_name
+                                                        ] + " (copy)" ?? ""
+                                                    }
+                                                    onChange={handleChange}
                                                     placeholder={
                                                         input.placeholder
                                                     }
@@ -207,10 +272,32 @@ export default function Create_request({
                                                     {input.input_description}
                                                 </label>
                                                 <NumberInput
+                                                    id={input.input_name}
+                                                    onChange={handleChange}
                                                     name={input.input_name}
+                                                    // valueInput={
+                                                    //     input.input_value
+                                                    // }
                                                     valueInput={
-                                                        input.input_value
+                                                        values?.[
+                                                            input.input_name
+                                                        ] ?? input.input_value
                                                     }
+                                                    // value={
+                                                    //     values[
+                                                    //         input.input_name
+                                                    //     ] !== null
+                                                    //         ? values[
+                                                    //               input
+                                                    //                   .input_name
+                                                    //           ]
+                                                    //         : ""
+                                                    // }
+                                                    // value={
+                                                    //     values?.[
+                                                    //         input.input_name
+                                                    //     ] ?? ""
+                                                    // }
                                                 ></NumberInput>
                                             </div>
                                         ) : input.input_type === "file" ? (
@@ -227,6 +314,30 @@ export default function Create_request({
                                                     className="block w-full p-2 border border-gray-300 rounded-md"
                                                 />
                                             </div>
+                                        ) : input.input_type === "text" ? (
+                                            <div className="my-6" key={index}>
+                                                <label
+                                                    htmlFor={input.input_name}
+                                                >
+                                                    {input.input_description}
+                                                </label>
+                                                <input
+                                                    required={input.required}
+                                                    type={input.input_type}
+                                                    name={input.input_name}
+                                                    id={input.input_name}
+                                                    value={
+                                                        values?.[
+                                                            input.input_name
+                                                        ] + " (copy)" ?? ""
+                                                    }
+                                                    placeholder={
+                                                        input.placeholder
+                                                    }
+                                                    className="block w-full p-2 border border-gray-300 rounded-md"
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
                                         ) : (
                                             // Nếu là input thông thường
                                             <div className="my-6" key={index}>
@@ -240,10 +351,26 @@ export default function Create_request({
                                                     type={input.input_type}
                                                     name={input.input_name}
                                                     id={input.input_name}
+                                                    // value={
+                                                    //     values[
+                                                    //         input.input_name
+                                                    //     ] !== null
+                                                    //         ? values[
+                                                    //               input
+                                                    //                   .input_name
+                                                    //           ]
+                                                    //         : ""
+                                                    // }
+                                                    value={
+                                                        values?.[
+                                                            input.input_name
+                                                        ] ?? ""
+                                                    }
                                                     placeholder={
                                                         input.placeholder
                                                     }
                                                     className="block w-full p-2 border border-gray-300 rounded-md"
+                                                    onChange={handleChange}
                                                 />
                                             </div>
                                         )

@@ -36,12 +36,13 @@ export default function Edit_request({
     }
 
     const handleSubmit = async (e) => {
+        console.log(result);
         e.preventDefault();
         try {
             const formData = new FormData(e.target);
-           const rp =await axios.post(route("Update_Request"), formData);
+            const rp = await axios.post(route("Update_Request"), formData);
             alert("Cập nhập đề xuất thành công");
-            window.location.href="/"
+            window.location.href = "/";
         } catch (error) {
             console.error(error);
         }

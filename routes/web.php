@@ -9,6 +9,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\Requests\InputDetailController;
 use App\Http\Controllers\Requests\RequestTemplateController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\Firebase\FirebaseController;
 use App\Http\Controllers\Firebase\NotificationCommentController;
 use App\Http\Controllers\Requests\ApprovedRequestsController;
@@ -42,7 +43,7 @@ Route::post('/export-requests-excel', [ExcelController::class, 'exportUserReques
 Route::middleware(['auth'])->group(function () {
     // User Managerment
     Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
-     // Export PDF request detail
+    // Export PDF request detail
     Route::get('/export-pdf/{id}', [PdfUserRequestController::class, 'index'])->name('Export-Pdf-UserRequest');
 
     Route::prefix('/users')->group(function () {
@@ -73,13 +74,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [UserRequestController::class, 'index'])->name('Request_list');
         Route::get('/detail/{id}', [UserRequestController::class, 'view'])->name('Request_Detail_Screen');
         Route::get('/edit/{id}', [UserRequestController::class, 'update_request_screen'])->name('Edit_Detail_Screen');
+        // duplicate 14.01.2024
+        Route::get("/duplicate/{id}", [UserRequestController::class, "duplicate"])->name("Duplicate_Request");
         Route::get('/create', [UserRequestController::class, 'add_new_request_screen'])->name('Create_User_Request_Screen');
         Route::post('/create-user-request', [UserRequestController::class, 'create'])->name('Create_User_Request');
         Route::post('/update-request-field', [UserRequestController::class, 'update_request_field'])->name('Update_Request_Field');
         Route::post('/update', [UserRequestController::class, 'update'])->name('Update_Request');
-
         Route::delete('/delete/{id}', [UserRequestController::class, 'delete'])->name('Delete_User_Request');
         // Route::get('', [UserRequestController::class, 'index'])->name('Requests_list');
+
     });
 });
 
@@ -110,6 +113,22 @@ Route::middleware('auth')->group(function () {
     // search reuqest
     Route::get('/get-request-templates', [SearchRequestController::class, 'getRequestTemplates'])->name('Get-Request-Templates');
     Route::get('/list-approved-request', [ApprovedRequestsController::class, 'index'])->name('List-Approved-Request')->middleware('check.role:1,99');;
+    // dvh 10/01/2025
+    Route::middleware('check.role:99')->group(function () {
+        // dvh 9/1/2025
+        Route::prefix('/users')->group(function () {
+            Route::post('/add-department/{id}', [UserController::class, 'addDepartment'])->name("Add_department_users");
+            Route::post('/removeDepartment', [UserController::class, 'removeDepartment'])->name("Remove_department_users");
+        });
+        // department route
+        Route::prefix('/departments')->group(function () {
+            Route::get("/", [DepartmentController::class, 'index'])->name("Departments");
+            Route::post('/create', [DepartmentController::class, 'create'])->name('Create_departments');
+            Route::get('/detail/{id}', [DepartmentController::class, 'view'])->name('Detail_departments');
+            Route::post('/update/{id}', [DepartmentController::class, 'update'])->name('Update_departments');
+            Route::post('/delete', [DepartmentController::class, 'delete'])->name("Delete_departments");
+        });
+    });
 });
 
 require __DIR__ . '/auth.php';

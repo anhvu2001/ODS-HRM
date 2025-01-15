@@ -60,7 +60,6 @@ class FirebaseController extends Controller
             "statusRequest" => 0,
             "timeStamp" => $dt->toDateTimeString(),
             "timeStampUpdate" => $dt->toDateTimeString()
-
         ];
 
         // Thực hiện ghi dữ liệu vào Firebase cho người gửi
