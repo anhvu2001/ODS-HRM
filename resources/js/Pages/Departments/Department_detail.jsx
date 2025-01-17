@@ -27,20 +27,12 @@ export default function Department_detail({
         const isConfirmed = window.confirm("bạn có chắc muốn xóa");
         if (!isConfirmed) return;
     };
-    // const { data, setData, post, processing, reset, errors } = useForm({
-    //     department_name: department.department_name || "",
-    //     manager: manager.id || "",
-    // });
     const { data, setData, post, processing, reset, errors } = useForm({
         department_name: department.department_name || "",
-        // manager: manager.id || "",
         manager: manager?.id ?? "",
         department_id: department.id,
         memberId: "",
     });
-    // const { memberData, setMemberData } = useForm({
-
-    // });
     const addMember = (e) => {
         e.preventDefault();
         post(route("Add_department_users", { id: data.memberId }), data, {

@@ -12,6 +12,7 @@ export default function Create_request({
     id_template,
     userList,
     request_template,
+    //
     duplicatedRequest,
 }) {
     let content;
