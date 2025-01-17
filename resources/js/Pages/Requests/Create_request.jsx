@@ -17,30 +17,10 @@ export default function Create_request({
     let content;
     if (duplicatedRequest) {
         content = JSON.parse(duplicatedRequest.content_request);
-    }
-    const [values, setValues] = useState(content);
-
-    // const result = {
-    //     id: duplicatedRequest.id,
-    //     name: duplicatedRequest.request_name,
-    // };
-    // const [values, setValues] = useState(result);
-    // const result = {
-    //     id: duplicatedRequest.id,
-    //     request_name: duplicatedRequest.request_name,
-    // };
-    // const [values, setValues] = useState(result);
-    function handleChange(e) {
-        const key = e.target.id;
-        const value = e.target.value;
-        console.log(key, value, values);
-        setValues((values) => ({
-            ...values,
-            [key]: value,
-        }));
+    } else {
+        content = [];
     }
     const handleSubmit = async (e) => {
-        // console.log(values);
         e.preventDefault();
         try {
             const formData = new FormData(e.target);
@@ -108,10 +88,11 @@ export default function Create_request({
                                     <div className="my-6">
                                         <label htmlFor="">Tiêu đề</label>
                                         <input
-                                            onChange={handleChange}
-                                            value={
-                                                values?.request_name +
-                                                    " (copy)" || ""
+                                            defaultValue={
+                                                content?.request_name
+                                                    ? content?.request_name +
+                                                      " (copy)"
+                                                    : ""
                                             }
                                             required=""
                                             type="text"
@@ -132,22 +113,11 @@ export default function Create_request({
                                                     name={input.input_name}
                                                     id={input.input_name}
                                                     className="block w-full p-2 border border-gray-300 rounded-md"
-                                                    // value={
-                                                    //     values[
-                                                    //         input.input_name
-                                                    //     ] !== null
-                                                    //         ? values[
-                                                    //               input
-                                                    //                   .input_name
-                                                    //           ]
-                                                    //         : ""
-                                                    // }
-                                                    value={
-                                                        values?.[
+                                                    defaultValue={
+                                                        content?.[
                                                             input.input_name
                                                         ] ?? ""
                                                     }
-                                                    onChange={handleChange}
                                                 >
                                                     <option>Chọn</option>
                                                     {input.default_value &&
@@ -192,22 +162,16 @@ export default function Create_request({
                                                     id={input.input_name}
                                                     cols="30"
                                                     rows="10"
-                                                    // value={
-                                                    //     values[
-                                                    //         input.input_name
-                                                    //     ] !== null
-                                                    //         ? values[
-                                                    //               input
-                                                    //                   .input_name
-                                                    //           ]
-                                                    //         : ""
-                                                    // }
-                                                    value={
-                                                        values?.[
+                                                    defaultValue={
+                                                        content?.[
                                                             input.input_name
-                                                        ] + " (copy)" ?? ""
+                                                        ]
+                                                            ? content?.[
+                                                                  input
+                                                                      .input_name
+                                                              ] + " (copy)"
+                                                            : ""
                                                     }
-                                                    onChange={handleChange}
                                                     placeholder={
                                                         input.placeholder
                                                     }
@@ -223,17 +187,7 @@ export default function Create_request({
                                                 >
                                                     {input.input_description}
                                                 </label>
-                                                {/* <select required={input.required} name="follower" id="" className="block w-full p-2 border border-gray-300 rounded-md">
-                                                    <option value="">Vui lòng chọn</option>
-                                                    {
-                                                        allLeaderAdmin.map((option) => {
-                                                            if (option.id !== auth.id) {
-                                                                return <option value={option.id}>{option.name}</option>
-                                                            }
-                                                            return null;
-                                                        })
-                                                    }
-                                                </select> */}
+
                                                 {auth.user.direct_manager && (
                                                     <div
                                                         className="my-6"
@@ -273,31 +227,12 @@ export default function Create_request({
                                                 </label>
                                                 <NumberInput
                                                     id={input.input_name}
-                                                    onChange={handleChange}
                                                     name={input.input_name}
-                                                    // valueInput={
-                                                    //     input.input_value
-                                                    // }
                                                     valueInput={
-                                                        values?.[
+                                                        content?.[
                                                             input.input_name
                                                         ] ?? input.input_value
                                                     }
-                                                    // value={
-                                                    //     values[
-                                                    //         input.input_name
-                                                    //     ] !== null
-                                                    //         ? values[
-                                                    //               input
-                                                    //                   .input_name
-                                                    //           ]
-                                                    //         : ""
-                                                    // }
-                                                    // value={
-                                                    //     values?.[
-                                                    //         input.input_name
-                                                    //     ] ?? ""
-                                                    // }
                                                 ></NumberInput>
                                             </div>
                                         ) : input.input_type === "file" ? (
@@ -326,16 +261,20 @@ export default function Create_request({
                                                     type={input.input_type}
                                                     name={input.input_name}
                                                     id={input.input_name}
-                                                    value={
-                                                        values?.[
+                                                    defaultValue={
+                                                        content?.[
                                                             input.input_name
-                                                        ] + " (copy)" ?? ""
+                                                        ]
+                                                            ? content?.[
+                                                                  input
+                                                                      .input_name
+                                                              ] + " (copy)"
+                                                            : ""
                                                     }
                                                     placeholder={
                                                         input.placeholder
                                                     }
                                                     className="block w-full p-2 border border-gray-300 rounded-md"
-                                                    onChange={handleChange}
                                                 />
                                             </div>
                                         ) : (
@@ -351,18 +290,8 @@ export default function Create_request({
                                                     type={input.input_type}
                                                     name={input.input_name}
                                                     id={input.input_name}
-                                                    // value={
-                                                    //     values[
-                                                    //         input.input_name
-                                                    //     ] !== null
-                                                    //         ? values[
-                                                    //               input
-                                                    //                   .input_name
-                                                    //           ]
-                                                    //         : ""
-                                                    // }
-                                                    value={
-                                                        values?.[
+                                                    defaultValue={
+                                                        content?.[
                                                             input.input_name
                                                         ] ?? ""
                                                     }
@@ -370,7 +299,6 @@ export default function Create_request({
                                                         input.placeholder
                                                     }
                                                     className="block w-full p-2 border border-gray-300 rounded-md"
-                                                    onChange={handleChange}
                                                 />
                                             </div>
                                         )

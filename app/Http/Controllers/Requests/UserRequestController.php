@@ -267,13 +267,10 @@ class UserRequestController extends Controller
         // Lấy tất cả dữ liệu từ request
         $requestAll = $request->all();
         $id_request = $requestAll['id'];
-
         // Lấy chi tiết đề xuất dựa trên id
         $requestDetail = UserRequests::find($id_request);
-
         // Tên đề xuất mới (nếu có)
         $requestName = $requestAll['request_name'];
-
         // Giải mã nội dung request ban đầu
         $requestContentOriginal = $requestDetail['content_request'];
         $arrayOriginal = json_decode($requestContentOriginal, true);
@@ -377,96 +374,21 @@ class UserRequestController extends Controller
     }
     // 10/01/2025
     // dvh
-    // public function duplicate(Request $request, $id)
-    // {
-    //     // $cur_user=auth()->user();
-
-    //     // get the selected request
-    //     $selectedRequest = UserRequests::find($id);
-    //     // duplicate the request
-    //     // if($cur_user->id===$selectedRequest->)
-    //     if ($selectedRequest) {
-    //         // copy the selected request object 
-    //         $duplicatedRequest = $selectedRequest->replicate();
-    //         // update the created at time
-    //         $duplicatedRequest->created_at = now();
-    //         // recreate flow of approver
-    //         $newFlowOfApprovers = $duplicatedRequest->flow_approvers;
-    //         $decodeFlowOfApprover = json_decode($newFlowOfApprovers, true);
-    //         // cho tất cả status của approver về 0
-    //         if ($decodeFlowOfApprover) {
-    //             foreach ($decodeFlowOfApprover as &$approver) {
-    //                 $approver['status'] = 0;
-    //             }
-    //         } else {
-    //             // lấy flow of approver của template  
-    //             $templateFlowOfApprover = RequestTemplate::where('id', $duplicatedRequest->request_template)->value('flow_of_approvers');
-    //             // dd($templateFlowOfApprover);
-    //             // tạo mới flow of approver dựa trên template
-    //             $decodeFlowOfApprover = UserRequestController::createFlowOfApprover($templateFlowOfApprover, $selectedRequest->id_user);
-    //         }
-    //         // remove reference
-    //         unset($approver);
-    //         $newFlowOfApprovers = json_encode($decodeFlowOfApprover);
-    //         // update flow of approvers
-    //         $duplicatedRequest->flow_approvers = $newFlowOfApprovers;
-    //         // set fully_accept status to 0 (pending)
-    //         $duplicatedRequest->fully_accept = 0;
-    //         // save the duplicated request to database 
-    //         $duplicatedRequest->save();
-    //         // 
-    //         // create approval for manager 
-    //         $managerId = User::where('id', $duplicatedRequest->id_user)
-    //             ->value('direct_manager');
-    //         if ($managerId) {
-    //             UserRequestsApprover::create([
-    //                 'user_id' => $managerId,
-    //                 'id_request' => $duplicatedRequest->id,
-    //             ]);
-    //         }
-    //         // 
-    //         // Create new requestApproval for each approver
-    //         if ($decodeFlowOfApprover) {
-    //             foreach ($decodeFlowOfApprover as $approver) {
-    //                 RequestApproval::create([
-    //                     'request_id' => $duplicatedRequest->id,
-    //                     'user_id' => $approver['user_id'] ?? null,
-    //                     'order' => $approver['order'] ?? null,
-    //                     'status' => $approver['status'] ?? 0,
-    //                     'created_at' => now(),
-    //                     'updated_at' => now(),
-    //                 ]);
-    //             }
-    //         }
-    //     }
-    //     // after success send the duplicated request data to firebase
-    //     return redirect()->route('dashboard');
-    // }
     public function duplicate(Request $request)
     {
         $id = $request->id;
         $cur_user = auth()->user();
-
-        // dd($id);
         // get the selected request
         $selectedRequest = UserRequests::find($id);
-        // dd($selectedRequest);
         // duplicate the request
         if ($selectedRequest && $cur_user->id === $selectedRequest->id_user) {
             // copy the selected request object 
-            $duplicatedRequest = $selectedRequest->replicate();
-            // dd($duplicatedRequest);
+            $duplicatedRequest = $selectedRequest;
             $id_template = $duplicatedRequest->request_template;
-            // dd($id_template);
             $request_template = RequestTemplate::find($id_template);
-            // dd($request_template);
-            // $inputDetails = InputDetailRequest::find($id_template);
             $inputDetailRequests = InputDetailRequest::where('id_request_templates', $id_template)->get()->sortBy('priority')->values();;
             $allLeaderAdmin = User::whereIn('role', ['1', '99'])->get();
             $userList = User::pluck('name', 'id')->all();
-            // $requestContent = json_decode($duplicatedRequest->content_request);
-            // return Inertia::render('Requests/Create_request', compact('inputDetailRequests', 'allLeaderAdmin', 'id_template', 'userList', 'request_template', 'requestContent'));
-
             return Inertia::render('Requests/Create_request', compact('inputDetailRequests', 'allLeaderAdmin', 'id_template', 'userList', 'request_template', 'duplicatedRequest'));
         } else {
             abort("403", "Không tồn tại trên tài khoản của bạn");
@@ -474,45 +396,4 @@ class UserRequestController extends Controller
     }
     // hàm tạo flow of approver cho request chưa có, dựa vào request template
     // cũ hiện tại không dùng 
-    public static function createFlowOfApprover($flowOfApprovers, $userId)
-    {
-        $existingApprovers = [];
-        $flowOfApprovers = json_decode($flowOfApprovers, true);
-        foreach ($flowOfApprovers as $approver) {
-            if (!isset($approver['user_id'])) continue;
-            $approverId = $approver['user_id'];
-            if ($approverId === 'qltt') {
-                $creator = User::find($userId);
-                if ($creator && $creator->direct_manager) {
-                    $approverId = $creator->direct_manager; // Gán id của quản lý trực tiếp
-                    // Kiểm tra nếu quản lý trực tiếp tồn tại trong bảng User
-                    $manager = User::find($approverId);
-                    if ($manager) {
-                        // Nếu tìm thấy quản lý trực tiếp, gán thông tin name và role_code
-                        $approverId = (int)$manager->id; // Gán id của quản lý trực tiếp và chuyển sang kiểu số nguyên
-                        $approver['role'] = $manager->role_code; // Thêm role của quản lý trực tiếp
-                        $approver['name'] = $manager->name; // Thêm tên của quản lý trực tiếp
-                    }
-                }
-            } else {
-                $user = User::where('role_code', $approverId)
-                    ->whereIn('role', [1, 99])
-                    ->first();
-                if ($user) {
-                    $approverId = $user->id; // Gán id thực tế của người dùng
-                    $approver['role'] = $user->role_code; // Thêm role vào approver
-                    $approver['name'] = $user->name; // Thêm role vào approver
-                }
-            }
-            if ($approverId == $userId) {
-                continue; // Bỏ qua nếu người tạo đề xuất trùng với người duyệt
-            }
-            if (!isset($existingApprovers[$approverId])) {
-                $approver['user_id'] = $approverId; // Cập nhật user_id thực tế
-                $existingApprovers[$approverId] = $approver;
-            }
-        }
-        $existingApprovers = array_values($existingApprovers);
-        return $existingApprovers;
-    }
 }

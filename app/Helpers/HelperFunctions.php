@@ -53,11 +53,11 @@ class HelperFunctions
         // Kiểm tra nếu $files_info là một mảng
         if (is_array($files_info)) {
             $links = [];
-    
+
             // Duyệt qua từng file
             foreach ($files_info as $file_info) {
                 $file_path = $file_info['file_path'] ?? '';
-    
+
                 if (!empty($file_path)) {
                     // Lấy URL đầy đủ và thêm vào danh sách $links
                     $links[] = url($file_path);
@@ -71,7 +71,7 @@ class HelperFunctions
         // Nếu không phải là mảng, xử lý như cũ
         return $files_info;
     }
-    
+
     public static function mapStatus($status)
     {
         switch ($status) {
@@ -106,7 +106,6 @@ class HelperFunctions
                     foreach ($inputFiles as $file) {
                         $fileName = $file->getClientOriginalName(); // Lấy tên gốc của file
                         $path = $file->store('public/files'); // Lưu file vào thư mục 'public/files'
-
                         // Lưu thông tin file vào mảng
                         $requestAll[$name_input][] = [
                             'file_name' => $fileName,
@@ -117,7 +116,6 @@ class HelperFunctions
                     // Trường hợp chỉ upload một file (không phải mảng file)
                     $fileName = $inputFiles->getClientOriginalName();
                     $path = $inputFiles->store('public/files');
-
                     $requestAll[$name_input] = [
                         'file_name' => $fileName,
                         'file_path' => Storage::url($path),

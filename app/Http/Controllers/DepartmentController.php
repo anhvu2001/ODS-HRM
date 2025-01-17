@@ -64,7 +64,6 @@ class DepartmentController extends Controller
                 'manager' => $newManagerId,
             ]
         );
-
         if ($newManager) {
             $newManager->update(
                 [
