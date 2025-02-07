@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from "react";
 import { Mention, MentionsInput } from "react-mentions";
 import axios from "axios";
+import FileUploader from "./FileUploader";
+import { convertFilePathToFile } from "@/Helpers/fileHelpers";
 
 export default function Comment({
     comment,
@@ -20,19 +22,32 @@ export default function Comment({
     const [replyContent, setReplyContent] = useState("");
     const [editContent, setEditContent] = useState("");
     const { id } = auth.user;
+    const [selectedFile, setSelectedFile] = useState(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!replyContent) return;
+        if (!replyContent && !selectedFile)
+            return alert("Vui lòng nhập nội dung hoặc file vào ô comment");
 
         try {
-            const { data } = await axios.post(route("Create-New-Comment"), {
-                content: replyContent,
-                user_id: id,
-                request_id: idRequest,
-                parent_comment_id: replyCommentId || null,
-                level: levelComment,
-            });
+            const formData = new FormData();
+            formData.append("content", replyContent);
+            formData.append("user_id", id);
+            formData.append("request_id", idRequest);
+            formData.append("parent_comment_id", replyCommentId || 0);
+            formData.append("level", levelComment);
+            if (selectedFile) {
+                formData.append("file_input", selectedFile); // Gửi file vào
+            }
+            const { data } = await axios.post(
+                route("Create-New-Comment"),
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
             if (data.status) {
                 // Update the UI immediately
                 fetchDataComment();
@@ -69,13 +84,30 @@ export default function Comment({
 
     const handleSubmitEdit = async (e, commentId) => {
         e.preventDefault();
-        if (!editContent) return;
-
+        if (!editContent && !selectedFile)
+            return alert("Vui lòng nhập nội dung hoặc file vào ô comment");
+        console.log("aaa", editContent);
         try {
-            await axios.post(route("Update-Comment", { id: commentId }), {
-                content: editContent,
-            });
+            const formData = new FormData();
+            formData.append("content", editContent);
+            if (selectedFile) {
+                formData.append("file_input", selectedFile); // Gửi file nếu có
+            } else {
+                formData.append("no_file", "true");
+            }
+            // Gửi FormData
+            await axios.post(
+                route("Update-Comment", { id: commentId }),
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data", // Đảm bảo tiêu đề đúng khi gửi FormData
+                    },
+                }
+            );
+            // Reset form và làm mới dữ liệu
             resetEditForm();
+            handleRemoveFile();
             fetchDataComment();
         } catch (error) {
             console.error("Error updating comment:", error);
@@ -126,12 +158,44 @@ export default function Comment({
                 console.error("Error fetching user suggestions:", error);
             });
     }, []);
+    const handleEditClick = async (comment) => {
+        setEditingCommentId(
+            comment.id === editingCommentId ? null : comment.id
+        );
+        setReplyCommentId(null);
+        setEditContent(comment.content || "");
 
+        if (comment?.file_path) {
+            try {
+                const file = await convertFilePathToFile(comment.file_path);
+                setSelectedFile(file);
+            } catch (error) {
+                console.error("Error converting file path to File:", error);
+                setSelectedFile(null);
+            }
+        } else {
+            setSelectedFile(null);
+        }
+    };
+    const handleRemoveFile = () => {
+        setSelectedFile(null);
+    };
+    console.log(selectedFile);
     return (
         <div className="mb-2">
             <h3 className="font-bold">{comment.name}</h3>
             <p>{comment?.content && parseMentions(comment.content)}</p>
-            <p className="text-yellow-600 text-xs">{comment.created_at}</p>
+            {comment?.file_path && (
+                <a
+                    className="text-green-500 font-normal decoration-solid"
+                    href={comment.file_path}
+                    download
+                >
+                    Dowload file
+                </a>
+            )}
+
+            <p className="text-yellow-600 text-xs">{comment.updated_at}</p>
             <div className="flex gap-3.5">
                 <button
                     className="text-blue-500 hover:text-blue-600"
@@ -141,6 +205,7 @@ export default function Comment({
                         );
                         setEditingCommentId(null);
                         setLevelComment(comment.level + 1);
+                        setSelectedFile(null);
                     }}
                 >
                     Reply
@@ -149,15 +214,7 @@ export default function Comment({
                     <>
                         <button
                             className="text-blue-500 hover:text-blue-600"
-                            onClick={() => {
-                                setEditingCommentId(
-                                    comment.id === editingCommentId
-                                        ? null
-                                        : comment.id
-                                );
-                                setReplyCommentId(null);
-                                setEditContent(comment.content);
-                            }}
+                            onClick={() => handleEditClick(comment)}
                         >
                             Edit
                         </button>
@@ -175,6 +232,11 @@ export default function Comment({
                     className="flex gap-2 m-2 relative items-center"
                     onSubmit={(e) => handleSubmitEdit(e, comment.id)}
                 >
+                    <FileUploader
+                        selectedFile={selectedFile}
+                        onFileSelect={setSelectedFile}
+                        onRemoveFile={handleRemoveFile}
+                    />
                     <MentionsInput
                         value={editContent}
                         onChange={({ target: { value } }) =>
@@ -211,6 +273,11 @@ export default function Comment({
                     className="flex gap-2 m-2 relative items-center"
                     onSubmit={handleSubmit}
                 >
+                    <FileUploader
+                        selectedFile={selectedFile}
+                        onFileSelect={setSelectedFile}
+                        onRemoveFile={handleRemoveFile}
+                    />
                     <MentionsInput
                         value={replyContent}
                         onChange={({ target: { value } }) =>

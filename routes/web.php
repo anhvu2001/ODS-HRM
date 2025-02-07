@@ -11,6 +11,8 @@ use App\Http\Controllers\Requests\RequestTemplateController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Firebase\FirebaseController;
 use App\Http\Controllers\Firebase\NotificationCommentController;
+use App\Http\Controllers\Projects\ProjectController;
+use App\Http\Controllers\Projects\ProjectParticipantController;
 use App\Http\Controllers\Requests\ApprovedRequestsController;
 use App\Http\Controllers\Requests\ExcelController;
 use App\Http\Controllers\Requests\SearchRequestController;
@@ -42,10 +44,12 @@ Route::post('/export-requests-excel', [ExcelController::class, 'exportUserReques
 Route::middleware(['auth'])->group(function () {
     // User Managerment
     Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
-     // Export PDF request detail
+    // Export PDF request detail
     Route::get('/export-pdf/{id}', [PdfUserRequestController::class, 'index'])->name('Export-Pdf-UserRequest');
+    // get all user
+    Route::get('/get-all-users', [UserController::class, 'getAllUsers'])->name('Get_all_users');
 
-    Route::prefix('/users')->group(function () {
+    Route::prefix('/users')->middleware('check.role:99')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('Users');
         Route::get('/detail/{id}', [UserController::class, 'view'])->name('Detail_users');
         Route::post('/update/{id}', [UserController::class, 'update'])->name('Update_users');
@@ -80,6 +84,16 @@ Route::middleware(['auth'])->group(function () {
 
         Route::delete('/delete/{id}', [UserRequestController::class, 'delete'])->name('Delete_User_Request');
         // Route::get('', [UserRequestController::class, 'index'])->name('Requests_list');
+    });
+    // Project routes
+    Route::prefix('/project')->group(function () {
+        Route::get('/', [ProjectController::class, 'index'])->name('Project');
+        Route::post('/create', [ProjectController::class, 'create'])->name('Create_Project');
+        Route::get('/list-projects-by-user', [ProjectController::class, 'getProjectsByUser'])->name('List_Project_By_User');
+        Route::get('/{projectId}/participants', [ProjectParticipantController::class, 'getParticipantsByProjectId'])->name('Get_ParticipantsByProjectId');;
+        Route::get('/get-all-status', [ProjectController::class, 'getAllStatus'])->name('Get_All_Status');
+        Route::put('/update/{projectId}', [ProjectController::class, 'update'])->name('Update_Project');
+        Route::delete('/delete/{projectId}', [ProjectController::class, 'delete'])->name('Delete_Project');
     });
 });
 

@@ -98,4 +98,24 @@ class UserController extends Controller
 
         return response()->json($users);
     }
+    public function getAllUsers()
+    {
+        try {
+            // Lấy chỉ tên và ID
+            $users = User::select('id', 'name', 'email')->get();
+            // Trả về dữ liệu dạng JSON
+            return response()->json([
+                'success' => true,
+                'data' => $users,
+                'message' => 'Fetched all users successfully',
+            ]);
+        } catch (\Exception $e) {
+            // Xử lý lỗi
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch users',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

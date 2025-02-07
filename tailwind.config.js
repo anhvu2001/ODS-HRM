@@ -8,13 +8,18 @@ export default {
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
         './resources/js/**/*.jsx',
+        './resources/**/*.js',
+
     ],
 
     theme: {
         extend: {
             fontFamily: {
                 serif: ['Merriweather', 'Roboto', ...defaultTheme.fontFamily.serif],
-             }
+             },
+             maxWidth: {
+                '8xl': '1440px',  // Thêm lớp max-w-8xl với giá trị 1440px
+              },
         },
     },
 

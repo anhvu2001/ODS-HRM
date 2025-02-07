@@ -78,7 +78,7 @@ export default function Search({ placeholder }) {
     };
 
     return (
-        <div className="flex items-center justify-center my-5 z-10">
+        <div className="flex items-center justify-start my-5 z-10 pl-6">
             <form onSubmit={handleFormSubmit} className="flex flex-col space-y-4">
                 <div className="flex items-center flex-wrap gap-5">
                     <div className="w-full m-0">
