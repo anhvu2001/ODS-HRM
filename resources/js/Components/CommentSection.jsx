@@ -113,7 +113,7 @@ export default function CommentSection({
         try {
             await axios.post(route("Create-Notificaton-Comment", commentId), {
                 idFollower: idFollower,
-                type:"ower"
+                type: "ower",
             });
         } catch (error) {
             console.error("Error sending notification:", error);
