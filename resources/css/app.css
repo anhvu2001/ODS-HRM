@@ -3,21 +3,22 @@
 @tailwind utilities;
 
 @keyframes shake {
-    0%, 100% {
-      transform: translateX(0);
+    0%,
+    100% {
+        transform: translateX(0);
     }
     25% {
-      transform: translateX(-3px);
+        transform: translateX(-3px);
     }
     50% {
-      transform: translateX(3px);
+        transform: translateX(3px);
     }
     75% {
-      transform: translateX(-3px);
+        transform: translateX(-3px);
     }
-  }
-  
-  .shake {
+}
+
+.shake {
     animation: shake 0.8s ease-in-out infinite;
-  }
-  
+}
+

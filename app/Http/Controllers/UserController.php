@@ -96,7 +96,6 @@ class UserController extends Controller
 
         return response()->json($users);
     }
-    // dvh 9/1/2025
     public function addDepartment(Request $request, $id)
     {
         $user = User::find($id);
@@ -120,5 +119,25 @@ class UserController extends Controller
                 'department' => null,
             ]
         );
+    }
+    public function getAllUsers()
+    {
+        try {
+            // Lấy chỉ tên và ID
+            $users = User::select('id', 'name', 'email')->get();
+            // Trả về dữ liệu dạng JSON
+            return response()->json([
+                'success' => true,
+                'data' => $users,
+                'message' => 'Fetched all users successfully',
+            ]);
+        } catch (\Exception $e) {
+            // Xử lý lỗi
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch users',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

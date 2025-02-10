@@ -54,7 +54,7 @@ export default function Request_templates({ auth, templates }) {
         <Head title="Dashboard" />
 
         <div className="py-12">
-            <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div className="max-w-8xl mx-auto sm:px-6 lg:px-8">
                 <PrimaryButton onClick={openAddNewModal} > Thêm mới Template</PrimaryButton>
                 <Modal show={showAddNewModal} onClose={closeAddNewModal}>
                     <form onSubmit={handleSubmit} className="p-6">

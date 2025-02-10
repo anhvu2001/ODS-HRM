@@ -163,7 +163,7 @@ export default function Detail_template_request({
             <Head title="Detail Template" />
 
             <div className="pt-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="max-w-8xl mx-auto sm:px-6 lg:px-8">
                     <div className="mx-6 bg-white overflow-hidden shadow-sm sm:rounded-lg divide-y">
                         <div className="p-6 flex place-content-around">
                             <h2>
@@ -441,7 +441,7 @@ export default function Detail_template_request({
                 </div>
             </div>
             <div className="pt-2">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="max-w-8xl mx-auto sm:px-6 lg:px-8">
                     <div className="mx-6 bg-white overflow-hidden shadow-sm sm:rounded-lg divide-y">
                         <div className="p-6 flex place-content-around">
                             <h2>Các bước duyệt</h2>

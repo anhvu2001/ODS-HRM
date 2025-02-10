@@ -7,6 +7,7 @@ use App\Models\Comment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class CommentController extends Controller
 {
@@ -53,7 +54,7 @@ class CommentController extends Controller
         $validatedData = $request->validate([
             'request_id' => 'required|integer',
             'user_id' => 'required|integer',
-            'content' => 'required|string',
+            'content' => 'nullable|string',
             'parent_comment_id' => 'nullable|integer',
             'level' => 'nullable|integer',
         ]);
@@ -62,11 +63,17 @@ class CommentController extends Controller
         $comment = new Comment();
         $comment->request_id = $validatedData['request_id'];
         $comment->user_id = $validatedData['user_id'];
-        $comment->content = $validatedData['content'];
+        $comment->content = $validatedData['content'] ?: null;
         $comment->parent_comment_id = $validatedData['parent_comment_id'];
         $comment->level = $validatedData['level'];
         $comment->created_at = $now;
         $comment->updated_at = $now;
+        // Kiểm tra và xử lý file upload
+        if ($request->hasFile('file_input') && $request->file('file_input')->isValid()) {
+            $file = $request->file('file_input');
+            $path = $file->store('file-comments', 'public');
+            $comment->file_path = Storage::url($path); // Lưu đường dẫn file vào cơ sở dữ liệu
+        }
         // Lưu comment vào cơ sở dữ liệu
         $comment->save();
         $newlyCommentId = $comment->id;
@@ -86,14 +93,31 @@ class CommentController extends Controller
 
         // Xác minh dữ liệu đầu vào
         $request->validate([
-            'content' => 'required|string|max:255', // Kiểm tra dữ liệu nội dung
+            'content' => 'nullable|string',
         ]);
 
         // Tìm kiếm comment cần chỉnh sửa
         $comment = Comment::findOrFail($id);
-
         // Cập nhật nội dung của comment
-        $comment->content = $request->input('content');
+        $comment->content = $request->input('content') ?: null;
+        // Nếu nhận được `no_file` = "true", xóa file cũ và cập nhật `file_path` = null
+        if ($request->input('no_file') === 'true') {
+            if ($comment->file_path) {
+                $oldFilePath = str_replace('/storage', 'public', $comment->file_path);
+                Storage::delete($oldFilePath);
+            }
+            $comment->file_path = null;
+        }
+        // Nếu có file mới, xóa file cũ (nếu có) và lưu file mới
+        if ($request->hasFile('file_input') && $request->file('file_input')->isValid()) {
+            if ($comment->file_path) {
+                $oldFilePath = str_replace('/storage', 'public', $comment->file_path);
+                Storage::delete($oldFilePath);
+            }
+            $file = $request->file('file_input');
+            $path = $file->store('file-comments', 'public');
+            $comment->file_path = Storage::url($path);
+        }
         $comment->updated_at = $now;
         $comment->save();
 
