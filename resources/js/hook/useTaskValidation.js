@@ -7,7 +7,7 @@ const useValidation = () => {
         const newErrors = {};
         const today = new Date();
         const startDate = new Date(formData.start_date);
-        const endDate = new Date(formData.end_date);
+        const endDate = new Date(formData.due_date);
 
         // Convert to "YYYY-MM-DD" format for comparison (ignore time)
         const formatDate = (date) => {
@@ -22,29 +22,37 @@ const useValidation = () => {
         const endDateFormatted = formatDate(endDate);
 
         // Required fields
-        if (!formData.name) newErrors.name = "Project name is required.";
-
+        // Task name
+        if (!formData.name) newErrors.name = "Task name is required.";
+        // task participant
+        if (!formData.participant)
+            newErrors.participant = "Participant is required";
+        //task priority
+        if (!formData.priority_id)
+            newErrors.priority_id = "Priority is required";
+        // task start_date
         if (!formData.start_date)
             newErrors.start_date = "Start date is required.";
-        if (!formData.end_date) newErrors.end_date = "End date is required.";
+        // task end date
+        if (!formData.due_date) newErrors.due_date = "due date is required.";
 
         // Date validations
         if (formData.start_date && startDateFormatted < todayFormatted) {
             newErrors.start_date = "Start date cannot be earlier than today.";
         }
-        if (formData.end_date && endDateFormatted < todayFormatted) {
-            newErrors.end_date = "End date cannot be earlier than today.";
+        if (formData.due_date && endDateFormatted < todayFormatted) {
+            newErrors.due_date = "End date cannot be earlier than today.";
         }
         if (
             formData.start_date &&
-            formData.end_date &&
+            formData.due_date &&
             startDateFormatted > endDateFormatted
         ) {
-            newErrors.end_date = "End date must be after start date.";
+            newErrors.due_date = "End date must be after start date.";
         }
-
         setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        // return Object.keys(newErrors).length === 0;
+        return Object.keys(newErrors).length;
     };
 
     return { errors, validate };

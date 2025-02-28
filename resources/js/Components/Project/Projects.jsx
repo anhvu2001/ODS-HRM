@@ -3,10 +3,9 @@ import axios from "axios";
 import CreateProjectModal from "./CreateProjectModal"; // Import modal mới
 import ProjectsList from "./ProjectsList";
 
-export default function Projects() {
+export default function Projects({ auth }) {
     const [projects, setProjects] = useState([]);
     const [showModal, setShowModal] = useState(false);
-
     // Fetch danh sách dự án
     const fetchProjects = async () => {
         try {
@@ -16,7 +15,6 @@ export default function Projects() {
             console.error("Error fetching projects:", error);
         }
     };
-
     useEffect(() => {
         fetchProjects();
     }, []);
@@ -37,6 +35,8 @@ export default function Projects() {
             <ProjectsList
                 projects={projects}
                 onProjectUpdated={fetchProjects} // Truyền callback vào ProjectsList
+                auth={auth}
+                edit={true}
             />
         </div>
     );

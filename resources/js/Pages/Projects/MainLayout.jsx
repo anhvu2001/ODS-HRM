@@ -54,9 +54,11 @@ export default function MainLayout({ auth }) {
                         </aside>
                         {/* Nội dung bên phải */}
                         <main className="w-4/5 bg-white p-6">
-                            <div className="h-[600px] overflow-x-auto ">
+                            <div className=" overflow-x-auto ">
+                                {/* không đủ hiện task */}
+                                {/* <div className="h-[600px] overflow-x-auto "> */}
                                 <Suspense fallback={<p>Loading...</p>}>
-                                    <ActiveComponent />
+                                    <ActiveComponent auth={auth} />
                                 </Suspense>
                             </div>
                         </main>

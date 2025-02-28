@@ -28,4 +28,9 @@ class Project extends Model
     {
         return $this->hasMany(ProjectParticipant::class, 'project_id');
     }
+    // dvh 11/02/2025
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, "project_id")->orderBy('lft');
+    }
 }

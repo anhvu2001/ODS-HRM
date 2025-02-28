@@ -19,6 +19,8 @@ use App\Http\Controllers\Requests\ExcelController;
 use App\Http\Controllers\Requests\SearchRequestController;
 use App\Http\Controllers\Requests\UserRequestController;
 use App\Http\Controllers\Requests\PdfUserRequestController;
+use App\Http\Controllers\Tasks\TaskCommentController;
+use App\Http\Controllers\Tasks\TaskController;
 use App\Models\UserRequests;
 use App\Models\User;
 
@@ -97,6 +99,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/get-all-status', [ProjectController::class, 'getAllStatus'])->name('Get_All_Status');
         Route::put('/update/{projectId}', [ProjectController::class, 'update'])->name('Update_Project');
         Route::delete('/delete/{projectId}', [ProjectController::class, 'delete'])->name('Delete_Project');
+        // 17/02/2025 dvh lấy project thuộc về user 
+        Route::get('/user-projects', [ProjectController::class, 'getUserProjects'])->name('User_joined_projects');
     });
 });
 
@@ -142,6 +146,24 @@ Route::middleware('auth')->group(function () {
             Route::post('/update/{id}', [DepartmentController::class, 'update'])->name('Update_departments');
             Route::post('/delete', [DepartmentController::class, 'delete'])->name("Delete_departments");
         });
+    });
+    // task
+    Route::prefix('/tasks')->group(function () {
+        Route::get("/get-priority", [TaskController::class, 'getPriorityOption'])->name("Get_priority_option");
+        Route::post("/create-new-task", [TaskController::class, 'createMainTask'])->name("Create_task");
+        Route::post("/create-new-sub-task", [TaskController::class, 'createSubTask'])->name("Create_sub_task");
+        Route::put('/update/{id}', [TaskController::class, 'update'])->name('Update_task');
+        Route::delete('/delete/{id}', [TaskController::class, 'delete'])->name("Delete_task");
+        Route::get('/user-tasks', [TaskController::class, 'getUserTasks'])->name('User_joined_tasks');
+    });
+    // task comment
+    Route::prefix('/taskComments')->group(function () {
+        Route::get("/", [TaskCommentController::class, "index"])->name("task_comments");
+        Route::post("/create", [TaskCommentController::class, "create"])->name("create_task_comments");
+        Route::delete('/delete/{id}', [TaskCommentController::class, 'delete'])->name("delete_task_comments");
+        Route::get('/get-comment/{id}', [TaskCommentController::class, 'getAllComments'])->name("get_all_task_comments");
+        Route::post("/edit", [TaskCommentController::class, 'edit'])->name("update_task_comment");
+        Route::post("/delete-file", [TaskCommentController::class, "deleteFile"])->name("delete_file");
     });
 });
 

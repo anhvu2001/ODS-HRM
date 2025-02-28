@@ -18,10 +18,11 @@ return new class extends Migration
             $table->timestamps();
         });
         // Thêm các giá trị mặc định vào bảng 'priority_levels'
+        // 28/02 đổi thứ tự priority levels
         DB::table('priority_levels')->insert([
             ['name' => 'High', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Low', 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Medium', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Low', 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 

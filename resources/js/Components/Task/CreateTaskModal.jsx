@@ -1,39 +1,38 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import useValidation from "@/hook/useValidation";
+import useTaskValidation from "@/hook/useTaskValidation";
 import Select from "react-select";
 
-export default function CreateProjectModal({
+export default function CreateTaskModal({
     showModal,
-    handleClose,
-    onProjectCreated,
+    handleCreateTaskClose,
+    handleModalClose,
+    onTaskCreate,
+    participants,
+    parent_id,
+    project,
+    priorityOptions,
 }) {
     const initialFormData = {
         name: "",
         description: "",
         start_date: "",
-        end_date: "",
-        participants: [],
+        due_date: "",
+        priority_id: "",
+        participant: null,
+        parent_id: parent_id,
+        project_id: project,
     };
+    const transformOptions = priorityOptions.map((option) => ({
+        value: option.id,
+        label: option.name,
+    }));
 
+    const resetForm = () => {
+        setFormData(initialFormData);
+    };
     const [formData, setFormData] = useState(initialFormData);
-    const [users, setUsers] = useState([]);
-    const { errors, validate } = useValidation();
-
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const { data } = await axios.get(route("Get_all_users"));
-                if (data?.success) {
-                    setUsers(data?.data);
-                }
-            } catch (error) {
-                console.error("Error fetching users:", error);
-            }
-        };
-        fetchUsers();
-    }, []);
-
+    const { errors, validate } = useTaskValidation();
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
@@ -41,59 +40,63 @@ export default function CreateProjectModal({
             [name]: value,
         }));
     };
-
-    const handleParticipantChange = (selectedOptions) => {
-        const selectedIds = selectedOptions.map((option) => option.value);
+    const handleParticipantChange = (selectedOption) => {
         setFormData((prev) => ({
             ...prev,
-            participants: selectedIds,
+            participant: selectedOption ? selectedOption.value : null, // Store only the ID
         }));
     };
-
-    const resetForm = () => {
-        setFormData(initialFormData);
+    const handlePriorityChange = (selectedOption) => {
+        setFormData((prev) => ({
+            ...prev,
+            priority_id: selectedOption ? selectedOption.value : null, // Store only the ID
+        }));
     };
-
     const submitForm = async (e) => {
         e.preventDefault();
-
-        if (!validate(formData)) return;
         try {
-            const response = await axios.post(
-                route("Create_Project"),
-                formData
-            );
-            alert(response.data.message || "Project created successfully!");
-            onProjectCreated();
-            resetForm();
-            handleClose();
+            validate(formData);
+            if (!formData.parent_id) {
+                const response = await axios.post(
+                    route("Create_task"),
+                    formData
+                );
+                alert(response.data.message || "Task created successfully!");
+                resetForm();
+                handleCreateTaskClose();
+                handleModalClose();
+                onTaskCreate();
+            } else if (formData.parent_id) {
+                const response = await axios.post(
+                    route("Create_sub_task"),
+                    formData
+                );
+                alert(
+                    response.data.message || "Sub task created successfully!"
+                );
+                resetForm();
+                handleCreateTaskClose();
+                handleModalClose();
+                onTaskCreate();
+            }
         } catch (error) {
-            console.error(
-                "Error creating project:",
-                error.response?.data || error
-            );
-            alert(
-                "Failed to create project. Please check your input and try again."
-            );
+            console.error();
+            alert("failed to create task ");
         }
     };
-
-    const handleModalClose = () => {
-        resetForm();
-        handleClose();
-    };
-    if (!showModal) return null;
+    if (!showModal) return;
     return (
         <div
             className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-10"
-            onClick={handleModalClose}
+            onClick={handleCreateTaskClose}
         >
             <div
                 className="bg-white p-8 rounded-lg w-3/4 max-w-lg"
                 onClick={(e) => e.stopPropagation()}
             >
                 <h2 className="text-2xl font-semibold mb-6 text-center">
-                    Create New Project
+                    {/* Create New Task */}
+                    {`Create New ${parent_id ? `Sub` : ``} Task`}
                 </h2>
                 <form onSubmit={submitForm}>
                     <div className="mb-4">
@@ -101,7 +104,7 @@ export default function CreateProjectModal({
                             htmlFor="name"
                             className="block mb-2 font-medium"
                         >
-                            Project Name
+                            {`${parent_id ? `Sub` : ``} Task Name`}
                         </label>
                         <input
                             type="text"
@@ -121,28 +124,75 @@ export default function CreateProjectModal({
                     {/* Dropdown thêm người tham gia */}
                     <div className="mb-4">
                         <label
-                            htmlFor="participants"
+                            htmlFor="participant"
                             className="block mb-2 font-medium"
                         >
-                            Add Participants
+                            Add Executor
                         </label>
                         <Select
-                            isMulti
-                            options={users.map((user) => ({
-                                value: user.id,
-                                label: user.name,
+                            options={participants.map((participant) => ({
+                                value: participant.id,
+                                label: participant.name,
                             }))}
-                            value={formData.participants.map((id) => {
-                                const user = users.find((u) => u.id === id);
-                                return user
-                                    ? { value: user.id, label: user.name }
-                                    : null;
-                            })}
+                            value={
+                                participants.find(
+                                    (p) => p.id === formData.participant
+                                )
+                                    ? {
+                                          value: formData.participant,
+                                          label: participants.find(
+                                              (p) =>
+                                                  p.id === formData.participant
+                                          ).name,
+                                      }
+                                    : null
+                            }
                             onChange={handleParticipantChange}
-                            className="basic-multi-select"
+                            className="basic-select"
                             classNamePrefix="select"
                             placeholder="Select participants..."
                         />
+                        {errors.name && (
+                            <p className="text-red-500 text-sm">
+                                {errors.participant}
+                            </p>
+                        )}
+                    </div>
+                    {/* dropdown chon priority */}
+                    <div className="mb-4">
+                        <label
+                            htmlFor="priority"
+                            className="block mb-2 font-medium"
+                        >
+                            {`Select ${parent_id ? `Sub` : ``} Task Priority`}
+                        </label>
+                        <Select
+                            // options={priorityOptions}
+                            options={transformOptions}
+                            value={
+                                transformOptions.find(
+                                    (p) => p.value === formData.priority_id
+                                )
+                                    ? {
+                                          value: formData.priority_id,
+                                          label: transformOptions.find(
+                                              (p) =>
+                                                  p.value ===
+                                                  formData.priority_id
+                                          ).label,
+                                      }
+                                    : null
+                            }
+                            onChange={handlePriorityChange}
+                            className="basic-multi-select"
+                            classNamePrefix="select"
+                            placeholder="Select priority"
+                        />
+                        {errors.name && (
+                            <p className="text-red-500 text-sm">
+                                {errors.priority_id}
+                            </p>
+                        )}
                     </div>
 
                     <div className="mb-4">
@@ -186,16 +236,16 @@ export default function CreateProjectModal({
 
                     <div className="mb-4">
                         <label
-                            htmlFor="end_date"
+                            htmlFor="due_date"
                             className="block mb-2 font-medium"
                         >
                             End Date
                         </label>
                         <input
                             type="date"
-                            id="end_date"
-                            name="end_date"
-                            value={formData.end_date}
+                            id="due_date"
+                            name="due_date"
+                            value={formData.due_date}
                             onChange={handleChange}
                             min={
                                 formData.start_date ||
@@ -203,9 +253,9 @@ export default function CreateProjectModal({
                             }
                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                         />
-                        {errors.end_date && (
+                        {errors.due_date && (
                             <p className="text-red-500 text-sm">
-                                {errors.end_date}
+                                {errors.due_date}
                             </p>
                         )}
                     </div>
@@ -213,7 +263,7 @@ export default function CreateProjectModal({
                     <div className="flex justify-between items-center">
                         <button
                             type="button"
-                            onClick={handleModalClose}
+                            onClick={handleCreateTaskClose}
                             className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
                         >
                             Close

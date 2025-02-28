@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\ProjectParticipant;
 use App\Models\Status;
+use App\Models\TaskUser;
+use Beste\Json;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -153,7 +155,8 @@ class ProjectController extends Controller
         )
             ->join('statuses', 'projects.status_id', '=', 'statuses.id') // Liên kết với bảng statuses
             ->where('projects.created_by', auth()->id()) // Chỉ lấy dự án do người dùng hiện tại tạo
-            ->with(['participants.user', 'participants.role']) // Tải trước thông tin người tham gia
+            ->with(['participants.user', 'participants.role', 'tasks.taskUser.user', 'tasks.status', 'tasks.creator']) // Tải trước thông tin người tham gia
+            // tải thêm task của project và người làm task
             ->get();
 
         // Định dạng dữ liệu trả về
@@ -173,6 +176,9 @@ class ProjectController extends Controller
                         'role' => $participant->role->name,
                     ];
                 }),
+                // 12/02/2025
+                // tai truoc task cua project
+                'tasks' => $project->tasks
             ];
         });
 

@@ -11,7 +11,9 @@ use OwenIt\Auditing\Contracts\Auditable;
 class Task extends Model implements Auditable
 {
     use \OwenIt\Auditing\Auditable;
-    use HasFactory, NodeTrait, SoftDeletes;
+    use HasFactory,
+        NodeTrait,
+        SoftDeletes;
     protected $table = 'tasks';
 
     protected $fillable = [
@@ -66,5 +68,33 @@ class Task extends Model implements Auditable
             'description' => $this->description,
             'status_id' => $this->status_id,
         ];
+    }
+    // dvh 11/02/2025
+    public function project()
+    {
+        return $this->belongsTo(Project::class, "project_id");
+    }
+    // lấy cột lft trong database làm left
+    public function getLftName()
+    {
+        return 'lft';  // Change _lft to lft
+    }
+    // lấy cột rgt trong database làm right
+    public function getRgtName()
+    {
+        return 'rgt';  // Change _rgt to rgt
+    }
+    // lấy cột parent_id làm parent 
+    public function getParentIdName()
+    {
+        return 'parent_id';
+    }
+    public function taskUser()
+    {
+        return $this->hasOne(TaskUser::class, "task_id");
+    }
+    public function taskComments()
+    {
+        return $this->hasMany(TaskComment::class, "task_id");
     }
 }
