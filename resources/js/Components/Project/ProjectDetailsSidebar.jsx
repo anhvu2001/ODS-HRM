@@ -3,6 +3,7 @@ import axios from "axios";
 import ParticipantSelector from "./ParticipantSelector";
 
 export default function ProjectDetailsSidebar({
+    auth,
     project,
     closeSidebar,
     onProjectUpdated,
@@ -12,7 +13,9 @@ export default function ProjectDetailsSidebar({
     const [users, setUsers] = useState([]);
     const { name, description, start_date, end_date, status_id, participants } =
         project;
+
     const ListIdParticipants = participants.map((item) => item.id);
+
     const [updatedProject, setUpdatedProject] = useState({
         name: name,
         description: description,
@@ -137,6 +140,7 @@ export default function ProjectDetailsSidebar({
                     <label className="block font-bold">Name</label>
                     <input
                         type="text"
+                        readOnly={project.created_by !== auth.user.id}
                         className="border rounded w-full p-2"
                         value={updatedProject.name}
                         onChange={(e) =>
@@ -150,6 +154,7 @@ export default function ProjectDetailsSidebar({
                 <div>
                     <label className="block font-bold">Description</label>
                     <textarea
+                        readOnly={project.created_by !== auth.user.id}
                         className="border rounded w-full p-2"
                         value={updatedProject?.description}
                         onChange={(e) =>
@@ -161,6 +166,7 @@ export default function ProjectDetailsSidebar({
                     ></textarea>
                 </div>
                 <ParticipantSelector
+                    readOnly={project.created_by !== auth.user.id}
                     users={users}
                     selectedParticipants={updatedProject.participants}
                     title="Add Participants"
@@ -174,6 +180,7 @@ export default function ProjectDetailsSidebar({
                 <div>
                     <label className="block font-bold">Start Date</label>
                     <input
+                        readOnly={project.created_by !== auth.user.id}
                         type="date"
                         className="border rounded w-full p-2"
                         value={updatedProject.start_date}
@@ -184,6 +191,7 @@ export default function ProjectDetailsSidebar({
                 <div>
                     <label className="block font-bold">End Date</label>
                     <input
+                        readOnly={project.created_by !== auth.user.id}
                         type="date"
                         className="border rounded w-full p-2"
                         value={updatedProject.end_date}
@@ -194,6 +202,7 @@ export default function ProjectDetailsSidebar({
                 <div>
                     <label className="block font-bold">Status</label>
                     <select
+                        disabled={project.created_by !== auth.user.id}
                         className="border rounded w-full p-2"
                         value={updatedProject.status}
                         onChange={(e) =>
@@ -212,21 +221,23 @@ export default function ProjectDetailsSidebar({
                     </select>
                 </div>
             </div>
-            <div className="mt-6 flex space-x-4">
-                <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded"
-                    onClick={handleUpdate}
-                    disabled={isUpdating}
-                >
-                    {isUpdating ? "Updating..." : "Update"}
-                </button>
-                <button
-                    className="bg-red-500 text-white px-4 py-2 rounded"
-                    onClick={handleDelete}
-                >
-                    Delete
-                </button>
-            </div>
+            {project.created_by === auth.user.id && (
+                <div className="mt-6 flex space-x-4">
+                    <button
+                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                        onClick={handleUpdate}
+                        disabled={isUpdating}
+                    >
+                        {isUpdating ? "Updating..." : "Update"}
+                    </button>
+                    <button
+                        className="bg-red-500 text-white px-4 py-2 rounded"
+                        onClick={handleDelete}
+                    >
+                        Delete
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

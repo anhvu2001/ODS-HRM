@@ -18,7 +18,7 @@ export default function CreateProjectModal({
 
     const [formData, setFormData] = useState(initialFormData);
     const [users, setUsers] = useState([]);
-    const { errors, validate } = useValidation();
+    const {errors, validate } = useValidation();
 
     useEffect(() => {
         const fetchUsers = async () => {

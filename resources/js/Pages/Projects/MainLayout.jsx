@@ -5,17 +5,29 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 const componentMap = {
     mytask: lazy(() => import("../../Components/Project/MyTask.jsx")),
     projects: lazy(() => import("../../Components/Project/Projects.jsx")),
+    taskQC: lazy(() => import("../../Components/TaskQC/TaskQC.jsx")),
 };
 const sidebarItems = [
     { name: "projects", label: "Projects" },
     { name: "mytask", label: "My Task" },
+    { name: "taskQC", label: "Task QC" },
 ];
+
 export default function MainLayout({ auth }) {
-    const [activeComponent, setActiveComponent] = useState("projects");
+    const defaultComponent =
+        auth.user.role != 1 && auth.user.role != 99 ? "mytask" : "projects";
+    const [activeComponent, setActiveComponent] = useState(defaultComponent);
 
     const handleSidebarClick = (component) => {
         setActiveComponent(component);
     };
+
+    const filterSideBarItems =
+        auth.user.role != 1 && auth.user.role != 99
+            ? sidebarItems.filter(
+                  (item) => item.name !== "projects" && item.name !== "taskQC"
+              )
+            : sidebarItems;
 
     const ActiveComponent = componentMap[activeComponent];
     return (
@@ -34,7 +46,7 @@ export default function MainLayout({ auth }) {
                         {/* Sidebar bên trái */}
                         <aside className="w-1/5 bg-gray-200 p-6">
                             <ul className="space-y-4 h-[600px] overflow-hidden">
-                                {sidebarItems.map((item) => (
+                                {filterSideBarItems.map((item) => (
                                     <li key={item.name}>
                                         <button
                                             onClick={() =>
@@ -55,8 +67,6 @@ export default function MainLayout({ auth }) {
                         {/* Nội dung bên phải */}
                         <main className="w-4/5 bg-white p-6">
                             <div className=" overflow-x-auto ">
-                                {/* không đủ hiện task */}
-                                {/* <div className="h-[600px] overflow-x-auto "> */}
                                 <Suspense fallback={<p>Loading...</p>}>
                                     <ActiveComponent auth={auth} />
                                 </Suspense>

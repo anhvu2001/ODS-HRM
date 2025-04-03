@@ -9,8 +9,9 @@ use Kalnoy\Nestedset\NodeTrait;
 
 class TaskComment extends Model
 {
-    use HasFactory, SoftDeletes;
-    // use NodeTrait;
+    use HasFactory,
+        SoftDeletes,
+        NodeTrait;
     protected $fillable = [
         'user_id',
         'task_id',

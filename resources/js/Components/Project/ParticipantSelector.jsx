@@ -6,6 +6,7 @@ export default function ParticipantSelector({
     selectedParticipants,
     onChange,
     title = "Add Participants",
+    readOnly,
 }) {
     const handleParticipantChange = (selectedOptions) => {
         const selectedIds = selectedOptions.map((option) => option.value);
@@ -31,6 +32,7 @@ export default function ParticipantSelector({
                 className="basic-multi-select"
                 classNamePrefix="select"
                 placeholder="Select participants..."
+                isDisabled={readOnly}
             />
         </div>
     );

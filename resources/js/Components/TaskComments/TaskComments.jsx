@@ -38,7 +38,7 @@ const mentionsInputStyle = {
     },
 };
 
-export default function TaskComments({ user, comments, taskId }) {
+export default function TaskComments({ user, taskId }) {
     const [dataComment, setDataComment] = useState([]);
     const [fileUploaded, setFileUploaded] = useState(null);
     const [content, setContent] = useState("");
@@ -106,14 +106,14 @@ export default function TaskComments({ user, comments, taskId }) {
     };
 
     return (
-        <div className="bg-gray-100 p-4 pb-24 max-w-6xl mx-auto my-0">
+        <div className="bg-gray-100 p-4 pb-24 max-w-6xl mx-auto mt-4">
             <h2 className="text-xl font-bold mb-4 text-center">Comments</h2>
             <div className="space-y-4 relative flex flex-col justify-center ">
                 <form
                     className="flex space-x-4 items-center justify-center"
                     onSubmit={handleSubmit}
                 >
-                    <div className="relative w-full max-w-3xl">
+                    <div className="relative w-5/6 max-w-3xl">
                         <MentionsInput
                             value={content}
                             onChange={({ target: { value } }) =>
@@ -141,13 +141,13 @@ export default function TaskComments({ user, comments, taskId }) {
                         />
 
                         <label htmlFor={`comment-fileInput`}>
-                            <FaPaperclip className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700 transition" />
+                            <FaPaperclip className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700 transition " />
                         </label>
                     </div>
 
                     <button
                         type="submit"
-                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg h-fit"
+                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg h-fit w-1/6"
                     >
                         Submit
                     </button>

@@ -29,9 +29,39 @@ class Task extends Model implements Auditable
         'lft',
         'rgt',
         'depth',
+        'qc_status'
     ];
 
     // Liên kết đến task cha
+    protected static function boot()
+    {
+        parent::boot();
+        // cascading delete
+        static::deleting(function (Task $task) {
+            // delete task comments relationship
+            if ($task->taskComments->isNotEmpty()) {
+                foreach ($task->taskComments as $comment) {
+                    $comment->delete();
+                }
+            }
+            // delete task users relationship
+            if ($task->taskUser) {
+                $task->taskUser->delete();
+            }
+            // delete sub-tasks
+            if ($task->children->isNotEmpty()) {
+                foreach ($task->children as $child) {
+                    $child->delete();
+                }
+            }
+            // delete task project file relationship
+            if ($task->projectFiles->isNotEmpty()) {
+                foreach ($task->projectFiles as $file) {
+                    $file->delete();
+                }
+            }
+        });
+    }
     public function parent()
     {
         return $this->belongsTo(Task::class, 'parent_id');
@@ -96,5 +126,9 @@ class Task extends Model implements Auditable
     public function taskComments()
     {
         return $this->hasMany(TaskComment::class, "task_id");
+    }
+    public function projectFiles()
+    {
+        return $this->hasMany(ProjectFile::class, "task_id");
     }
 }

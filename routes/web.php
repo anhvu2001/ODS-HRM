@@ -27,6 +27,8 @@ use App\Models\User;
 use App\Mail\HelloWorldEmail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -90,18 +92,6 @@ Route::middleware(['auth'])->group(function () {
         // Route::get('', [UserRequestController::class, 'index'])->name('Requests_list');
 
     });
-    // Project routes
-    Route::prefix('/project')->group(function () {
-        Route::get('/', [ProjectController::class, 'index'])->name('Project');
-        Route::post('/create', [ProjectController::class, 'create'])->name('Create_Project');
-        Route::get('/list-projects-by-user', [ProjectController::class, 'getProjectsByUser'])->name('List_Project_By_User');
-        Route::get('/{projectId}/participants', [ProjectParticipantController::class, 'getParticipantsByProjectId'])->name('Get_ParticipantsByProjectId');;
-        Route::get('/get-all-status', [ProjectController::class, 'getAllStatus'])->name('Get_All_Status');
-        Route::put('/update/{projectId}', [ProjectController::class, 'update'])->name('Update_Project');
-        Route::delete('/delete/{projectId}', [ProjectController::class, 'delete'])->name('Delete_Project');
-        // 17/02/2025 dvh lấy project thuộc về user 
-        Route::get('/user-projects', [ProjectController::class, 'getUserProjects'])->name('User_joined_projects');
-    });
 });
 
 Route::get('/reset-password-danh', function () {
@@ -132,6 +122,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/get-request-templates', [SearchRequestController::class, 'getRequestTemplates'])->name('Get-Request-Templates');
     Route::get('/list-approved-request', [ApprovedRequestsController::class, 'index'])->name('List-Approved-Request')->middleware('check.role:1,99');;
     // dvh 10/01/2025
+
     Route::middleware('check.role:99')->group(function () {
         // dvh 9/1/2025
         Route::prefix('/users')->group(function () {
@@ -147,24 +138,51 @@ Route::middleware('auth')->group(function () {
             Route::post('/delete', [DepartmentController::class, 'delete'])->name("Delete_departments");
         });
     });
+    // projects
+    Route::prefix('/project')->group(function () {
+        Route::get('/', [ProjectController::class, 'index'])->name('Project');
+        Route::get('/get-all-status', [ProjectController::class, 'getAllStatus'])->name('Get_All_Status');
+    });
     // task
     Route::prefix('/tasks')->group(function () {
         Route::get("/get-priority", [TaskController::class, 'getPriorityOption'])->name("Get_priority_option");
-        Route::post("/create-new-task", [TaskController::class, 'createMainTask'])->name("Create_task");
-        Route::post("/create-new-sub-task", [TaskController::class, 'createSubTask'])->name("Create_sub_task");
-        Route::put('/update/{id}', [TaskController::class, 'update'])->name('Update_task');
-        Route::delete('/delete/{id}', [TaskController::class, 'delete'])->name("Delete_task");
+        Route::post('/update/{id}', [TaskController::class, 'update'])->name('Update_task');
         Route::get('/user-tasks', [TaskController::class, 'getUserTasks'])->name('User_joined_tasks');
+        Route::get("/get-more-task/{id}", [TaskController::class, 'getMoreTask'])->name("get_more_task");
+        Route::get("/get-task-after-update/{id}", [TaskController::class, 'getTaskAfterUpdate'])->name('get_task_on_update');
+        // lấy file cho task
+        Route::get("/get-task-files/{id}", [TaskController::class, 'getTaskFiles'])->name("get_all_task_file");
+        Route::get("/get-updated-my-task/{id}", [TaskController::class, 'getUpdatedTask'])->name("get_update_my_task");
+        Route::get("/get-tasks-qc", [TaskController::class, 'getTaskQC'])->name('get_task_need_qc')->middleware('check.role:1,99');
+    });
+    // 
+    Route::middleware('check.role:1,99')->group(function () {
+        Route::prefix('/project')->group(function () {
+            Route::post('/create', [ProjectController::class, 'create'])->name('Create_Project');
+            Route::get('/list-projects-by-user', [ProjectController::class, 'getProjectsByUser'])->name('List_Project_By_User');
+            Route::get('/{projectId}/participants', [ProjectParticipantController::class, 'getParticipantsByProjectId'])->name('Get_ParticipantsByProjectId');;
+            Route::put('/update/{projectId}', [ProjectController::class, 'update'])->name('Update_Project');
+            Route::delete('/delete/{projectId}', [ProjectController::class, 'delete'])->name('Delete_Project');
+            // 17/02/2025 dvh lấy project thuộc về user 
+            Route::get('/user-projects', [ProjectController::class, 'getUserProjects'])->name('User_joined_projects');
+            Route::get('/project-changed', [ProjectController::class, 'getnPageProjects'])->name("get_n_page_project");
+        });
+        Route::prefix('/tasks')->group(function () {
+            Route::post("/create-new-task", [TaskController::class, 'createMainTask'])->name("Create_task")->middleware('check.role:1,99');
+            Route::post("/create-new-sub-task", [TaskController::class, 'createSubTask'])->name("Create_sub_task")->middleware('check.role:1,99');
+            Route::delete('/delete/{id}', [TaskController::class, 'delete'])->name("Delete_task")->middleware('check.role:1,99');
+            Route::put("/task-qc/{id}", [TaskController::class, 'taskQC'])->name('task_qc');
+            Route::get("/qc-history", [TaskController::class, 'getQCHistory'])->name("get_qc_history")->middleware('check.role:1,99');
+        });
     });
     // task comment
     Route::prefix('/taskComments')->group(function () {
-        Route::get("/", [TaskCommentController::class, "index"])->name("task_comments");
         Route::post("/create", [TaskCommentController::class, "create"])->name("create_task_comments");
         Route::delete('/delete/{id}', [TaskCommentController::class, 'delete'])->name("delete_task_comments");
         Route::get('/get-comment/{id}', [TaskCommentController::class, 'getAllComments'])->name("get_all_task_comments");
         Route::post("/edit", [TaskCommentController::class, 'edit'])->name("update_task_comment");
-        Route::post("/delete-file", [TaskCommentController::class, "deleteFile"])->name("delete_file");
     });
 });
 
+// Route for file upload from ckeditor
 require __DIR__ . '/auth.php';

@@ -4,16 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProjectFile extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     protected $table = 'project_files';
     protected $fillable = [
         'task_id',
         'project_id',
-        'file_name',
-        'file_path',
+        'file_list',
         'uploaded_by',
         'uploaded_at',
         'updated_at',

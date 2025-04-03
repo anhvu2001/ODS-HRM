@@ -1,19 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { getStatusColor } from "@/utils/statusColor";
-import { getPriorityColor } from "@/utils/priorityColor";
-import { remainingDay } from "@/utils/calculateDay";
+import MyTaskListSection from "./MyTaskListSection";
 
-import TaskDetailModal from "../Task/TaskDetailModal";
-
-export default function ProjectsList({
-    projects,
-    onProjectUpdated,
-    auth,
-    edit,
-    statusOptions,
-}) {
-    const [selectedTask, setselectedTask] = useState(false);
+export default function MyTaskList({ auth, edit, statusOptions }) {
+    const [projects, setProjects] = useState([]);
     const [priorityOptions, setPriorityOptions] = useState([]);
+    const [page, setPage] = useState(0);
+    const [hasMore, setHasMore] = useState(false);
     const fetchPriority = async () => {
         try {
             const { data } = await axios.get(route("Get_priority_option"));
@@ -22,124 +14,76 @@ export default function ProjectsList({
             console.error("Error fetching priorities:", error);
         }
     };
+    // lấy task phân theo project
+    const fetchProjects = async () => {
+        // add page to fetch project
+        try {
+            const { data } = await axios.get(
+                route("User_joined_tasks", { page })
+            );
+            setProjects((prev) => [...prev, ...data.groupedTasks]);
+            setPage(page + 1);
+            setHasMore(data.hasMore);
+        } catch (error) {
+            console.error("Error fetching projects:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchProjects();
+    }, []);
     // get participant
     useEffect(() => {
         fetchPriority();
     }, []);
     return (
-        <div className="relative my-10">
-            {/* Danh sách dự án */}
-            <div>
-                <div className="w-full flex gap-4 px-4">
-                    <div className="w-2/6">Tên Công Việc</div>
-                    <div className="w-1/6">Độ ưu tiên</div>
-                    <div className="w-1/6">Ngày kết thúc</div>
-                    <div className="w-1/6">Ngày còn lại</div>
-                    <div className="w-1/6 text-center">Trạng thái</div>
+        <>
+            <div className="relative my-10">
+                <div className="flex flex-col gap-2">
+                    <div className="w-full flex gap-4 px-4 border h-12 bg-slate-200">
+                        <div className="w-3/12 font-bold content-center">
+                            Tên Công Việc
+                        </div>
+                        <div className="w-1/12 font-bold content-center">
+                            Độ ưu tiên
+                        </div>
+                        <div className="w-2/12 text-center font-bold content-center">
+                            Ngày kết thúc
+                        </div>
+                        <div className="w-2/12 text-center font-bold content-center">
+                            Ngày còn lại
+                        </div>
+                        <div className="w-2/12 text-center font-bold content-center">
+                            Trạng thái
+                        </div>
+                        <div className="w-2/12 text-center font-bold content-center">
+                            Trạng thái QC
+                        </div>
+                    </div>
+                    {projects.length > 0 &&
+                        projects.map((project) => (
+                            <MyTaskListSection
+                                project={project}
+                                setProjects={setProjects}
+                                priorityOptions={priorityOptions}
+                                statusOptions={statusOptions}
+                                onProjectUpdated={fetchProjects}
+                                edit={edit}
+                                auth={auth}
+                            />
+                        ))}
+                    {hasMore && (
+                        <button
+                            onClick={() => {
+                                fetchProjects();
+                            }}
+                            className="bg-green-400 text-white w-2/6 rounded-xl self-center p-2 mt-3"
+                        >
+                            Load More Projects
+                        </button>
+                    )}
                 </div>
-                {projects &&
-                    projects.map((project) => (
-                        <>
-                            <div
-                                key={project.id}
-                                className="w-full flex my-4 "
-                                // Chọn dự án
-                            >
-                                <div className="w-full border-y-2 h-12 flex items-center">
-                                    <div>
-                                        <span>Dự án: </span> {project[0]?.name}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="w-full flex flex-col gap-4 px-4">
-                                {project.map((item) => (
-                                    <>
-                                        <div
-                                            className="flex w-full gap-4 cursor-pointer duration-150 hover:bg-slate-200  rounded"
-                                            onClick={() => {
-                                                setselectedTask(item.task.id);
-                                            }}
-                                        >
-                                            <div className="w-2/6 truncate">
-                                                {item.task.name}
-                                            </div>
-
-                                            <div className="w-1/6">
-                                                <p
-                                                    className={`font-bold w-3/6 text-sm p-2 rounded-2xl text-center ${getPriorityColor(
-                                                        item.task.priority_id
-                                                    )}`}
-                                                >
-                                                    {
-                                                        priorityOptions.find(
-                                                            (p) =>
-                                                                p.id ===
-                                                                item.task
-                                                                    .priority_id
-                                                        )?.name
-                                                    }
-                                                </p>
-                                            </div>
-
-                                            <div className="w-1/6 text-red-600">
-                                                {item.task.due_date}
-                                            </div>
-                                            <div className="w-1/6">
-                                                {remainingDay(
-                                                    item.task.due_date
-                                                )}
-                                                <span> ngày</span>
-                                            </div>
-                                            <div className="w-1/6">
-                                                <p
-                                                    className={`font-bold text-sm p-2 rounded-2xl w-full text-center ${getStatusColor(
-                                                        item.task.status_id
-                                                    )}`}
-                                                >
-                                                    {
-                                                        statusOptions.find(
-                                                            (p) =>
-                                                                p.id ===
-                                                                item.task
-                                                                    .status_id
-                                                        )?.name
-                                                    }
-                                                </p>
-                                            </div>
-                                        </div>
-                                        {selectedTask === item.task.id && (
-                                            <>
-                                                <div
-                                                    className="fixed inset-0 bg-black bg-opacity-50 z-10"
-                                                    onClick={() => {
-                                                        setselectedTask(null);
-                                                    }}
-                                                ></div>
-                                                <TaskDetailModal
-                                                    task={item.task}
-                                                    handleModalClose={() =>
-                                                        setselectedTask(null)
-                                                    }
-                                                    onTaskCreate={
-                                                        onProjectUpdated
-                                                    }
-                                                    priorityOptions={
-                                                        priorityOptions
-                                                    }
-                                                    edit={edit}
-                                                    auth={auth}
-                                                />
-                                            </>
-                                        )}
-                                    </>
-                                ))}
-                            </div>
-                            {/* add tasks list here create task button maybe add a small drop down button */}
-                            {/* check if the user is in the project  */}
-                            {/* Check if user is in the project's participants */}
-                        </>
-                    ))}
             </div>
-        </div>
+        </>
     );
 }

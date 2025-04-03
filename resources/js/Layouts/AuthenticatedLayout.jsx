@@ -108,16 +108,20 @@ export default function Authenticated({ user, header, children }) {
                                 </NavLink>
                             </div>
                             {(user.role === "99" || user.role === "1") && (
-                                <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                    <NavLink
-                                        href={route("List-Approved-Request")}
-                                        active={route().current(
-                                            "List-Approved-Request"
-                                        )}
-                                    >
-                                        Danh sách request đã duyệt
-                                    </NavLink>
-                                </div>
+                                <>
+                                    <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                                        <NavLink
+                                            href={route(
+                                                "List-Approved-Request"
+                                            )}
+                                            active={route().current(
+                                                "List-Approved-Request"
+                                            )}
+                                        >
+                                            Danh sách request đã duyệt
+                                        </NavLink>
+                                    </div>
+                                </>
                             )}
                             {user.role === "99" && (
                                 <>
@@ -193,6 +197,18 @@ export default function Authenticated({ user, header, children }) {
                                     </div>
                                 </>
                             )}
+                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                                <NavLink
+                                    href={route("Project")}
+                                    active={route().current("Project")}
+                                >
+                                    {`${
+                                        user.role == "99" || user.role === "1"
+                                            ? `Quản lý dự án`
+                                            : `Danh sách công việc`
+                                    }`}
+                                </NavLink>
+                            </div>
                         </div>
 
                         <div className="hidden sm:flex sm:items-center sm:ms-6 relative">

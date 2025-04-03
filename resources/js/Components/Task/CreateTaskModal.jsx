@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import useTaskValidation from "@/hook/useTaskValidation";
 import Select from "react-select";
@@ -27,7 +27,7 @@ export default function CreateTaskModal({
         value: option.id,
         label: option.name,
     }));
-
+    const [isCreating, setIsCreating] = useState(false);
     const resetForm = () => {
         setFormData(initialFormData);
     };
@@ -54,6 +54,7 @@ export default function CreateTaskModal({
     };
     const submitForm = async (e) => {
         e.preventDefault();
+        setIsCreating(true);
         try {
             validate(formData);
             if (!formData.parent_id) {
@@ -78,9 +79,12 @@ export default function CreateTaskModal({
                 handleCreateTaskClose();
                 handleModalClose();
                 onTaskCreate();
+                setIsCreating(false);
             }
         } catch (error) {
             console.error();
+            setIsCreating(false);
+
             alert("failed to create task ");
         }
     };
@@ -95,7 +99,6 @@ export default function CreateTaskModal({
                 onClick={(e) => e.stopPropagation()}
             >
                 <h2 className="text-2xl font-semibold mb-6 text-center">
-                    {/* Create New Task */}
                     {`Create New ${parent_id ? `Sub` : ``} Task`}
                 </h2>
                 <form onSubmit={submitForm}>
@@ -120,7 +123,6 @@ export default function CreateTaskModal({
                             </p>
                         )}
                     </div>
-
                     {/* Dropdown thêm người tham gia */}
                     <div className="mb-4">
                         <label
@@ -167,7 +169,6 @@ export default function CreateTaskModal({
                             {`Select ${parent_id ? `Sub` : ``} Task Priority`}
                         </label>
                         <Select
-                            // options={priorityOptions}
                             options={transformOptions}
                             value={
                                 transformOptions.find(
@@ -272,7 +273,7 @@ export default function CreateTaskModal({
                             type="submit"
                             className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
                         >
-                            Create
+                            {`${isCreating ? `Creating...` : `Create`}`}
                         </button>
                     </div>
                 </form>

@@ -17,11 +17,10 @@ export default function TComment({
     const [editContent, setEditContent] = useState("");
     const [fileUploaded, setFileUploaded] = useState(null);
     const [fileDownloaded, setFileDownloaded] = useState([]);
-    const [filePaths, setFilePath] = useState(JSON.parse(comment.file_paths));
+    const [deletedFile, setDeletedFile] = useState();
 
     const handleFileChange = (event) => {
         const selectedFiles = event.target.files;
-
         if (selectedFiles.length > 0) {
             setFileUploaded(selectedFiles[0]); // Update the state with the uploaded file
         }
@@ -63,12 +62,11 @@ export default function TComment({
         if (comment.content) {
             setEditContent(comment.content);
         }
-        // Wait for file conversion before setting state
         if (comment.file_paths) {
             const files = await convertPathToFile(
                 JSON.parse(comment.file_paths)
             );
-            setFileDownloaded(files); // This will now correctly log the files
+            setFileDownloaded(files);
         }
     };
     const handleSubmitEdit = async (e) => {
@@ -85,8 +83,9 @@ export default function TComment({
         formData.append("parent_id", comment.id);
         if (fileUploaded) {
             formData.append("file", fileUploaded);
-        } else if (fileDownloaded) {
-            formData.append("file", fileDownloaded[0]);
+        }
+        if (deletedFile) {
+            formData.append("deleted_file", deletedFile);
         }
         try {
             const { data } = await axios.post(
@@ -98,10 +97,11 @@ export default function TComment({
                     },
                 }
             );
-            // setFilePath(comment.file_paths);
+            alert(data.message);
             fetchDataComment();
             setEditCommentId(null);
             setEditContent("");
+            setDeletedFile(null);
         } catch (error) {
             console.error("error editting comment:", error);
         }
@@ -110,7 +110,9 @@ export default function TComment({
         const isConfirmed = window.confirm("bạn có chắc muốn xóa");
         if (!isConfirmed) return;
         try {
-            await axios.delete(route("delete_task_comments", commentId));
+            const response = await axios.delete(
+                route("delete_task_comments", commentId)
+            );
         } catch (error) {
             console.error("Error deleting comment:", error);
         }
@@ -171,19 +173,23 @@ export default function TComment({
 
         return fileObjects; // ✅ Returns an array of File objects
     };
-    const handleDeleteFile = async () => {
+    const handleDeleteFile = async (file) => {
         setFileDownloaded(null);
         setFileUploaded(null);
+        setDeletedFile(file);
+        // xóa file và update db nếu có delete file
+        // giữ nguyên db nếu không có
         setFilePath(null);
+        console.log(deletedFile);
     };
 
     return (
-        <div key={comment.id} className="mb-2 flex flex-col my-3 w-full">
-            <div className="flex flex-col gap-1">
-                <h2 className="">{comment.user.name}</h2>
-                <h3 className="font-bold">
+        <div key={comment.id} className="mb-2 flex flex-col my-3 w-full ">
+            <div className="flex flex-col gap-1 w-full">
+                <h2 className="w-full font-bold">{comment.user.name}</h2>
+                <p className=" overflow-hidden w-full h-auto">
                     {comment?.content && parseMentions(comment.content)}
-                </h3>
+                </p>
                 {JSON.parse(comment.file_paths) && (
                     <div>
                         <div>File đính kèm:</div>
@@ -269,16 +275,6 @@ export default function TComment({
                                 <FaPaperclip className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700 transition" />
                             </label>
                         </div>
-                        {/* {fileUploaded &&
-                        fileUploaded.map((file, index) => (
-                            <span
-                                key={index}
-                                className="text-sm text-green-600"
-                            >
-                                {file.name}
-                            </span>
-                        ))} */}
-
                         <button
                             type="submit"
                             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg h-fit"
@@ -293,7 +289,7 @@ export default function TComment({
                         </button>
                     </form>
                     {fileUploaded && (
-                        <div className="text-sm text-green-600">
+                        <div className="text-sm text-green-600 px-3">
                             <span>Upload file: </span> {fileUploaded.name}
                             <button
                                 className="text-red-700 pl-3"
@@ -367,13 +363,15 @@ export default function TComment({
                     <div className="text-blue-400">
                         {fileDownloaded
                             ? fileDownloaded.map((file, index) => (
-                                  <div key={index} className="flex gap-4">
+                                  <div key={index} className="flex gap-4 px-3">
                                       <span className="block text-blue-600">
-                                          {file.name}
+                                          {file?.name || "File không tồn tại"}
                                       </span>
                                       <button
                                           className="text-red-700"
-                                          onClick={handleDeleteFile}
+                                          onClick={() => {
+                                              handleDeleteFile(file);
+                                          }}
                                       >
                                           Delete
                                       </button>
