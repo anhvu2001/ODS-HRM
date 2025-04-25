@@ -1,6 +1,5 @@
 <?php
 
-use Dompdf\FrameDecorator\Table;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,7 +13,7 @@ return new class extends Migration
     {
         //
         Schema::table('tasks', function (Blueprint $table) {
-            $table->boolean('qc_status')->nullable();
+            $table->text("qc_note")->nullable();
         });
     }
 
@@ -24,5 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         //
+        Schema::table('tasks', function (Blueprint $table) {
+            $table->dropColumn("qc_note");
+        });
     }
 };

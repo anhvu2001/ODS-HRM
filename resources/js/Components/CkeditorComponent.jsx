@@ -5,9 +5,9 @@ export default function CkeditorComponent({
     readOnly,
     setFormData,
     defaultDescription,
+    editorId,
 }) {
     const [loading, setLoading] = useState(true);
-
     useEffect(() => {
         const scriptUrl = "/assets/ckeditor4/ckeditor.js";
         let script = document.querySelector(`script[src="${scriptUrl}"]`);
@@ -23,13 +23,15 @@ export default function CkeditorComponent({
 
         function initializeEditor() {
             if (window.CKEDITOR) {
-                const editor = window.CKEDITOR.replace("editor1");
-                editor.on("instanceReady", function () {
-                    editor.setData(defaultDescription);
-                    setLoading(false);
-                });
+                const editor = window.CKEDITOR.replace(editorId);
+                if (editor) {
+                    editor?.on("instanceReady", function () {
+                        editor.setData(defaultDescription);
+                        setLoading(false);
+                    });
+                }
 
-                editor.on("change", function () {
+                editor?.on("change", function () {
                     setFormData((prevFormData) => ({
                         ...prevFormData,
                         description: editor.getData(),
@@ -39,8 +41,8 @@ export default function CkeditorComponent({
         }
 
         return () => {
-            if (window.CKEDITOR && window.CKEDITOR.instances.editor1) {
-                window.CKEDITOR.instances.editor1.destroy(true);
+            if (window.CKEDITOR && window.CKEDITOR.instances.editor) {
+                window.CKEDITOR.instances.editor.destroy(true);
             }
         };
     }, [setFormData]);
@@ -63,12 +65,7 @@ export default function CkeditorComponent({
                 </div>
             )}
             <div className={`${loading ? `opacity-0 max-h-0` : `opacity-100`}`}>
-                <textarea
-                    id="editor1"
-                    name="editor1"
-                    readOnly={readOnly}
-                    value=""
-                />
+                <textarea id={editorId} name="editor1" readOnly={readOnly} />
             </div>
         </div>
     );

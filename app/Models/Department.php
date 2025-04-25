@@ -20,4 +20,8 @@ class Department extends Model
     {
         return $this->belongsTo(User::class, 'manager');
     }
+    public function members()
+    {
+        return $this->hasMany(User::class, "department");
+    }
 }

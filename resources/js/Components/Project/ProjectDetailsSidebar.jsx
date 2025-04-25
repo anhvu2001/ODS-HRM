@@ -10,24 +10,18 @@ export default function ProjectDetailsSidebar({
 }) {
     const [isUpdating, setIsUpdating] = useState(false);
     const [statues, setStatues] = useState([]);
-    const [users, setUsers] = useState([]);
-    const { name, description, start_date, end_date, status_id, participants } =
-        project;
-
-    const ListIdParticipants = participants.map((item) => item.id);
-
+    const { name, description, end_date, status_id } = project;
     const [updatedProject, setUpdatedProject] = useState({
         name: name,
         description: description,
-        start_date: start_date,
         end_date: end_date,
         status: status_id,
-        participants: ListIdParticipants || [],
     });
 
     const handleUpdate = async () => {
         setIsUpdating(true);
         try {
+            console.log(updatedProject);
             await axios.put(
                 route("Update_Project", project.id),
                 updatedProject
@@ -58,18 +52,6 @@ export default function ProjectDetailsSidebar({
             alert("Failed to delete project.");
         }
     };
-
-    const fetchUsers = async () => {
-        try {
-            const { data } = await axios.get(route("Get_all_users"));
-            if (data?.success) {
-                setUsers(data?.data);
-            }
-        } catch (error) {
-            console.error("Error fetching users:", error);
-        }
-    };
-
     const fetchStatus = async () => {
         try {
             const { data } = await axios.get(route("Get_All_Status"));
@@ -82,41 +64,14 @@ export default function ProjectDetailsSidebar({
     };
 
     useEffect(() => {
-        fetchUsers();
         fetchStatus();
     }, [project.id]);
-
-    const handleStartDateChange = (e) => {
-        const newStartDate = e.target.value;
-        const today = new Date().toISOString().split("T")[0]; // Lấy ngày hiện tại theo định dạng YYYY-MM-DD
-
-        // Kiểm tra nếu ngày bắt đầu nhỏ hơn ngày hiện tại
-        if (newStartDate < today) {
-            alert("Start date cannot be in the past.");
-            return; // Không cập nhật nếu ngày bắt đầu không hợp lệ
-        }
-
-        setUpdatedProject((prev) => ({
-            ...prev,
-            start_date: newStartDate,
-            // Nếu ngày bắt đầu thay đổi và ngày kết thúc cũ nhỏ hơn ngày bắt đầu mới, cập nhật lại ngày kết thúc
-            end_date:
-                newStartDate > prev.end_date ? newStartDate : prev.end_date,
-        }));
-    };
-
     const handleEndDateChange = (e) => {
         const newEndDate = e.target.value;
         const today = new Date().toISOString().split("T")[0]; // Lấy ngày hiện tại theo định dạng YYYY-MM-DD
-
         // Kiểm tra nếu ngày kết thúc nhỏ hơn ngày bắt đầu hoặc ngày kết thúc nhỏ hơn ngày hiện tại
-        if (newEndDate < updatedProject.start_date) {
-            alert("End date cannot be earlier than start date.");
-            return; // Không cập nhật nếu ngày kết thúc không hợp lệ
-        }
-
         if (newEndDate < today) {
-            alert("End date cannot be in the past.");
+            alert("Deadline cannot be in the past.");
             return; // Không cập nhật nếu ngày kết thúc không hợp lệ
         }
 
@@ -165,29 +120,6 @@ export default function ProjectDetailsSidebar({
                         }
                     ></textarea>
                 </div>
-                <ParticipantSelector
-                    readOnly={project.created_by !== auth.user.id}
-                    users={users}
-                    selectedParticipants={updatedProject.participants}
-                    title="Add Participants"
-                    onChange={(selectedIds) =>
-                        setUpdatedProject((prev) => ({
-                            ...prev,
-                            participants: selectedIds,
-                        }))
-                    }
-                />
-                <div>
-                    <label className="block font-bold">Start Date</label>
-                    <input
-                        readOnly={project.created_by !== auth.user.id}
-                        type="date"
-                        className="border rounded w-full p-2"
-                        value={updatedProject.start_date}
-                        onChange={handleStartDateChange}
-                        min={new Date().toISOString().split("T")[0]}
-                    />
-                </div>
                 <div>
                     <label className="block font-bold">End Date</label>
                     <input
@@ -196,7 +128,6 @@ export default function ProjectDetailsSidebar({
                         className="border rounded w-full p-2"
                         value={updatedProject.end_date}
                         onChange={handleEndDateChange}
-                        min={updatedProject.start_date}
                     />
                 </div>
                 <div>

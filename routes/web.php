@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Comment\CommentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TaskCategoriesController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -136,27 +137,50 @@ Route::middleware('auth')->group(function () {
             Route::get('/detail/{id}', [DepartmentController::class, 'view'])->name('Detail_departments');
             Route::post('/update/{id}', [DepartmentController::class, 'update'])->name('Update_departments');
             Route::post('/delete', [DepartmentController::class, 'delete'])->name("Delete_departments");
+            Route::post("/get-department-member", [DepartmentController::class, 'getMember'])->name('get_department_member');
         });
+
+        // task leader
+        Route::prefix("/tasks")->group(function () {});
+    });
+    Route::prefix('/departments')->group(function () {
+        Route::get("/get-all-departments", [DepartmentController::class, "getAllDepartments"])->name('Get_all_departments');
     });
     // projects
-    Route::prefix('/project')->group(function () {
-        Route::get('/', [ProjectController::class, 'index'])->name('Project');
-        Route::get('/get-all-status', [ProjectController::class, 'getAllStatus'])->name('Get_All_Status');
-    });
+
+
     // task
     Route::prefix('/tasks')->group(function () {
         Route::get("/get-priority", [TaskController::class, 'getPriorityOption'])->name("Get_priority_option");
         Route::post('/update/{id}', [TaskController::class, 'update'])->name('Update_task');
         Route::get('/user-tasks', [TaskController::class, 'getUserTasks'])->name('User_joined_tasks');
-        Route::get("/get-more-task/{id}", [TaskController::class, 'getMoreTask'])->name("get_more_task");
-        Route::get("/get-task-after-update/{id}", [TaskController::class, 'getTaskAfterUpdate'])->name('get_task_on_update');
+        // Route::get("/get-more-task/{id}", [TaskController::class, 'getMoreTask'])->name("get_more_task");
+        // Route::get("/get-task-after-update/{id}", [TaskController::class, 'getTaskAfterUpdate'])->name('get_task_on_update');
         // lấy file cho task
         Route::get("/get-task-files/{id}", [TaskController::class, 'getTaskFiles'])->name("get_all_task_file");
-        Route::get("/get-updated-my-task/{id}", [TaskController::class, 'getUpdatedTask'])->name("get_update_my_task");
+        // Route::get("/get-updated-my-task/{id}", [TaskController::class, 'getUpdatedTask'])->name("get_update_my_task");
         Route::get("/get-tasks-qc", [TaskController::class, 'getTaskQC'])->name('get_task_need_qc')->middleware('check.role:1,99');
+        // leader temp
+        Route::get("/get-leader-task", [TaskController::class, 'getLeaderTask'])->name("get_leader_main_task");
+        Route::post("/assign-task/{id}", [TaskController::class, "assignTask"])->name("leader_assign_task");
+        Route::get("/qc-history", [TaskController::class, 'getQCHistory'])->name("get_qc_history")->middleware('check.role:1,99');
+        Route::post("/task-qc/{id}", [TaskController::class, 'taskQC'])->name('task_qc');
+        // member task
+        Route::get("/get-member-task", [TaskController::class, 'getMemberTask'])->name("get_member_task");
+        Route::post("/submit-task/{id}", [TaskController::class, 'submitTask'])->name('member_submit_task');
+        Route::get("/get-task-by-id/{id}", [TaskController::class, 'getTaskById'])->name("get_task_by_id");
+        Route::get('/update-task/{id}', [TaskController::class, 'updateTask'])->name('update_task_by_id');
+        Route::get("/get-n-page-status-task", [TaskController::class, 'getNPageUserTasks'])->name('get_task_after_change');
     });
     // 
-    Route::middleware('check.role:1,99')->group(function () {
+    // Route::middleware('check.accountLeader')->group(function () {
+    Route::prefix('/project')->group(function () {
+        Route::get('/', [ProjectController::class, 'index'])->name('Project');
+        Route::get('/get-all-status', [ProjectController::class, 'getAllStatus'])->name('Get_All_Status');
+    });
+    // });
+
+    Route::middleware('check.accountLeader')->group(function () {
         Route::prefix('/project')->group(function () {
             Route::post('/create', [ProjectController::class, 'create'])->name('Create_Project');
             Route::get('/list-projects-by-user', [ProjectController::class, 'getProjectsByUser'])->name('List_Project_By_User');
@@ -166,13 +190,16 @@ Route::middleware('auth')->group(function () {
             // 17/02/2025 dvh lấy project thuộc về user 
             Route::get('/user-projects', [ProjectController::class, 'getUserProjects'])->name('User_joined_projects');
             Route::get('/project-changed', [ProjectController::class, 'getnPageProjects'])->name("get_n_page_project");
+            Route::get('/get-deadline/{id}', [ProjectController::class, "getDeadline"])->name('get_project_deadline');
         });
         Route::prefix('/tasks')->group(function () {
             Route::post("/create-new-task", [TaskController::class, 'createMainTask'])->name("Create_task")->middleware('check.role:1,99');
             Route::post("/create-new-sub-task", [TaskController::class, 'createSubTask'])->name("Create_sub_task")->middleware('check.role:1,99');
             Route::delete('/delete/{id}', [TaskController::class, 'delete'])->name("Delete_task")->middleware('check.role:1,99');
-            Route::put("/task-qc/{id}", [TaskController::class, 'taskQC'])->name('task_qc');
-            Route::get("/qc-history", [TaskController::class, 'getQCHistory'])->name("get_qc_history")->middleware('check.role:1,99');
+            Route::get("/get-account-tasks", [TaskController::class, 'getAccountTask'])->name("get_account_task");
+            Route::post("/send-feedback/{id}", [TaskController::class, 'taskFeedback'])->name("send_task_feedback");
+            Route::post("/complete-task/{id}", [TaskController::class, 'accountCompleteTask'])->name("account-complete-task");
+            Route::get("/account-task-history", [TaskController::class, 'accountTaskHistory'])->name('get_account_task_history');
         });
     });
     // task comment
@@ -181,6 +208,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('/delete/{id}', [TaskCommentController::class, 'delete'])->name("delete_task_comments");
         Route::get('/get-comment/{id}', [TaskCommentController::class, 'getAllComments'])->name("get_all_task_comments");
         Route::post("/edit", [TaskCommentController::class, 'edit'])->name("update_task_comment");
+    });
+    Route::prefix('/taskCategories')->group(function () {
+        Route::get("/get-all-task-categories", [TaskCategoriesController::class, 'getAllTaskCategories'])->name("Get_task_categories_option");
     });
 });
 

@@ -10,28 +10,27 @@ export default function CreateProjectModal({
 }) {
     const initialFormData = {
         name: "",
+        project_departments: [],
         description: "",
-        start_date: "",
         end_date: "",
-        participants: [],
     };
 
     const [formData, setFormData] = useState(initialFormData);
-    const [users, setUsers] = useState([]);
-    const {errors, validate } = useValidation();
+    const { errors, validate } = useValidation();
+    const [departments, setDepartments] = useState([]);
 
     useEffect(() => {
-        const fetchUsers = async () => {
+        const fetchDepartments = async () => {
             try {
-                const { data } = await axios.get(route("Get_all_users"));
+                const { data } = await axios.get(route("Get_all_departments"));
                 if (data?.success) {
-                    setUsers(data?.data);
+                    setDepartments(data?.data);
                 }
             } catch (error) {
                 console.error("Error fetching users:", error);
             }
         };
-        fetchUsers();
+        fetchDepartments();
     }, []);
 
     const handleChange = (e) => {
@@ -42,11 +41,11 @@ export default function CreateProjectModal({
         }));
     };
 
-    const handleParticipantChange = (selectedOptions) => {
+    const handleDepartmentChange = (selectedOptions) => {
         const selectedIds = selectedOptions.map((option) => option.value);
         setFormData((prev) => ({
             ...prev,
-            participants: selectedIds,
+            project_departments: selectedIds,
         }));
     };
 
@@ -63,6 +62,7 @@ export default function CreateProjectModal({
                 route("Create_Project"),
                 formData
             );
+            console.log(response.data.message);
             alert(response.data.message || "Project created successfully!");
             onProjectCreated();
             resetForm();
@@ -121,27 +121,32 @@ export default function CreateProjectModal({
                     {/* Dropdown thêm người tham gia */}
                     <div className="mb-4">
                         <label
-                            htmlFor="participants"
+                            htmlFor="departments"
                             className="block mb-2 font-medium"
                         >
-                            Add Participants
+                            Add Departments
                         </label>
                         <Select
                             isMulti
-                            options={users.map((user) => ({
-                                value: user.id,
-                                label: user.name,
+                            options={departments.map((department) => ({
+                                value: department.id,
+                                label: department.department_name,
                             }))}
-                            value={formData.participants.map((id) => {
-                                const user = users.find((u) => u.id === id);
-                                return user
-                                    ? { value: user.id, label: user.name }
+                            value={formData.project_departments.map((id) => {
+                                const department = departments.find(
+                                    (d) => d.id === id
+                                );
+                                return department
+                                    ? {
+                                          value: department.id,
+                                          label: department.department_name,
+                                      }
                                     : null;
                             })}
-                            onChange={handleParticipantChange}
+                            onChange={handleDepartmentChange}
                             className="basic-multi-select"
                             classNamePrefix="select"
-                            placeholder="Select participants..."
+                            placeholder="Select departments..."
                         />
                     </div>
 
@@ -163,33 +168,10 @@ export default function CreateProjectModal({
 
                     <div className="mb-4">
                         <label
-                            htmlFor="start_date"
-                            className="block mb-2 font-medium"
-                        >
-                            Start Date
-                        </label>
-                        <input
-                            type="date"
-                            id="start_date"
-                            name="start_date"
-                            value={formData.start_date}
-                            onChange={handleChange}
-                            min={new Date().toISOString().split("T")[0]}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
-                        />
-                        {errors.start_date && (
-                            <p className="text-red-500 text-sm">
-                                {errors.start_date}
-                            </p>
-                        )}
-                    </div>
-
-                    <div className="mb-4">
-                        <label
                             htmlFor="end_date"
                             className="block mb-2 font-medium"
                         >
-                            End Date
+                            Deadline
                         </label>
                         <input
                             type="date"

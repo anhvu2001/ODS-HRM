@@ -42,6 +42,7 @@ export default function TaskComments({ user, taskId }) {
     const [dataComment, setDataComment] = useState([]);
     const [fileUploaded, setFileUploaded] = useState(null);
     const [content, setContent] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const fetchDataComment = useCallback(async () => {
         try {
             const { data } = await axios.get(
@@ -62,6 +63,7 @@ export default function TaskComments({ user, taskId }) {
             console.log("please add content or file");
             return;
         }
+        setIsSubmitting(true);
         const formData = new FormData();
         formData.append("content", content);
         formData.append("user_id", user);
@@ -80,8 +82,10 @@ export default function TaskComments({ user, taskId }) {
             fetchDataComment();
             setContent("");
             setFileUploaded(null);
+            setIsSubmitting(false);
         } catch (error) {
             console.error("Error creating comment:", error);
+            setIsSubmitting(false);
         }
     };
     const fetchUserSuggestions = useCallback((query, callback) => {
@@ -106,7 +110,7 @@ export default function TaskComments({ user, taskId }) {
     };
 
     return (
-        <div className="bg-gray-100 p-4 pb-24 max-w-6xl mx-auto mt-4">
+        <div className="bg-gray-100 p-4 pb-24 max-w-6xl mt-4">
             <h2 className="text-xl font-bold mb-4 text-center">Comments</h2>
             <div className="space-y-4 relative flex flex-col justify-center ">
                 <form
@@ -148,8 +152,9 @@ export default function TaskComments({ user, taskId }) {
                     <button
                         type="submit"
                         className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg h-fit w-1/6"
+                        disabled={isSubmitting}
                     >
-                        Submit
+                        {`${isSubmitting ? `Submitting` : `Submit`}`}
                     </button>
                 </form>
                 {fileUploaded && (

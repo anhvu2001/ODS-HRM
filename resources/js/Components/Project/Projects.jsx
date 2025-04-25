@@ -8,7 +8,7 @@ export default function Projects({ auth }) {
     const [showModal, setShowModal] = useState(false);
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     // Fetch danh sách dự án
     const fetchProjects = async () => {
         try {
@@ -41,7 +41,7 @@ export default function Projects({ auth }) {
                 onClick={() => setShowModal(true)}
                 className="bg-blue-500 text-white px-4 py-2 rounded self-start"
             >
-                Create New Project
+                Tạo dự án mới
             </button>
             <CreateProjectModal
                 showModal={showModal}

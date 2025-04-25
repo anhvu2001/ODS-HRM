@@ -19,16 +19,16 @@ class ProjectParticipantController extends Controller
         }
 
         // Lấy thông tin người tham gia
-        $participants = ProjectParticipant::with('user', 'role') // Tải thông tin người dùng và vai trò
-            ->where('project_id', $projectId)
-            ->get()
-            ->map(function ($participant) {
-                return [
-                    'id' => $participant->user_id,
-                    'name' => $participant->user->name, // Lấy tên người tham gia
-                    'role' => $participant->role->name, // Lấy tên vai trò
-                ];
-            });
+        // $participants = ProjectParticipant::with('user', 'role') // Tải thông tin người dùng và vai trò
+        //     ->where('project_id', $projectId)
+        //     ->get()
+        //     ->map(function ($participant) {
+        //         return [
+        //             'id' => $participant->user_id,
+        //             'name' => $participant->user->name, // Lấy tên người tham gia
+        //             'role' => $participant->role->name, // Lấy tên vai trò
+        //         ];
+        //     });
 
         return response()->json($participants);
     }

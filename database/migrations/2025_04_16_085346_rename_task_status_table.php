@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('project_participants', function (Blueprint $table) {
-            //
-            $table->softDeletes();
-        });
+        //
+        Schema::rename("task_statuses", "step_detail");
     }
 
     /**
@@ -22,9 +20,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('project_participants', function (Blueprint $table) {
-            //
-            $table->dropSoftDeletes();
-        });
+        //
     }
 };

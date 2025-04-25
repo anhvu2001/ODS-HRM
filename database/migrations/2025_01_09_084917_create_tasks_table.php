@@ -14,26 +14,25 @@ return new class extends Migration
         Schema::create('tasks', function (Blueprint $table) {
             $table->id(); // ID tự tăng
             $table->unsignedBigInteger('parent_id')->nullable(); // Task cha
-            $table->unsignedBigInteger('project_id'); // ID dự án
+            $table->unsignedBigInteger('project_id'); // ID dự án      
             $table->string('name'); // Tên task
             $table->text('description')->nullable(); // Mô tả task
+            $table->foreignId("next_assignee_id")->constrained('users')->nullable();
+            $table->boolean('status')->nullable();
+            $table->unsignedBigInteger("category_id");
+            $table->integer("status_id");
+            $table->integer('step_order');
             $table->unsignedBigInteger('created_by'); // ID người tạo
-            $table->unsignedBigInteger('status_id'); // ID trạng thái
-            $table->unsignedBigInteger('priority_id'); // ID độ ưu tiên
-            $table->date('start_date')->nullable(); // Ngày bắt đầu
+            $table->boolean('qc_status')->nullable();
             $table->date('due_date')->nullable(); // Hạn hoàn thành
-            $table->unsignedInteger('lft')->nullable(); // Vị trí bên trái trong cây
-            $table->unsignedInteger('rgt')->nullable(); // Vị trí bên phải trong cây
-            $table->unsignedInteger('depth')->nullable(); // Độ sâu của node trong cây
+            $table->foreignId('department_id')->constrained('departments')->onDelete('cascade');
             $table->timestamps(); // created_at và updated_at
-            $table->softDeletes(); 
+            $table->softDeletes();
 
             // Khóa ngoại
             $table->foreign('parent_id')->references('id')->on('tasks')->onDelete('cascade');
             $table->foreign('project_id')->references('id')->on('projects')->onDelete('cascade');
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('status_id')->references('id')->on('statuses')->onDelete('cascade');
-            $table->foreign('priority_id')->references('id')->on('priority_levels')->onDelete('cascade');
         });
     }
 

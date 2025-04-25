@@ -6,28 +6,48 @@ const componentMap = {
     mytask: lazy(() => import("../../Components/Project/MyTask.jsx")),
     projects: lazy(() => import("../../Components/Project/Projects.jsx")),
     taskQC: lazy(() => import("../../Components/TaskQC/TaskQC.jsx")),
+    accountTask: lazy(() =>
+        import("../../Components/CompletedTask/AccountTab.jsx")
+    ),
 };
-const sidebarItems = [
+let sidebarItems = [
     { name: "projects", label: "Projects" },
     { name: "mytask", label: "My Task" },
     { name: "taskQC", label: "Task QC" },
+    { name: "accountTask", label: "Completed Tasks" },
 ];
 
 export default function MainLayout({ auth }) {
     const defaultComponent =
-        auth.user.role != 1 && auth.user.role != 99 ? "mytask" : "projects";
+        // auth.user.role != 1 && auth.user.role != 99 ? "mytask" : "projects";
+        auth.user.department !== 3 ? "mytask" : "projects";
+
     const [activeComponent, setActiveComponent] = useState(defaultComponent);
 
     const handleSidebarClick = (component) => {
         setActiveComponent(component);
     };
+    let filterSideBarItems = [];
+    // auth.user.role != 1 && auth.user.role != 99
+    if (auth.user.department !== 3 || !auth.user.role) {
+        filterSideBarItems = sidebarItems.filter(
+            (item) => item.name !== "projects" && item.name !== "accountTask"
+        );
+    } else {
+        filterSideBarItems = sidebarItems;
+    }
 
-    const filterSideBarItems =
-        auth.user.role != 1 && auth.user.role != 99
-            ? sidebarItems.filter(
-                  (item) => item.name !== "projects" && item.name !== "taskQC"
-              )
-            : sidebarItems;
+    if (!auth.user.role) {
+        filterSideBarItems = filterSideBarItems.filter(
+            (item) => item.name !== "taskQC"
+        );
+    }
+
+    // auth.user.department !== 18
+    //     ? sidebarItems.filter(
+    //           (item) => item.name !== "projects" && item.name !== "taskQC"
+    //       )
+    //     : sidebarItems;
 
     const ActiveComponent = componentMap[activeComponent];
     return (

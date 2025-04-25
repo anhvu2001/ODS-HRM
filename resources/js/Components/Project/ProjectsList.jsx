@@ -17,15 +17,14 @@ export default function ProjectsList({
                     <div className="w-3/6 border-y-2 h-12 flex items-center font-bold px-2 text-white">
                         Tên dự án
                     </div>
-                    <div className="w-1/6 border-2 h-12 flex items-center px-2 text-base font-bold text-white">
-                        Ngày bắt đầu
-                    </div>
+
                     <div className="w-1/6 border-2 h-12 flex items-center px-2 border-l-0 font-bold text-base text-white">
                         Ngày kết thúc
                     </div>
                     <div className="w-1/6 border-y-2 h-12 flex justify-center items-center px-2 text-base font-bold text-white">
                         Trạng thái
                     </div>
+                    <div className="w-1/6 border-y-2 border-l-2 h-12 flex justify-center items-center px-2 text-base font-bold text-white"></div>
                 </div>
                 <div className="flex flex-col gap-4">
                     {projects &&

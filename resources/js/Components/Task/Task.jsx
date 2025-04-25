@@ -1,14 +1,11 @@
 import React, { useState } from "react";
 
-import { getStatusColor } from "@/utils/statusColor";
 import TaskDetailModal from "./TaskDetailModal";
-import { getPriorityColor } from "@/utils/priorityColor";
-
+import { getStatusColor } from "@/utils/statusColor";
 export default function Task({
     task,
     projectParticipants,
     onTaskCreate,
-    priorityOptions,
     edit,
     auth,
 }) {
@@ -20,38 +17,22 @@ export default function Task({
             setTaskDetailModal(task.id);
         }
     };
-    const depthPadding = (depth) => `pl-${3 * (depth + 1)}`;
     return (
         <div key={task.id}>
             <div
                 className="flex cursor-pointer border-b py-1 gap-4"
                 onClick={showTaskDetailModal}
             >
-                <div
-                    className={`w-3/12 line-clamp-2 items-center ${depthPadding(
-                        task.depth
-                    )}`}
-                >
+                <div className={`w-4/12 line-clamp-2 items-center px-3`}>
                     {task.name}
                 </div>
+
                 <div className="w-2/12 h-12 flex items-center">
-                    {task.task_user.user.name}
+                    {task?.department.department_name}
                 </div>
-                <div className="w-1/12 h-12 px-2 flex items-center">
-                    <p
-                        className={`font-bold w-full text-sm p-2 rounded-2xl  text-center ${getPriorityColor(
-                            task.priority_id
-                        )}`}
-                    >
-                        {
-                            priorityOptions.find(
-                                (option) => option.id === task.priority_id
-                            )?.name
-                        }
-                    </p>
-                </div>
+
                 <div className="w-2/12 h-12 px-2 flex justify-center  items-center">
-                    {task.start_date}
+                    {task.category.name}
                 </div>
                 <div className="w-2/12 h-12 px-2 flex justify-center  items-center">
                     {task.due_date}
@@ -59,10 +40,10 @@ export default function Task({
                 <div className="w-2/12 h-12 px-2 flex items-center">
                     <p
                         className={`font-bold text-sm p-2 rounded-2xl w-full text-center ${getStatusColor(
-                            task.status.id
+                            task.status_details?.id
                         )}`}
                     >
-                        {task.status.name}
+                        {task.status_details?.name}
                     </p>
                 </div>
             </div>
@@ -79,7 +60,6 @@ export default function Task({
                         handleModalClose={() => setTaskDetailModal(false)}
                         projectParticipants={projectParticipants}
                         onTaskCreate={onTaskCreate}
-                        priorityOptions={priorityOptions}
                         edit={edit}
                         auth={auth}
                     />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { getStatusColor } from "@/utils/statusColor";
 import CreateTaskModal from "../Task/CreateTaskModal";
+import { getStatusColor } from "@/utils/statusColor";
 import TaskListSection from "../Task/TaskListSection";
 
 export default function ProjectsList({
@@ -9,6 +9,7 @@ export default function ProjectsList({
     edit,
     setSelectedProject,
     onProjectUpdated,
+    // status,
 }) {
     const [showTasks, setShowTasks] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -18,20 +19,12 @@ export default function ProjectsList({
         setSelectedModal(id);
     };
 
-    const [priorityOptions, setPriorityOptions] = useState([]);
-    const fetchPriority = async () => {
-        try {
-            const { data } = await axios.get(route("Get_priority_option"));
-            setPriorityOptions(data);
-        } catch (error) {
-            console.error("Error fetching priorities:", error);
-        }
-    };
     const [viewMore, setViewMore] = useState(false);
     const handleViewMore = () => {
         setViewMore(viewMore ? false : true);
     };
     const handleTaskCreate = () => {
+        console.log("handle task create");
         onProjectUpdated();
         setShowTasks(true);
         setViewMore(true);
@@ -48,9 +41,9 @@ export default function ProjectsList({
             console.error("Error fetching users:", error);
         }
     };
+
     useEffect(() => {
         fetchUsers();
-        fetchPriority();
     }, []);
     return (
         <div className="border rounded-xl" key={project.id}>
@@ -86,7 +79,6 @@ export default function ProjectsList({
                             </div>
                             <div className="w-full line-clamp-1">
                                 {project?.name}
-                                <span className="pl-2 text-sm text-gray-600">{`(${project.tasks.length} tasks)`}</span>
                             </div>
                         </div>
 
@@ -97,24 +89,28 @@ export default function ProjectsList({
                             }}
                             className="cursor-pointer text-blue-600 pr-2"
                         >
-                            + Add New Task
+                            + Thêm công việc
                         </div>
                     </div>
                 </div>
-                <div className="w-1/6 border-2 border-y-0 h-12 flex items-center px-2 text-base text-green-600">
-                    {project?.start_date}
-                </div>
-                <div className="w-1/6 border-2 border-y-0 h-12 flex items-center px-2 border-l-0 text-base text-[#c92f54]">
+
+                <div className="w-1/6 border-2 border-y-0 h-12 flex items-center px-2 text-base text-[#c92f54]">
                     {project?.end_date}
                 </div>
                 <div className="w-1/6 border-y-0 h-12 flex items-center px-2 text-base rounded-xl">
                     <p
                         className={`font-bold text-sm p-2 rounded-2xl w-full text-center ${getStatusColor(
-                            project.status_id
+                            project?.status?.id
                         )}`}
                     >
-                        {project?.status_name}
+                        {project?.status?.name}
                     </p>
+                </div>
+                <div
+                    className="w-1/6 border-2 border-y-0 h-12 flex underline items-center justify-center px-2 text-base text-center text-blue-700"
+                    onClick={() => setSelectedProject(project)}
+                >
+                    Xem Chi tiết
                 </div>
             </div>
             {/* Check if user is in the project's participants */}
@@ -126,12 +122,13 @@ export default function ProjectsList({
                                 handleCreateTaskClose={() =>
                                     setShowModal(false)
                                 }
+                                departmentOptions={project.departments}
                                 showModal={showModal}
                                 participants={participants}
                                 handleModalClose={() => setShowModal(false)}
                                 project={project.id}
                                 onTaskCreate={handleTaskCreate}
-                                priorityOptions={priorityOptions}
+                                deadline={project.end_date}
                             />
                         )}
                     </>
@@ -150,7 +147,6 @@ export default function ProjectsList({
                             tasks={project.tasks}
                             projectParticipants={participants}
                             onTaskCreate={onProjectUpdated}
-                            priorityOptions={priorityOptions}
                             edit={edit}
                             auth={auth}
                             viewMore={viewMore}

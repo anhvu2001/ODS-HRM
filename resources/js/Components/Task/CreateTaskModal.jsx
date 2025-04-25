@@ -2,28 +2,44 @@ import React, { useState } from "react";
 import axios from "axios";
 import useTaskValidation from "@/hook/useTaskValidation";
 import Select from "react-select";
+import { useEffect } from "react";
 
 export default function CreateTaskModal({
     showModal,
     handleCreateTaskClose,
     handleModalClose,
     onTaskCreate,
-    participants,
     parent_id,
     project,
-    priorityOptions,
+    departmentOptions,
+    deadline,
 }) {
+    const [taskCategoriesOption, setTaskCategoriesOption] = useState([]);
+
     const initialFormData = {
         name: "",
+        department: null,
+        category_id: null,
         description: "",
-        start_date: "",
         due_date: "",
-        priority_id: "",
-        participant: null,
         parent_id: parent_id,
         project_id: project,
     };
-    const transformOptions = priorityOptions.map((option) => ({
+
+    const fetchTaskCategories = async () => {
+        try {
+            const { data } = await axios.get(
+                route("Get_task_categories_option")
+            );
+            setTaskCategoriesOption(data?.data);
+        } catch (error) {
+            console.error("Error fetching categories:", error);
+        }
+    };
+    useEffect(() => {
+        fetchTaskCategories();
+    }, []);
+    const transformOptions = taskCategoriesOption.map((option) => ({
         value: option.id,
         label: option.name,
     }));
@@ -40,16 +56,16 @@ export default function CreateTaskModal({
             [name]: value,
         }));
     };
-    const handleParticipantChange = (selectedOption) => {
+    const handleDepartmentChange = (selectedOption) => {
         setFormData((prev) => ({
             ...prev,
-            participant: selectedOption ? selectedOption.value : null, // Store only the ID
+            department: selectedOption ? selectedOption.value : null, // Store only the ID
         }));
     };
-    const handlePriorityChange = (selectedOption) => {
+    const handleTaskCategoryChange = (selectedOption) => {
         setFormData((prev) => ({
             ...prev,
-            priority_id: selectedOption ? selectedOption.value : null, // Store only the ID
+            category_id: selectedOption ? selectedOption.value : null, // Store only the ID
         }));
     };
     const submitForm = async (e) => {
@@ -62,6 +78,7 @@ export default function CreateTaskModal({
                     route("Create_task"),
                     formData
                 );
+                console.log(response.data.message);
                 alert(response.data.message || "Task created successfully!");
                 resetForm();
                 handleCreateTaskClose();
@@ -79,9 +96,10 @@ export default function CreateTaskModal({
                 handleCreateTaskClose();
                 handleModalClose();
                 onTaskCreate();
-                setIsCreating(false);
             }
+            setIsCreating(false);
         } catch (error) {
+            console.log(error);
             console.error();
             setIsCreating(false);
 
@@ -91,7 +109,7 @@ export default function CreateTaskModal({
     if (!showModal) return;
     return (
         <div
-            className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-10"
+            className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-10 overflow-y-scroll"
             onClick={handleCreateTaskClose}
         >
             <div
@@ -123,75 +141,75 @@ export default function CreateTaskModal({
                             </p>
                         )}
                     </div>
-                    {/* Dropdown thêm người tham gia */}
                     <div className="mb-4">
                         <label
-                            htmlFor="participant"
+                            htmlFor="department"
                             className="block mb-2 font-medium"
                         >
-                            Add Executor
+                            Select Department
                         </label>
                         <Select
-                            options={participants.map((participant) => ({
-                                value: participant.id,
-                                label: participant.name,
+                            options={departmentOptions?.map((item) => ({
+                                value: item.department_id,
+                                label: item.department.department_name,
                             }))}
                             value={
-                                participants.find(
-                                    (p) => p.id === formData.participant
+                                departmentOptions.find(
+                                    (p) =>
+                                        p.department_id === formData.department
                                 )
                                     ? {
-                                          value: formData.participant,
-                                          label: participants.find(
+                                          value: formData.department,
+                                          label: departmentOptions.find(
                                               (p) =>
-                                                  p.id === formData.participant
-                                          ).name,
+                                                  p.department_id ===
+                                                  formData.department
+                                          ).department.department_name,
                                       }
                                     : null
                             }
-                            onChange={handleParticipantChange}
+                            onChange={handleDepartmentChange}
                             className="basic-select"
                             classNamePrefix="select"
-                            placeholder="Select participants..."
+                            placeholder="Select departments..."
                         />
                         {errors.name && (
                             <p className="text-red-500 text-sm">
-                                {errors.participant}
+                                {errors.department}
                             </p>
                         )}
                     </div>
-                    {/* dropdown chon priority */}
                     <div className="mb-4">
                         <label
-                            htmlFor="priority"
+                            htmlFor="task_category"
                             className="block mb-2 font-medium"
                         >
-                            {`Select ${parent_id ? `Sub` : ``} Task Priority`}
+                            {`Select ${parent_id ? `Sub` : ``} Task Category`}
                         </label>
                         <Select
                             options={transformOptions}
                             value={
                                 transformOptions.find(
-                                    (p) => p.value === formData.priority_id
+                                    (p) => p.value === formData.category_id
                                 )
                                     ? {
-                                          value: formData.priority_id,
+                                          value: formData.category_id,
                                           label: transformOptions.find(
                                               (p) =>
                                                   p.value ===
-                                                  formData.priority_id
+                                                  formData.category_id
                                           ).label,
                                       }
                                     : null
                             }
-                            onChange={handlePriorityChange}
+                            onChange={handleTaskCategoryChange}
                             className="basic-multi-select"
                             classNamePrefix="select"
-                            placeholder="Select priority"
+                            placeholder="Select task categories"
                         />
                         {errors.name && (
                             <p className="text-red-500 text-sm">
-                                {errors.priority_id}
+                                {errors.category_id}
                             </p>
                         )}
                     </div>
@@ -211,36 +229,12 @@ export default function CreateTaskModal({
                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                         ></textarea>
                     </div>
-
-                    <div className="mb-4">
-                        <label
-                            htmlFor="start_date"
-                            className="block mb-2 font-medium"
-                        >
-                            Start Date
-                        </label>
-                        <input
-                            type="date"
-                            id="start_date"
-                            name="start_date"
-                            value={formData.start_date}
-                            onChange={handleChange}
-                            min={new Date().toISOString().split("T")[0]}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
-                        />
-                        {errors.start_date && (
-                            <p className="text-red-500 text-sm">
-                                {errors.start_date}
-                            </p>
-                        )}
-                    </div>
-
                     <div className="mb-4">
                         <label
                             htmlFor="due_date"
                             className="block mb-2 font-medium"
                         >
-                            End Date
+                            Deadline
                         </label>
                         <input
                             type="date"
@@ -252,6 +246,7 @@ export default function CreateTaskModal({
                                 formData.start_date ||
                                 new Date().toISOString().split("T")[0]
                             }
+                            max={deadline}
                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
                         />
                         {errors.due_date && (
@@ -272,6 +267,7 @@ export default function CreateTaskModal({
                         <button
                             type="submit"
                             className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+                            disabled={isCreating}
                         >
                             {`${isCreating ? `Creating...` : `Create`}`}
                         </button>

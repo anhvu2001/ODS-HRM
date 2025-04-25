@@ -16,9 +16,7 @@ return new class extends Migration
             $table->string('name'); // Tạo cột name lưu tên dự án
             $table->text('description')->nullable(); // Tạo cột description lưu mô tả dự án
             $table->foreignId('created_by')->constrained('users'); // Khóa ngoại tới bảng users, lưu ID người tạo dự án
-            $table->date('start_date'); // Tạo cột ngày bắt đầu
             $table->date('end_date'); // Tạo cột ngày kết thúc
-            $table->foreignId('status_id')->constrained('statuses'); // Khóa ngoại tới bảng status
             $table->timestamps(); // Tạo cột created_at và updated_at
         });
     }

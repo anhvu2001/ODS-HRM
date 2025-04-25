@@ -4,7 +4,6 @@ export default function TaskListSection({
     tasks,
     projectParticipants,
     onTaskCreate,
-    priorityOptions,
     edit,
     auth,
     handleViewMore,
@@ -12,19 +11,16 @@ export default function TaskListSection({
 }) {
     return (
         <div className="pb-2 duration-300">
-            {tasks.length > 0 && (
+            {tasks?.length > 0 && (
                 <div className="flex px-2 bg-gray-200 gap-4">
-                    <div className="w-3/12 border-b-2 h-12 flex items-center font-bold">
+                    <div className="w-4/12 border-b-2 h-12 flex items-center font-bold">
                         Tên công việc
                     </div>
                     <div className="w-2/12 border-b-2 h-12 flex items-center font-bold">
-                        Tên người tham gia
+                        Phòng ban tham gia
                     </div>
-                    <div className="w-1/12 border-b-2 border-l-0 border-t-0 h-12 flex items-center justify-center font-bold">
-                        Độ ưu tiên
-                    </div>
-                    <div className="w-2/12 border-b-2 h-12 flex items-center justify-center font-bold">
-                        Ngày bắt đầu
+                    <div className="w-2/12 border-b-2 border-l-0 border-t-0 h-12 flex items-center justify-center font-bold">
+                        Phân loại
                     </div>
                     <div className="w-2/12 border-b-2 h-12 flex items-center justify-center font-bold">
                         Ngày kết thúc
@@ -35,7 +31,7 @@ export default function TaskListSection({
                 </div>
             )}
             {/* render the first element */}
-            {tasks.length > 0 ? (
+            {tasks?.length > 0 ? (
                 <div className="">
                     <div>
                         <Task
@@ -43,7 +39,6 @@ export default function TaskListSection({
                             task={tasks[0]}
                             projectParticipants={projectParticipants}
                             onTaskCreate={onTaskCreate}
-                            priorityOptions={priorityOptions}
                             edit={edit}
                             auth={auth}
                         />
@@ -70,7 +65,6 @@ export default function TaskListSection({
                                 task={task}
                                 projectParticipants={projectParticipants}
                                 onTaskCreate={onTaskCreate}
-                                priorityOptions={priorityOptions}
                                 edit={edit}
                                 auth={auth}
                             />

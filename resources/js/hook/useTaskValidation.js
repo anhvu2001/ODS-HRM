@@ -16,42 +16,24 @@ const useValidation = () => {
             }
             return date.toISOString().split("T")[0];
         };
-
         const todayFormatted = formatDate(today);
-        const startDateFormatted = formatDate(startDate);
         const endDateFormatted = formatDate(endDate);
 
         // Required fields
         // Task name
         if (!formData.name) newErrors.name = "Task name is required.";
-        // task participant
-        if (!formData.participant)
-            newErrors.participant = "Participant is required";
-        //task priority
-        if (!formData.priority_id)
-            newErrors.priority_id = "Priority is required";
-        // task start_date
-        if (!formData.start_date)
-            newErrors.start_date = "Start date is required.";
-        // task end date
+        if (!formData.department)
+            newErrors.department = "Department is required";
+
+        if (!formData.category_id)
+            newErrors.category_id = "Categories is required";
         if (!formData.due_date) newErrors.due_date = "due date is required.";
 
-        // Date validations
-        if (formData.start_date && startDateFormatted < todayFormatted) {
-            newErrors.start_date = "Start date cannot be earlier than today.";
-        }
         if (formData.due_date && endDateFormatted < todayFormatted) {
             newErrors.due_date = "End date cannot be earlier than today.";
         }
-        if (
-            formData.start_date &&
-            formData.due_date &&
-            startDateFormatted > endDateFormatted
-        ) {
-            newErrors.due_date = "End date must be after start date.";
-        }
+
         setErrors(newErrors);
-        // return Object.keys(newErrors).length === 0;
         return Object.keys(newErrors).length;
     };
 

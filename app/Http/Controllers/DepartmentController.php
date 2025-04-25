@@ -78,4 +78,14 @@ class DepartmentController extends Controller
         $id = $request->id;
         Department::find($id)->delete();
     }
+    public function getAllDepartments()
+    {
+        $departments = Department::select('id', 'department_name')->get();
+        $user = User::all();
+        return response()->json([
+            'success' => true,
+            'data' =>  $departments,
+            'message' => 'Fetched all department successfully',
+        ]);
+    }
 }

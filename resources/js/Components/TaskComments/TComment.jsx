@@ -18,6 +18,7 @@ export default function TComment({
     const [fileUploaded, setFileUploaded] = useState(null);
     const [fileDownloaded, setFileDownloaded] = useState([]);
     const [deletedFile, setDeletedFile] = useState();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleFileChange = (event) => {
         const selectedFiles = event.target.files;
@@ -31,6 +32,7 @@ export default function TComment({
             console.log("please add content or file");
             return;
         }
+        setIsSubmitting(true);
         const formData = new FormData();
         formData.append("content", content);
         formData.append("user_id", user);
@@ -51,8 +53,10 @@ export default function TComment({
             setReplyCommentId(null);
             setContent("");
             setFileUploaded(null);
+            setIsSubmitting(false);
         } catch (error) {
             console.error("Error creating comment:", error);
+            setIsSubmitting(false);
         }
     };
     const handleClickEdit = async () => {
@@ -75,6 +79,7 @@ export default function TComment({
             alert("vui lòng nhập file hoặc nội dung");
             return;
         }
+        setIsSubmitting(true);
         const formData = new FormData();
         formData.append("content", editContent);
         formData.append("user_id", user);
@@ -102,8 +107,10 @@ export default function TComment({
             setEditCommentId(null);
             setEditContent("");
             setDeletedFile(null);
+            setIsSubmitting(false);
         } catch (error) {
             console.error("error editting comment:", error);
+            setIsSubmitting(false);
         }
     };
     const handleDelete = async (commentId) => {
@@ -278,8 +285,9 @@ export default function TComment({
                         <button
                             type="submit"
                             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg h-fit"
+                            disabled={isSubmitting}
                         >
-                            Submit
+                            {`${isSubmitting ? `Submitting` : `Submit`}`}
                         </button>
                         <button
                             onClick={() => setReplyCommentId(null)}
@@ -335,8 +343,9 @@ export default function TComment({
                         <button
                             type="submit"
                             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg h-fit"
+                            disabled={isSubmitting}
                         >
-                            Submit
+                            {`${isSubmitting ? `Submitting` : `Submit`}`}
                         </button>
                         <button
                             onClick={() => setEditCommentId(null)}

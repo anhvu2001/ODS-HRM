@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -16,6 +17,13 @@ return new class extends Migration
             $table->string("department_name");
             $table->timestamps();
         });
+        DB::table("departments")->insert(
+            [
+                ["department_name" => "Content", 'created_at' => now(), 'updated_at' => now()],
+                ["department_name" => "Design", 'created_at' => now(), 'updated_at' => now()],
+                ["department_name" => "Account", 'created_at' => now(), 'updated_at' => now()],
+            ]
+        );
     }
 
     /**

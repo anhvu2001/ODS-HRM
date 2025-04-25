@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('project_participants', function (Blueprint $table) {
+        Schema::create('departments_participate_project', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('role_id')->constrained('project_roles')->onDelete('cascade'); // Khóa ngoại tới bảng roles
+            $table->foreignId('department_id')->constrained('departments')->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('project_participants');
+        Schema::dropIfExists('table_departments_participate_project');
     }
 };

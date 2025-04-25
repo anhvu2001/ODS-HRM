@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Projects;
 
 use App\Http\Controllers\Controller;
+use App\Models\Department;
+use App\Models\DepartmentsProjects;
 use App\Models\Project;
 use App\Models\ProjectParticipant;
 use App\Models\Status;
+use App\Models\StatusDetails;
 use App\Models\TaskUser;
 use Beste\Json;
 use Illuminate\Http\Request;
@@ -19,43 +22,34 @@ class ProjectController extends Controller
     }
     public function create(Request $request)
     {
+
         // Validate dữ liệu từ form
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'start_date' => 'required|date|after_or_equal:today',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'participants' => 'nullable|array',
-            'participants.*' => 'exists:users,id', // Đảm bảo các ID người tham gia là hợp lệ
+            'end_date' => 'required|date|',
+            'project_departments' => 'required'
         ]);
 
         // Lưu dữ liệu vào bảng projects
         $project = Project::create([
             'name' => $validated['name'],
             'description' => $validated['description'],
-            'start_date' => $validated['start_date'],
             'end_date' => $validated['end_date'],
             'created_by' => auth()->id(), // Người tạo (user hiện tại)
-            'status_id' => 1, // Mặc định trạng thái là 1
+            'status' => 1, // Mặc định trạng thái là 0 chưa hoàn thành 
         ]);
-
         // Lấy danh sách người tham gia
-        $participantIds = $validated['participants'];
+        $projectDepartmentIds = $validated['project_departments'];
 
         // Kiểm tra nếu người tạo chưa có trong danh sách người tham gia thì thêm vào
-        if (!in_array(auth()->id(), $participantIds)) {
-            $participantIds[] = auth()->id();
-        }
-
         // Lưu người tham gia vào bảng project_participants
-        foreach ($participantIds as $index => $userId) {
-            ProjectParticipant::create([
+        foreach ($projectDepartmentIds as $departmentsId) {
+            DepartmentsProjects::create([
                 'project_id' => $project->id,
-                'user_id' => $userId,
-                'role_id' => $userId == auth()->id() ? 1 : 2, // Gán role 1 cho người tạo, role 2 cho người tham gia
+                'department_id' => $departmentsId,
             ]);
         }
-
         return response()->json(['message' => 'Project created successfully!'], 201);
     }
     public function update(Request $request, $id)
@@ -64,11 +58,8 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'status' => 'required|exists:statuses,id', // ID trạng thái phải tồn tại trong bảng statuses
-            'participants' => 'nullable|array',
-            'participants.*' => 'exists:users,id', // Mỗi participant phải là ID hợp lệ trong bảng users
+            'end_date' => 'required|date|after_or_equal:today',
+            'status' => 'required|exists:status_details,id', // ID trạng thái phải tồn tại trong bảng statuses
         ]);
 
         try {
@@ -78,32 +69,10 @@ class ProjectController extends Controller
             $project->update([
                 'name' => $validated['name'],
                 'description' => $validated['description'],
-                'start_date' => $validated['start_date'],
+                // 'start_date' => $validated['start_date'],
                 'end_date' => $validated['end_date'],
-                'status_id' => $validated['status'],
+                'status' => $validated['status'],
             ]);
-
-            // Xử lý danh sách participants
-            if (isset($validated['participants'])) {
-                // Lấy danh sách người tham gia mới
-                $newParticipantIds = $validated['participants'];
-                // Kiểm tra nếu người tạo chưa có trong danh sách thì thêm vào
-                if (!in_array(auth()->id(), $newParticipantIds)) {
-                    $newParticipantIds[] = auth()->id();
-                }
-
-                // Xóa tất cả người tham gia cũ
-                ProjectParticipant::where('project_id', $project->id)->forceDelete();
-
-                // Thêm lại danh sách người tham gia mới
-                foreach ($newParticipantIds as $userId) {
-                    ProjectParticipant::create([
-                        'project_id' => $project->id,
-                        'user_id' => $userId,
-                        'role_id' => $userId == auth()->id() ? 1 : 2, // Gán role 1 cho người tạo, role 2 cho thành viên
-                    ]);
-                }
-            }
 
             return response()->json([
                 'success' => true,
@@ -139,104 +108,73 @@ class ProjectController extends Controller
 
     public function getProjectsByUser(Request $request)
     {
-        $projects = Project::select(
-            'projects.id',
-            'projects.name',
-            'projects.description',
-            'projects.start_date',
-            'projects.end_date',
-            'statuses.name as status_name',
-            'statuses.id as status_id',
-            'projects.created_by'
-        )
-            ->join('statuses', 'projects.status_id', '=', 'statuses.id') // Liên kết với bảng statuses
-            ->join('project_participants', 'projects.id', "=", "project_participants.project_id")
-            ->with(['participants.user', 'participants.role', 'tasks.taskUser.user', 'tasks.status', 'tasks.creator']) // Tải trước thông tin người tham gia
-            ->where("project_participants.user_id", auth()->id())
-            ->whereNull("project_participants.deleted_at")
-            ->orderBy("projects.created_at", "desc")
-            // tải thêm task của project và người làm task
-            ->skip(5 * $request->page)
-            ->take(5)
-            ->get();
 
-        // Định dạng dữ liệu trả về
-        $formattedProjects = $projects->map(function ($project) {
-            return [
-                'id' => $project->id,
-                'name' => $project->name,
-                'description' => $project->description,
-                'start_date' => $project->start_date,
-                'end_date' => $project->end_date,
-                'status_name' => $project->status_name,
-                'status_id' => $project->status_id,
-                'participants' => $project->participants->map(function ($participant) {
-                    return [
-                        'id' => $participant->user->id,
-                        'name' => $participant->user->name,
-                        'role' => $participant->role->name,
-                    ];
-                }),
-                'created_by' => $project->created_by,
-                // tai truoc task cua project
-                'tasks' => $project->tasks
-            ];
-        });
-        $hasMore = $projects->count() < 5 ? false : true;
-        return response()->json(['projects' => $formattedProjects, 'hasMore' => $hasMore]);
+        $projects = Project::with(['departments.department', 'tasks.category', 'tasks.department', 'tasks.creator', 'tasks.assignee', 'tasks.statusDetails'])
+            ->skip($request->page * 5)
+            ->take(6)
+            ->orderBy('updated_at', 'desc')
+            ->get();
+        $hasMore = $projects->count() < 6 ? false : true;
+        $formattedProject = $projects->take(5)->map(
+            function ($project) {
+                return [
+                    'id' => $project->id,
+                    'name' => $project->name,
+                    'created_by' => $project->created_by,
+                    'description' => $project->description,
+                    'end_date' => $project->end_date,
+                    'departments' => $project->departments,
+                    'status' => $project->statusDetails,
+                    'tasks' => $project->tasks
+                        ->filter(function ($task) {
+                            if ($task->step_id == 1) {
+                                return $task;
+                            }
+                        })->values()->toArray()
+                ];
+            }
+        );
+        return response()->json(['projects' => $formattedProject, 'hasMore' => $hasMore]);
     }
     public function getnPageProjects(Request $request)
     {
         $page = $request->page ? $request->page : 1;
-        $projects = Project::select(
-            'projects.id',
-            'projects.name',
-            'projects.description',
-            'projects.start_date',
-            'projects.end_date',
-            'statuses.name as status_name',
-            'statuses.id as status_id',
-            'projects.created_by'
-        )
-            ->join('statuses', 'projects.status_id', '=', 'statuses.id') // Liên kết với bảng statuses
-            ->join('project_participants', 'projects.id', "=", "project_participants.project_id")
-            ->with(['participants.user', 'participants.role', 'tasks.taskUser.user', 'tasks.status', 'tasks.creator']) // Tải trước thông tin người tham gia
-            ->where("project_participants.user_id", auth()->id())
-            ->whereNull("project_participants.deleted_at")
-            ->orderBy("projects.created_at", "desc")
-            // tải thêm task của project và người làm task
-            ->take(5 * $page)
+        $projects = Project::with(['departments.department', 'tasks.category', 'tasks.department', 'tasks.creator', 'tasks.assignee', 'tasks.statusDetails'])
+            ->take(5 * $page + 1)
+            ->orderBy('updated_at', 'desc')
             ->get();
-        // Định dạng dữ liệu trả về
-        $formattedProjects = $projects->map(function ($project) {
-            return [
-                'id' => $project->id,
-                'name' => $project->name,
-                'description' => $project->description,
-                'start_date' => $project->start_date,
-                'end_date' => $project->end_date,
-                'status_name' => $project->status_name,
-                'status_id' => $project->status_id,
-                'participants' => $project->participants->map(function ($participant) {
-                    return [
-                        'id' => $participant->user->id,
-                        'name' => $participant->user->name,
-                        'role' => $participant->role->name,
-                    ];
-                }),
-                // tai truoc task cua project
-                'tasks' => $project->tasks,
-                "created_by" => $project->created_by
-            ];
-        });
-        $hasMore = $projects->count() < 5 * $request->page ? false : true;
-        return response()->json(['projects' => $formattedProjects, 'hasMore' => $hasMore]);
+        $hasMore = $projects->count() < 5 * $page + 1 ? false : true;
+        $formattedProject = $projects->take(5 * $page)->map(
+            function ($project) {
+                return [
+                    'id' => $project->id,
+                    'name' => $project->name,
+                    'created_by' => $project->created_by,
+                    'description' => $project->description,
+                    'end_date' => $project->end_date,
+                    'departments' => $project->departments,
+                    'status' => $project->statusDetails,
+                    'tasks' => $project->tasks
+                        ->filter(function ($task) {
+                            if ($task->step_id == 1) {
+                                return $task;
+                            }
+                        })->values()->toArray()
+                ];
+            }
+        );
+        return response()->json(['projects' => $formattedProject, 'hasMore' => $hasMore]);
     }
 
     // project page load more button
     public function getAllStatus()
     {
-        $statuses = Status::select('id', 'name')->get();
+        $statuses = StatusDetails::select('id', 'name')->get();
         return response()->json($statuses);
+    }
+    public function getDeadline(Request $request, $id)
+    {
+        $project = Project::find($id);
+        return response()->json($project['end_date']);
     }
 }

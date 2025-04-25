@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PriorityLevel extends Model
+class TaskCategory extends Model
 {
     use HasFactory;
-        protected $table = 'priority_levels';
-        protected $fillable = ['name'];
+    protected $table = 'task_categories';
+    protected $fillable = ['name'];
 }

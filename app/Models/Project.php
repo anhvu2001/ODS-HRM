@@ -14,12 +14,6 @@ class Project extends Model
         parent::boot();
         // cascade delete
         static::deleting(function (Project $project) {
-            // delete project participants relationship
-            if ($project->participants->isNotEmpty()) {
-                foreach ($project->participants as $participant) {
-                    $participant->delete();
-                }
-            }
             // delete project tasks relationship
             if ($project->tasks->isNotEmpty()) {
                 foreach ($project->tasks as $task) {
@@ -30,7 +24,7 @@ class Project extends Model
     }
     protected $table = 'projects';
     // Xác định các cột có thể được gán giá trị
-    protected $fillable = ['name', 'description', 'created_by', 'start_date', 'end_date', 'status_id'];
+    protected $fillable = ['name', 'description', 'created_by', 'end_date', 'status'];
 
     // Quan hệ với bảng User (người tạo dự án)
     public function user()
@@ -38,17 +32,17 @@ class Project extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
     // Quan hệ với bảng Status (trạng thái dự án)
-    public function status()
+    public function statusDetails()
     {
-        return $this->belongsTo(Status::class, 'status_id');
+        return $this->belongsTo(StatusDetails::class, 'status');
     }
     // Phương thức quan hệ đến bảng ProjectParticipant
-    public function participants()
-    {
-        return $this->hasMany(ProjectParticipant::class, 'project_id');
-    }
     public function tasks()
     {
-        return $this->hasMany(Task::class, "project_id")->orderBy('lft');
+        return $this->hasMany(Task::class, "project_id");
+    }
+    public function departments()
+    {
+        return $this->hasMany(DepartmentsProjects::class, "project_id");
     }
 }

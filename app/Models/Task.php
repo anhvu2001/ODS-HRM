@@ -12,7 +12,6 @@ class Task extends Model implements Auditable
 {
     use \OwenIt\Auditing\Auditable;
     use HasFactory,
-        NodeTrait,
         SoftDeletes;
     protected $table = 'tasks';
 
@@ -21,15 +20,19 @@ class Task extends Model implements Auditable
         'project_id',
         'name',
         'description',
+        'next_assignee_id',
+        'status',
+        'category_id',
+        'step_id',
+        'step_order',
         'created_by',
-        'status_id',
-        'priority_id',
-        'start_date',
         'due_date',
-        'lft',
-        'rgt',
-        'depth',
-        'qc_status'
+        'qc_status',
+        'department_id',
+        'qc_note',
+        'parent_task_id',
+        'task_step_flow',
+        'feedback'
     ];
 
     // Liên kết đến task cha
@@ -44,10 +47,7 @@ class Task extends Model implements Auditable
                     $comment->delete();
                 }
             }
-            // delete task users relationship
-            if ($task->taskUser) {
-                $task->taskUser->delete();
-            }
+
             // delete sub-tasks
             if ($task->children->isNotEmpty()) {
                 foreach ($task->children as $child) {
@@ -67,10 +67,15 @@ class Task extends Model implements Auditable
         return $this->belongsTo(Task::class, 'parent_id');
     }
 
-    // Liên kết đến các task con
+    // // Liên kết đến các task con
     public function children()
     {
         return $this->hasMany(Task::class, 'parent_id');
+    }
+
+    public function directChildren()
+    {
+        return $this->hasOne(Task::class, 'parent_id');
     }
 
     // Liên kết đến người tạo
@@ -80,23 +85,23 @@ class Task extends Model implements Auditable
     }
 
     // Liên kết đến trạng thái
-    public function status()
-    {
-        return $this->belongsTo(Status::class, 'status_id');
-    }
+    // public function status()
+    // {
+    //     return $this->belongsTo(Status::class, 'step_id');
+    // }
 
     // Liên kết đến độ ưu tiên
-    public function priority()
-    {
-        return $this->belongsTo(PriorityLevel::class, 'priority_id');
-    }
+    // public function priority()
+    // {
+    //     return $this->belongsTo(PriorityLevel::class, 'priority_id');
+    // }
     // Phương thức này nếu cần tùy chỉnh các trường lưu vào audit
     public function getAuditData()
     {
         return [
             'name' => $this->name,
             'description' => $this->description,
-            'status_id' => $this->status_id,
+            'step_id' => $this->step_id,
         ];
     }
     // dvh 11/02/2025
@@ -105,24 +110,24 @@ class Task extends Model implements Auditable
         return $this->belongsTo(Project::class, "project_id");
     }
     // lấy cột lft trong database làm left
-    public function getLftName()
-    {
-        return 'lft';  // Change _lft to lft
-    }
-    // lấy cột rgt trong database làm right
-    public function getRgtName()
-    {
-        return 'rgt';  // Change _rgt to rgt
-    }
+    // public function getLftName()
+    // {
+    //     return 'lft';  // Change _lft to lft
+    // }
+    // // lấy cột rgt trong database làm right
+    // public function getRgtName()
+    // {
+    //     return 'rgt';  // Change _rgt to rgt
+    // }
     // lấy cột parent_id làm parent 
-    public function getParentIdName()
-    {
-        return 'parent_id';
-    }
-    public function taskUser()
-    {
-        return $this->hasOne(TaskUser::class, "task_id");
-    }
+    // public function getParentIdName()
+    // {
+    //     return 'parent_id';
+    // }
+    // public function taskUser()
+    // {
+    //     return $this->hasOne(TaskUser::class, "task_id");
+    // }
     public function taskComments()
     {
         return $this->hasMany(TaskComment::class, "task_id");
@@ -131,4 +136,39 @@ class Task extends Model implements Auditable
     {
         return $this->hasMany(ProjectFile::class, "task_id");
     }
+    public function department()
+    {
+        return $this->belongsTo(Department::class, "department_id");
+    }
+    public function category()
+    {
+        return $this->belongsTo(TaskCategory::class, "category_id");
+    }
+    public function assignee()
+    {
+        return $this->belongsTo(User::class, 'next_assignee_id');
+    }
+    public function statusDetails()
+    {
+        return $this->belongsTo(StatusDetails::class, 'status');
+    }
+    public function stepDetail()
+    {
+        return $this->belongsTo(StepDetail::class, 'step_id');
+    }
+    // public function findFirstTaskByDepartmentRecursive($department)
+    // {
+    //     //
+    //     $parent = $this->parent;
+    //     if (!$parent) {
+    //         return null;
+    //     }
+    //     $parent_department = $parent['department_id'];
+    //     if ($parent_department !== $department) {
+    //         return $parent->findFirstTaskByDepartmentRecursive($department);
+    //     } else {
+    //         return $parent->parent;
+    //     }
+    //     // $parent_assignee=$parent->assignee();
+    // }
 }

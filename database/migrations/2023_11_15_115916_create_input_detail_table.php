@@ -8,7 +8,7 @@ class CreateInputDetailTable extends Migration
 {
     public function up()
     {
-        Schema::create('input_detail', function (Blueprint $table) {
+        Schema::create('input_details', function (Blueprint $table) {
             $table->id();
             $table->string('input_name');
             $table->string('input_type');
