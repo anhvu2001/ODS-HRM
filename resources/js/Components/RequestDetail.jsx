@@ -125,8 +125,7 @@ const RequestDetail = ({
                                                       input.input_name === key
                                               )?.input_description}
                                     </td>
-
-                                    <td className="m-3 border p-2">
+                                    <td className="m-3 border p-2 whitespace-pre-wrap">
                                         {value === null ? (
                                             ""
                                         ) : key === "follower" ||

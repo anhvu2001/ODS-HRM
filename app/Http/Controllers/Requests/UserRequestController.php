@@ -276,7 +276,7 @@ class UserRequestController extends Controller
         $arrayOriginal = json_decode($requestContentOriginal, true);
         // Cập nhật các trường 
         foreach ($requestAll as $key => $value) {
-            if ($key !== 'id' && $key !== 'request_name') {
+            if ($key !== 'id') {
                 $arrayOriginal[$key] = $value; // Cập nhật giá trị mới cho các trường
             }
         }
