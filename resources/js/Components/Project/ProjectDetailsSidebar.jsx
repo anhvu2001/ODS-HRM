@@ -10,18 +10,16 @@ export default function ProjectDetailsSidebar({
 }) {
     const [isUpdating, setIsUpdating] = useState(false);
     const [statues, setStatues] = useState([]);
-    const { name, description, end_date, status_id } = project;
+    const { name, description, end_date, status } = project;
     const [updatedProject, setUpdatedProject] = useState({
         name: name,
         description: description,
         end_date: end_date,
-        status: status_id,
+        status: status.id,
     });
-
     const handleUpdate = async () => {
         setIsUpdating(true);
         try {
-            console.log(updatedProject);
             await axios.put(
                 route("Update_Project", project.id),
                 updatedProject
@@ -32,7 +30,6 @@ export default function ProjectDetailsSidebar({
         } catch (error) {
             const errorMessage =
                 error.response?.data?.message || "Failed to update project.";
-            console.error(errorMessage, error);
             alert(errorMessage);
         } finally {
             setIsUpdating(false);

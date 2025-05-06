@@ -30,13 +30,14 @@ export default function CkeditorComponent({
                         setLoading(false);
                     });
                 }
-
-                editor?.on("change", function () {
-                    setFormData((prevFormData) => ({
-                        ...prevFormData,
-                        description: editor.getData(),
-                    }));
-                });
+                if (!readOnly) {
+                    editor?.on("change", function () {
+                        setFormData((prevFormData) => ({
+                            ...prevFormData,
+                            description: editor.getData(),
+                        }));
+                    });
+                }
             }
         }
 

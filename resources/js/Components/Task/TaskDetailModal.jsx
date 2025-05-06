@@ -29,6 +29,7 @@ export default function TaskDetailModal({
     const [showNoteModal, setShowNoteModal] = useState(false);
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
     const [deadline, setDeadline] = useState(null);
+    const [processing, setProcessing] = useState(false);
 
     const fetchParentTask = async () => {
         try {
@@ -209,16 +210,15 @@ export default function TaskDetailModal({
                 formDataObject
             );
             alert(response.data.message);
-            console.log(response.data.message);
             setUpdating(false);
             onTaskCreate();
         } catch (error) {
-            console.error();
+            setUpdating(false);
         }
     };
     const handleComplete = async () => {
         try {
-            setUpdating(true);
+            setProcessing(true);
             const formDataObject = new FormData();
             formDataObject.append("name", formData.name);
             formDataObject.append("description", formData.description);
@@ -235,6 +235,7 @@ export default function TaskDetailModal({
             setUpdating(false);
             onTaskCreate();
         } catch (error) {
+            console.error();
             setUpdating(false);
         }
     };
@@ -301,7 +302,6 @@ export default function TaskDetailModal({
             onTaskCreate();
         } catch (error) {
             console.error();
-            console.log(error);
             alert("Hãy nhập ghi chú");
         }
     };
@@ -316,7 +316,7 @@ export default function TaskDetailModal({
             alert("Failed to delete task");
         }
     };
-    const renderQCstatus = () => {
+    const renderQCstatus = (task) => {
         if (task.qc_status === 1) {
             return (
                 <div className="text-green-600 font-bold text-xl">
@@ -422,12 +422,12 @@ export default function TaskDetailModal({
                 <h2 className="text-xl font-bold mb-2">
                     Chi tiết công việc:
                     <span className="text-gray-600 text-sm">
-                        (tạo bởi {task.creator?.name})
+                        {` (tạo bởi ${task.creator?.name})`}
                     </span>
                 </h2>
 
                 {/* hiển thị trạng thái qc */}
-                {renderQCstatus()}
+                {renderQCstatus(task)}
                 {task.feedback && (
                     <div>
                         <div className="font-bold text-yellow-600">
@@ -489,7 +489,6 @@ export default function TaskDetailModal({
 
                     <div className="flex flex-col gap-4">
                         {task.qc_status !== 1 && edit && (
-                            // auth.user.id === task.next_assignee_id &&
                             <>
                                 <label className="block font-bold">
                                     File upload
@@ -777,10 +776,10 @@ export default function TaskDetailModal({
                                                     type="button"
                                                     className="bg-blue-500 text-white px-4 py-2 rounded"
                                                     onClick={handleComplete}
-                                                    disabled={updating}
+                                                    disabled={processing}
                                                 >
-                                                    {updating
-                                                        ? "processing..."
+                                                    {processing
+                                                        ? "Processing..."
                                                         : "Task complete"}
                                                 </button>
                                             </div>
@@ -823,6 +822,7 @@ export default function TaskDetailModal({
                                 setShowParent(false);
                             }}
                             auth={auth}
+                            renderQCstatus={renderQCstatus}
                         />
                     )}
                 </div>
@@ -892,7 +892,7 @@ export default function TaskDetailModal({
                                     onChange={(e) => {
                                         setFeedback(e.target.value);
                                     }}
-                                    placeholder="lí do từ chối"
+                                    placeholder="Nội dung feedback của khách"
                                 />
                                 <button
                                     type="button"

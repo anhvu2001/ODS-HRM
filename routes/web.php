@@ -154,8 +154,6 @@ Route::middleware('auth')->group(function () {
         Route::get("/get-priority", [TaskController::class, 'getPriorityOption'])->name("Get_priority_option");
         Route::post('/update/{id}', [TaskController::class, 'update'])->name('Update_task');
         Route::get('/user-tasks', [TaskController::class, 'getUserTasks'])->name('User_joined_tasks');
-        // Route::get("/get-more-task/{id}", [TaskController::class, 'getMoreTask'])->name("get_more_task");
-        // Route::get("/get-task-after-update/{id}", [TaskController::class, 'getTaskAfterUpdate'])->name('get_task_on_update');
         // lấy file cho task
         Route::get("/get-task-files/{id}", [TaskController::class, 'getTaskFiles'])->name("get_all_task_file");
         // Route::get("/get-updated-my-task/{id}", [TaskController::class, 'getUpdatedTask'])->name("get_update_my_task");
@@ -179,29 +177,29 @@ Route::middleware('auth')->group(function () {
         Route::get('/get-all-status', [ProjectController::class, 'getAllStatus'])->name('Get_All_Status');
     });
     // });
-
-    Route::middleware('check.accountLeader')->group(function () {
+    // route của phòng account
+    Route::middleware('check.account')->group(function () {
+        Route::prefix('/tasks')->group(function () {
+            Route::post("/create-new-task", [TaskController::class, 'createMainTask'])->name("Create_task");
+            Route::post("/create-new-sub-task", [TaskController::class, 'createSubTask'])->name("Create_sub_task");
+            Route::delete('/delete/{id}', [TaskController::class, 'delete'])->name("Delete_task");
+            Route::get("/get-account-tasks", [TaskController::class, 'getAccountTask'])->name("get_account_task");
+            Route::post("/send-feedback/{id}", [TaskController::class, 'taskFeedback'])->name("send_task_feedback");
+            Route::post("/complete-task/{id}", [TaskController::class, 'accountCompleteTask'])->name("account-complete-task");
+            Route::get("/account-task-history", [TaskController::class, 'accountTaskHistory'])->name('get_account_task_history');
+        });
         Route::prefix('/project')->group(function () {
             Route::post('/create', [ProjectController::class, 'create'])->name('Create_Project');
             Route::get('/list-projects-by-user', [ProjectController::class, 'getProjectsByUser'])->name('List_Project_By_User');
             Route::get('/{projectId}/participants', [ProjectParticipantController::class, 'getParticipantsByProjectId'])->name('Get_ParticipantsByProjectId');;
             Route::put('/update/{projectId}', [ProjectController::class, 'update'])->name('Update_Project');
             Route::delete('/delete/{projectId}', [ProjectController::class, 'delete'])->name('Delete_Project');
-            // 17/02/2025 dvh lấy project thuộc về user 
             Route::get('/user-projects', [ProjectController::class, 'getUserProjects'])->name('User_joined_projects');
             Route::get('/project-changed', [ProjectController::class, 'getnPageProjects'])->name("get_n_page_project");
             Route::get('/get-deadline/{id}', [ProjectController::class, "getDeadline"])->name('get_project_deadline');
         });
-        Route::prefix('/tasks')->group(function () {
-            Route::post("/create-new-task", [TaskController::class, 'createMainTask'])->name("Create_task")->middleware('check.role:1,99');
-            Route::post("/create-new-sub-task", [TaskController::class, 'createSubTask'])->name("Create_sub_task")->middleware('check.role:1,99');
-            Route::delete('/delete/{id}', [TaskController::class, 'delete'])->name("Delete_task")->middleware('check.role:1,99');
-            Route::get("/get-account-tasks", [TaskController::class, 'getAccountTask'])->name("get_account_task");
-            Route::post("/send-feedback/{id}", [TaskController::class, 'taskFeedback'])->name("send_task_feedback");
-            Route::post("/complete-task/{id}", [TaskController::class, 'accountCompleteTask'])->name("account-complete-task");
-            Route::get("/account-task-history", [TaskController::class, 'accountTaskHistory'])->name('get_account_task_history');
-        });
     });
+
     // task comment
     Route::prefix('/taskComments')->group(function () {
         Route::post("/create", [TaskCommentController::class, "create"])->name("create_task_comments");

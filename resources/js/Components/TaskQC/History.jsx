@@ -2,17 +2,15 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { remainingDay } from "@/utils/calculateDay";
 import TaskDetailModal from "../Task/TaskDetailModal";
+import { getStatusColor } from "@/utils/statusColor";
 export default function History({ auth }) {
     const [hasMore, setHasMore] = useState(false);
     const [page, setPage] = useState(0);
-    const [projects, setProjects] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [selectedTask, setSelectedTask] = useState(null);
-
     const fetchQCHistory = async () => {
         try {
             const response = await axios.get(route("get_qc_history", { page }));
-            console.log(response.data.qc_task_history);
             setTasks(response.data.qc_task_history);
             setPage(page + 1);
             setHasMore(response.data.has_more);
@@ -20,63 +18,78 @@ export default function History({ auth }) {
             console.error("Error fetching projects:", error);
         }
     };
+
     useEffect(() => {
         fetchQCHistory();
     }, []);
+    console.log(tasks);
+
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex mt-4 border h-12 items-center gap-2 bg-slate-200 px-2">
-                <div className="w-1/6 font-bold line-clamp-2">
-                    Tên công việc
+            <div className="w-full flex gap-4 px-4 border h-12 bg-slate-200">
+                <div className="font-bold content-center w-[50px] flex-shrink-0">
+                    ID
                 </div>
-                <div className="w-1/6 font-bold line-clamp-2">Phân loại</div>
-                <div className="w-1/6 font-bold">Người thực hiện</div>
-                <div className="w-1/6 font-bold text-center">Deadline</div>
-                <div className="w-1/6 font-bold text-center">Ngày còn lại</div>
-                <div className="w-1/6 text-center font-bold">Trạng thái</div>
+                <div className="w-3/12 font-bold content-center">
+                    Tên Công Việc
+                </div>
+                <div className="w-2/12 font-bold content-center">Tên Dự Án</div>
+                <div className="w-1/12 text-center font-bold content-center">
+                    Phân loại
+                </div>
+                <div className="w-2/12 text-center font-bold content-center">
+                    Deadline
+                </div>
+                <div className="w-2/12 text-center font-bold content-center">
+                    Ngày còn lại
+                </div>
+
+                <div className="w-2/12 text-center font-bold content-center">
+                    Trạng thái
+                </div>
             </div>
             <div>
                 {tasks.map((item) => (
                     <div key={item.id}>
                         <div
-                            className="flex gap-2 cursor-pointer bg-amber-100 hover:bg-amber-200 h-[50px] py-1 px-2"
+                            className="flex w-full gap-4 px-4 cursor-pointer rounded duration-150 hover:bg-amber-200 h-[60px] py-1"
                             onClick={() => {
                                 setSelectedTask(
                                     selectedTask == item.id ? null : item.id
                                 );
                             }}
                         >
-                            <div className="w-1/6 truncate content-center">
+                            <div className="content-center w-[50px] flex-shrink-0">
+                                {item.id}
+                            </div>
+                            <div className="w-3/12 line-clamp-2 content-center">
                                 {item.name}
                             </div>
-                            <div className="w-1/6 truncate content-center">
+                            <div className="w-2/12 line-clamp-2 content-center">
+                                {item?.project?.name}
+                            </div>
+                            <div className="w-1/12  content-center text-center">
                                 {item.category.name}
                             </div>
-                            <div className="w-1/6 content-center">
-                                {item?.assignee.name}
-                            </div>
-
-                            <div className="w-1/6 text-red-600 text-center content-center">
+                            <div className="w-2/12 text-center text-red-600  content-center">
                                 {item.due_date}
                             </div>
-                            <div className="w-1/6 text-center content-center">
+                            <div
+                                className={`w-2/12 text-center content-center ${
+                                    item.due_date == 0
+                                        ? "text-red-600"
+                                        : "text-black"
+                                }`}
+                            >
                                 {remainingDay(item.due_date)} ngày
                             </div>
-                            <div className="w-1/6 flex justify-center content-center">
+                            <div className="w-2/12 h-12 content-center">
                                 <p
-                                    className={`font-bold w-full text-sm p-2 rounded-2xl text-center self-center ${
-                                        item.qc_status === 1
-                                            ? "bg-green-300 text-green-800"
-                                            : item.qc_status === 0
-                                            ? "bg-red-200 text-red-800"
-                                            : "bg-gray-200 text-gray-800"
-                                    }`}
+                                    className={`font-bold w-full text-sm p-2 rounded-2xl text-center self-center ${getStatusColor(
+                                        item.status
+                                    )}`}
                                 >
-                                    {item.qc_status === 1
-                                        ? "Approved"
-                                        : item.qc_status === 0
-                                        ? "Rejected"
-                                        : "Not Completed"}
+                                    {item.status_details.name}
                                 </p>
                             </div>
                         </div>

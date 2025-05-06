@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import MyTaskListSection from "../Task/MyTaskListSection";
 
-export default function AccountTaskHistory({ auth, edit, statusOptions }) {
-    console.log(1);
-
+export default function AccountTaskHistory({ auth }) {
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(false);
     const [tasks, setTasks] = useState([]);
@@ -40,7 +38,7 @@ export default function AccountTaskHistory({ auth, edit, statusOptions }) {
                         <div className="w-2/12 font-bold content-center">
                             Tên Dự Án
                         </div>
-                        <div className="w-2/12 text-center font-bold content-center">
+                        <div className="w-1/12 text-center font-bold content-center">
                             Phân loại
                         </div>
                         <div className="w-2/12 text-center font-bold content-center">
@@ -51,7 +49,7 @@ export default function AccountTaskHistory({ auth, edit, statusOptions }) {
                         </div>
 
                         <div className="w-2/12 text-center font-bold content-center">
-                            Trạng thái QC
+                            Trạng thái
                         </div>
                     </div>
                     <MyTaskListSection

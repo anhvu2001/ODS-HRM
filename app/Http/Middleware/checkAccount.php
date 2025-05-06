@@ -7,7 +7,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class checkAccountLeader
+class checkAccount
 {
     /**
      * Handle an incoming request.
@@ -16,14 +16,14 @@ class checkAccountLeader
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $cur_user_id = auth()->id();
+        $curUser = auth()->user();
         $account_department = Department::find(3);
-        $manager = $account_department->manager;
+        // $manager = $account_department->manager;
         if (!$account_department) {
             abort(404, 'Phòng ban không tồn tại');
         }
-        if ($cur_user_id !== $manager) {
-            abort(403, 'bạn không có quyền xem trang này');
+        if ($curUser['department'] !== 3) {
+            abort(404, 'Bạn không thuộc phòng account');
         }
         return $next($request);
     }

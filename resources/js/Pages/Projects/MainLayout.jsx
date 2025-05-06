@@ -18,10 +18,7 @@ let sidebarItems = [
 ];
 
 export default function MainLayout({ auth }) {
-    const defaultComponent =
-        // auth.user.role != 1 && auth.user.role != 99 ? "mytask" : "projects";
-        auth.user.department !== 3 ? "mytask" : "projects";
-
+    const defaultComponent = auth.user.department !== 3 ? "mytask" : "projects";
     const [activeComponent, setActiveComponent] = useState(defaultComponent);
 
     const handleSidebarClick = (component) => {
@@ -29,7 +26,7 @@ export default function MainLayout({ auth }) {
     };
     let filterSideBarItems = [];
     // auth.user.role != 1 && auth.user.role != 99
-    if (auth.user.department !== 3 || !auth.user.role) {
+    if (auth.user.department !== 3) {
         filterSideBarItems = sidebarItems.filter(
             (item) => item.name !== "projects" && item.name !== "accountTask"
         );
@@ -42,12 +39,6 @@ export default function MainLayout({ auth }) {
             (item) => item.name !== "taskQC"
         );
     }
-
-    // auth.user.department !== 18
-    //     ? sidebarItems.filter(
-    //           (item) => item.name !== "projects" && item.name !== "taskQC"
-    //       )
-    //     : sidebarItems;
 
     const ActiveComponent = componentMap[activeComponent];
     return (

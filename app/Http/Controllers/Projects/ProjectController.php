@@ -108,8 +108,9 @@ class ProjectController extends Controller
 
     public function getProjectsByUser(Request $request)
     {
-
+        $user_id = auth()->id();
         $projects = Project::with(['departments.department', 'tasks.category', 'tasks.department', 'tasks.creator', 'tasks.assignee', 'tasks.statusDetails'])
+            ->where('created_by', $user_id)
             ->skip($request->page * 5)
             ->take(6)
             ->orderBy('updated_at', 'desc')
@@ -138,8 +139,10 @@ class ProjectController extends Controller
     }
     public function getnPageProjects(Request $request)
     {
+        $userId = auth()->id();
         $page = $request->page ? $request->page : 1;
         $projects = Project::with(['departments.department', 'tasks.category', 'tasks.department', 'tasks.creator', 'tasks.assignee', 'tasks.statusDetails'])
+            ->where('created_by', $userId)
             ->take(5 * $page + 1)
             ->orderBy('updated_at', 'desc')
             ->get();

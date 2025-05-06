@@ -2,7 +2,6 @@ import { getProgressColor } from "@/utils/taskProgressColor.js";
 
 export default function TaskFlowProgress({ currentTaskFlow }) {
     const steps = JSON.parse(currentTaskFlow);
-    // console.log(steps);
     return (
         <div className="w-1/5 h-fit pr-3">
             <div className="flex flex-col gap-3">
@@ -13,7 +12,7 @@ export default function TaskFlowProgress({ currentTaskFlow }) {
                     <div className="flex gap-4 flex-col">
                         {steps.map((step) => (
                             <div
-                                id={step.step_id}
+                                key={step.step_id}
                                 className={`${getProgressColor(
                                     step.status
                                 )} flex items-center flex-shrink-0 gap-2`}

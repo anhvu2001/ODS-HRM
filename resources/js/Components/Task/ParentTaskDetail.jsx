@@ -1,19 +1,42 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import Select from "react-select";
-import useTaskValidation from "@/hook/useTaskValidation";
 import TaskComments from "../TaskComments/TaskComments";
 import CkeditorComponent from "../CkeditorComponent";
 
 export default function ParentTaskDetail({
     task,
     handleModalClose,
-    onTaskCreate,
-    edit,
-    qcMode,
     auth,
+    renderQCstatus,
 }) {
-    const [taskfiles, setTaskFiles] = useState();
+    // const renderQCstatus = () => {
+    //     if (task.qc_status === 1) {
+    //         return (
+    //             <div className="text-green-600 font-bold text-xl">
+    //                 Task Completed
+    //             </div>
+    //         );
+    //     } else if (task.qc_status === 0) {
+    //         return (
+    //             <div>
+    //                 <div className="text-red-600 font-bold text-xl">
+    //                     Task Rejected
+    //                 </div>
+    //                 <div>
+    //                     <div className="font-bold text-red-600 ">Lí do:</div>
+    //                     <textarea
+    //                         className=" w-full border-red-500 rounded"
+    //                         readOnly
+    //                         value={task?.qc_note}
+    //                         rows={2}
+    //                     ></textarea>
+    //                 </div>
+    //             </div>
+    //         );
+    //     } else {
+    //         return <></>;
+    //     }
+    // };
     const [dataComment, setDataComment] = useState([]);
     const fetchDataComment = async () => {
         try {
@@ -25,42 +48,6 @@ export default function ParentTaskDetail({
             console.error("error fetching comment");
         }
     };
-    const FilePathsToFile = async () => {
-        try {
-            const filePaths = JSON.parse(task.project_files[0].file_list);
-            const files = await convertPathToFile(filePaths);
-            setTaskFiles(files);
-        } catch (error) {
-            console.error("error converting file path to file");
-        }
-    };
-
-    // console.log(JSON.parse(task.project_files[0].file_list));
-    const convertPathToFile = async (filePaths) => {
-        const fileObjects = await Promise.all(
-            filePaths.map(({ file_name, file_path }) => {
-                return filePathToBlob(`/storage/${file_path}`, file_name);
-            })
-        );
-        return fileObjects;
-    };
-    const filePathToBlob = async (filePath, file_name = "downloadedFile") => {
-        try {
-            const response = await fetch(filePath); // Fetch the file from the path
-            if (!response.ok) throw new Error("Failed to fetch file");
-            const blob = await response.blob(); // Convert response to Blob
-            // Convert Blob to File object
-            const file = new File([blob], file_name, {
-                type: blob.type,
-            });
-            return file;
-        } catch (error) {
-            console.error("Error fetching file:", error);
-        }
-    };
-    useEffect(() => {
-        FilePathsToFile();
-    }, []);
     useEffect(() => {
         fetchDataComment();
     }, []);
@@ -82,12 +69,13 @@ export default function ParentTaskDetail({
                 </button>
                 <h1 className="font-bold text-center text-2xl pb-4">
                     {task.status_id !== 3 && task.status_id !== 6
-                        ? `Chi tiết công việc được giao`
-                        : `Chi tiết công việc được nộp`}
+                        ? `Chi Tiết Công Việc Được Giao`
+                        : `Chi Tiết Công Việc Được Nộp`}
                 </h1>
                 <h2 className="text-blue-600 font-bold">
                     {`Người tạo:`} <span>{task.assignee.name}</span>
                 </h2>
+                {renderQCstatus(task)}
                 <div className="space-y-4">
                     <div>
                         <label className="block font-bold py-2">
@@ -113,7 +101,7 @@ export default function ParentTaskDetail({
                     <div>
                         <div className="font-bold py-2">Files đính kèm:</div>
                         {task.project_files.length > 0 ? (
-                            <div>
+                            <div className="flex flex-col gap-1 h-[100px] overflow-y-scroll">
                                 {JSON.parse(
                                     task.project_files[0].file_list
                                 ).map((file, index) => (
@@ -164,16 +152,6 @@ export default function ParentTaskDetail({
                                 value={task.due_date}
                             />
                         </div>
-                        {/* <div className="mb-2">
-                            <label className="block font-bold mb-2">
-                                Assignee
-                            </label>
-                            <input
-                                readOnly
-                                className="border rounded w-full p-2"
-                                value={task.assignee.name}
-                            />
-                        </div> */}
                     </div>
                 </div>
                 <TaskComments

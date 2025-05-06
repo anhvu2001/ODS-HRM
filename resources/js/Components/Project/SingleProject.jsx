@@ -9,7 +9,6 @@ export default function ProjectsList({
     edit,
     setSelectedProject,
     onProjectUpdated,
-    // status,
 }) {
     const [showTasks, setShowTasks] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -24,7 +23,6 @@ export default function ProjectsList({
         setViewMore(viewMore ? false : true);
     };
     const handleTaskCreate = () => {
-        console.log("handle task create");
         onProjectUpdated();
         setShowTasks(true);
         setViewMore(true);
@@ -115,7 +113,7 @@ export default function ProjectsList({
             </div>
             {/* Check if user is in the project's participants */}
             <>
-                {edit && auth.user.role && (
+                {edit && (
                     <>
                         {selectedModal === project.id && (
                             <CreateTaskModal

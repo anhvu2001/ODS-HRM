@@ -23,6 +23,7 @@ class TaskController extends Controller
     //
     public function createMainTask(Request $request)
     {
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -462,9 +463,6 @@ class TaskController extends Controller
         $nextDepartment = Department::find($nextStep['department']);
         // đồng thời tạo task post caption cho member trước nếu category là 4
         // chỉ tạo task post caption khi ở bước 3 và category 4 và không tạo lại khi submit task bị từ chối
-        // return response()->json(['message' => ($previousTask['status'] !== 3 && $previousTask['status'] !== 4)]);
-
-
         if ($previousTask) {
             if ($validated['description']) {
                 $previousTask->description = $validated['description'];
@@ -556,21 +554,9 @@ class TaskController extends Controller
                     ]
                 );
             }
-
-            if ($previousTask['next_assignee_id'] === $nextDepartment['manager']) {
-                // sao chép file vào task tạo tự động khi người làm là leader
-                $qcProjectFiles = ProjectFile::create(
-                    [
-                        'task_id' => $newTask->id,
-                        'project_id' => $newTask->project_id,
-                        'uploaded_by' => auth()->id(),
-                        'file_list' =>  json_encode($fileList),
-                    ]
-                );
-            }
         }
         $this->copyParentDescriptionAndFile($previousTask, $request, $id);
-        if ($previousTask['category_id'] == 4 && $previousTask['step_id'] == 3  && ($previousTask['status'] !== 3 && $previousTask['status'] !== 4)) {
+        if ($previousTask['category_id'] == 4 && $previousTask['step_id'] == 3  && ($previousTask['status'] !== 3 && $previousTask['status'] !== 4) && empty($previousTask['feedback'])) {
             $postCaptionTask = Task::create([
                 'parent_id' => $previousTask['parent_id'],
                 'project_id' => $previousTask['project_id'],
@@ -592,19 +578,13 @@ class TaskController extends Controller
         if ($previousTask['next_assignee_id'] === $nextDepartment['manager']) {
             // call taskQC and approve
             $qcResponse = $this->taskQC($request, id: $newTask['id']);
-
-            // return response()->json(["message" => $qcResponse]);
         }
         return response()->json(["message" => "Task submitted!"]);
     }
     // lấy tất cả các task cần QC
     public function getTaskQC(Request $request)
     {
-
         $user = auth()->user();
-        // if ($user["role"]) {
-        //     return;
-        // }
         // get leader task qc
         $qcTasks = Task:: //task đã hoàn thành
             where('status', [1, 3, 4])
@@ -615,14 +595,13 @@ class TaskController extends Controller
             ->orderBy('due_date', 'asc')
 
             ->get();
-        // $groupQcTasks = $qcTasks->groupBy('project.id')->values();
         return response()->json(['qc_task' => $qcTasks]);
     }
     // update qc_status cho task 
     public function taskQC(Request $request, $id)
     {
-        $isApproved = filter_var($request->approve, FILTER_VALIDATE_BOOL);
 
+        $isApproved = filter_var($request->approve, FILTER_VALIDATE_BOOL);
         $validated = $request->validate([
             'qc_note' => [Rule::requiredIf(!$isApproved), 'string'],
             'description' => 'nullable|string',
@@ -669,6 +648,7 @@ class TaskController extends Controller
                             ];
                         }
                     }
+
                     // tạo project_file mới 
                     $newProjectFiles = ProjectFile::create([
                         'task_id' => $id,
@@ -680,20 +660,27 @@ class TaskController extends Controller
                 // add file from request
                 // update task step flow
                 $this->updateTaskStepFlow($task, 2);
-
-
                 // tạo task mới cho team design nếu đang ở bước 4 content leader qc hoặc gửi cho account ở bước 7
                 if ($task['step_id'] === 4 || $task['step_id'] === 7) {
                     $nextStepOrder = $task['step_order'] + 1;
                     $nextStep = TaskWorkFlows::where('category_id', $task['category_id'])->where('step_order', $nextStepOrder)->first();
                     // find the next step department
                     $nextDepartment = Department::find($nextStep['department']);
+                    // kiểm tra bước tiếp theo phải là phòng account hay không
+                    $isAccount = $nextDepartment['id'] === 3;
+                    // return response()->json(['message' =>   $isAccount], 200);
+                    if ($isAccount) {
+                        $parentTask = Task::find($task['parent_task_id']);
+                        $parentTask = Task::find($task['parent_task_id']);
+                        $parentTaskCreator = $parentTask['created_by'];
+                    }
+
                     $newTask = Task::create([
                         'parent_id' => $task['id'],
                         'project_id' => $task['project_id'],
                         'name' => $task['name'],
                         'description' => '',
-                        'next_assignee_id' => $nextDepartment['manager'], //gửi cho leader 
+                        'next_assignee_id' =>  $isAccount ? $parentTaskCreator : $nextDepartment['manager'], //gửi cho leader 
                         'status' => 1,
                         'category_id' => $task['category_id'],
                         'step_id' => $nextStep['current_step_id'],
@@ -704,6 +691,7 @@ class TaskController extends Controller
                         'parent_task_id' => $task['parent_task_id'],
                         'feedback' => $task['feedback']
                     ]);
+
                     $this->addTaskStepFlow($task, $newTask, null);
                 }
             } else {
@@ -726,17 +714,29 @@ class TaskController extends Controller
     {
         $user = auth()->user();
         // get leader task qc
-        $qcTasks = Task:: //task đã hoàn thành
-            whereNotNull('qc_status')
-            ->where('created_by', $user['id'])
-            ->with(['creator', 'project', 'category', 'assignee'])
+        // $qcTasks = Task:: //task đã hoàn thành
+        //     whereNotNull('qc_status')
+        //     ->where('created_by', $user['id'])
+        //     ->with(['creator', 'project', 'category', 'assignee'])
+        //     ->orderby('updated_at', "desc")
+        //     ->orderBy('due_date', 'asc')
+        //     ->skip(15 * $request->page)
+        //     ->take(16)
+        //     ->get();
+        // lấy các task đã qc
+        $qcTasks = Task::whereNotNull('qc_status')->pluck('id');
+        // lấy các task có parent thuộc task đã qc
+        $tasksHistory = Task::whereIn('parent_id', $qcTasks)
+            ->where('next_assignee_id', $user['id'])
+            ->with(['creator', 'project', 'category', 'assignee', 'statusDetails'])
             ->orderby('updated_at', "desc")
             ->orderBy('due_date', 'asc')
             ->skip(15 * $request->page)
             ->take(16)
             ->get();
-        $hasMore = $qcTasks->count() < 16 ? false : true;
-        return response()->json(['qc_task_history' => $qcTasks->take(15), 'has_more' => $hasMore]);
+
+        $hasMore = $tasksHistory->count() < 16 ? false : true;
+        return response()->json(['qc_task_history' => $tasksHistory->take(15), 'has_more' => $hasMore]);
     }
 
     public function getAccountTask(Request $request)
@@ -769,29 +769,33 @@ class TaskController extends Controller
         // executor task
         $executorTask = Task::where("parent_task_id", $task['parent_task_id'])
             ->where('category_id', $task['category_id'])
-            ->where("step_id", 3)->first();
+            ->where('status', 2)
+            ->where("step_id", 3)->latest()->first();
         $executorTask->feedback = $request->feedback;
-        $executorTask->status = 4;
-        $executorTask->qc_status = null;
-        // update task step flow
-        $this->updateTaskStepFlow($executorTask, 4);
-        $executorTask->save();
+        // Tạo mới task cho member
+        $newExecutorTask = Task::create([
+            'parent_id' => $executorTask['id'],
+            'project_id' => $executorTask['project_id'],
+            'name' => $executorTask['name'],
+            'description' => $executorTask['description'],
+            'next_assignee_id' => $executorTask['next_assignee_id'],
+            'status' => 4,
+            'category_id' => $executorTask['category_id'], // brief 
+            'step_id' => $executorTask['step_id'],
+            'step_order' => $executorTask['step_order'],
+            'created_by' => $executorTask['created_by'],
+            'due_date' => $executorTask['due_date'],
+            'department_id' => $executorTask['department_id'],
+            'parent_task_id' => $executorTask['parent_task_id'],
+            'task_step_flow' => $executorTask['task_step_flow'],
+            'feedback' => $request->feedback
+        ]);
+        $this->updateTaskStepFlow($newExecutorTask, 4);
         $task->status = 2;
         $task->save();
         return response()->json(['message' => 'Gửi feedback thành công!']);
     }
-    public function addFeedback(Task $task, $feedback)
-    {
-        if ($task) {
-            $task->feedback = $feedback;
-            $task->status = 4;
-            $task->qc_status = null;
-            $this->updateTaskStepFlow($task, 4);
-            $task->save();
-        } else {
-            return response()->json(['message' => 'Công việc không tồn tại']);
-        }
-    }
+
     public function accountCompleteTask(Request $request, $id)
     {
         $task = Task::find($id);
@@ -817,16 +821,18 @@ class TaskController extends Controller
             return response()->json(['message' => "Không tồn tại công việc này"]);
         }
 
-        $group_task = Task::where('parent_task_id', $task['parent_task_id'])->where('step_id', 8)->get();
+        // check toàn bộ task con bất kể step_id
+        $group_task = Task::where('parent_task_id', $task['parent_task_id'])->get();
         // kiểm tra toàn bộ task account con
         $allDone = true;
         foreach ($group_task as $task) {
-            if ($task['status'] !== 2) {
+            // task chưa hoàn thành hoặc bị hủy
+            if ($task['status'] === 1) {
                 $allDone = false;
                 break;
             }
         }
-        // nếu toàn bộ task con đều hoàn thành thì cập nhật
+        // nếu toàn bộ task con đều hoàn thành thì cập nhật trạng thái parent task id là hoàn thành
         if ($allDone) {
             $parent_task = Task::find($task['parent_task_id']);
             $parent_task->status = 2;
@@ -838,10 +844,8 @@ class TaskController extends Controller
     public function accountTaskHistory(Request $request)
     {
         $user = auth()->user();
-        if (!$user['role']) {
-            return response()->json(['message' => 'Bạn không thể vào trang này'], 402);
-        }
         $tasks = Task::with(["department.members", "category", "creator", "assignee", 'statusDetails', 'project'])
+            ->where('next_assignee_id', $user['id'])
             ->where('step_id', 8)
             ->where('status', 2)
             ->skip(15 * $request->page)
@@ -906,37 +910,11 @@ class TaskController extends Controller
     public function copyParentDescriptionAndFile(Task $task, $request, $id)
     {
         $projectFiles = ProjectFile::where('task_id', $task['id'])->first();
-        // if ((!$task['description'] || !$projectFiles) && $task->parent) {
-
-        //     $parent = $task->parent;
-        //     if (!$task['description']) {
-        //         $task->description =  $parent['description'];
-        //     }
-        //     // $projectFiles = ProjectFile::find($id);
-        //     if (!$projectFiles) {
-        //         $parentProjectFiles = $parent->projectFiles()->first();
-        //         if ($parentProjectFiles) {
-        //             if (!$projectFiles) {
-        //                 $projectFiles = ProjectFile::create([
-        //                     'task_id' => $task['id'],
-        //                     'project_id' => $task->project_id,
-        //                     'uploaded_by' => auth()->id(),
-        //                     'file_list' => $parentProjectFiles['file_list']
-        //                 ]);
-        //             } else {
-        //                 $projectFiles->file_list = $parentProjectFiles['file_list'];
-        //             }
-        //         }
-        //     }
-        //     $task->save();
-        //     return $projectFiles;
-        // } 
         if ((!$task['description'] || (!$request->hasFile('files') && !$request->delete_files)) && $task->parent) {
             $parent = $task->parent;
             if (!$task['description']) {
                 $task->description =  $parent['description'];
             }
-            // $projectFiles = ProjectFile::find($id);
             if (!$request->hasFile('files') && !$request->delete_files) {
                 $parentProjectFiles = $parent->projectFiles()->first();
                 if ($parentProjectFiles) {

@@ -38,7 +38,7 @@ export default function QCTaskList({ auth }) {
                     Người thực hiện
                 </div>
                 <div className="w-2/12 text-center font-bold content-center">
-                    Ngày kết thúc
+                    Deadline
                 </div>
                 <div className="w-2/12 text-center font-bold content-center">
                     Ngày còn lại

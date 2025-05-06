@@ -15,7 +15,7 @@ export default function AccountTab({ auth }) {
         <>
             <div className="flex border rounded-xl mb-6">
                 <div
-                    className={`w-1/2 text-center border-r-inherit border-r-2 p-2 cursor-pointer text-lg font-bold ${
+                    className={`w-1/2 text-center border-r-inherit border-r-2 p-2 cursor-pointer text-lg font-bold duration-300 hover:bg-green-300 ${
                         selectedTab === "CompletedTask"
                             ? "bg-blue-500 text-white"
                             : ""
@@ -25,7 +25,7 @@ export default function AccountTab({ auth }) {
                     Công việc cần khách feedback
                 </div>
                 <div
-                    className={`w-1/2 text-center p-2 cursor-pointer font-bold text-lg ${
+                    className={`w-1/2 text-center p-2 cursor-pointer font-bold text-lg duration-300  hover:bg-green-300 ${
                         selectedTab === "history"
                             ? "bg-blue-500 text-white"
                             : ""

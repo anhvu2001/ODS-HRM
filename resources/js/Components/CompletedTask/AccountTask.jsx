@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from "react";
 import MyTaskListSection from "../Task/MyTaskListSection";
 
-export default function AccountTask({ auth, edit, statusOptions }) {
-    // const [projects, setProjects] = useState([]);
-    // const [priorityOptions, setPriorityOptions] = useState([]);
-    const [page, setPage] = useState(0);
-    const [hasMore, setHasMore] = useState(false);
+export default function AccountTask({ auth }) {
     const [tasks, setTasks] = useState([]);
     const fetchTasks = async () => {
         try {
@@ -18,37 +14,7 @@ export default function AccountTask({ auth, edit, statusOptions }) {
     useEffect(() => {
         fetchTasks();
     }, []);
-    // const fetchPriority = async () => {
-    //     try {
-    //         const { data } = await axios.get(route("Get_priority_option"));
-    //         setPriorityOptions(data);
-    //     } catch (error) {
-    //         console.error("Error fetching priorities:", error);
-    //     }
-    // };
-    // lấy task phân theo project
-    // const fetchProjects = async () => {
-    //     // add page to fetch project
-    //     try {
-    //         const { data } = await axios.get(
-    //             route("User_joined_tasks", { page })
-    //         );
-    //         console.log(data);
-    //         setProjects((prev) => [...prev, ...data.groupedTasks]);
-    //         setPage(page + 1);
-    //         setHasMore(data.hasMore);
-    //     } catch (error) {
-    //         console.error("Error fetching projects:", error);
-    //     }
-    // };
 
-    // useEffect(() => {
-    //     fetchProjects();
-    // }, []);
-    // get participant
-    // useEffect(() => {
-    //     fetchPriority();
-    // }, []);
     return (
         <>
             <div className="relative my-10">
@@ -77,7 +43,7 @@ export default function AccountTask({ auth, edit, statusOptions }) {
                         </div>
 
                         <div className="w-2/12 text-center font-bold content-center">
-                            Trạng thái QC
+                            Trạng thái
                         </div>
                     </div>
                     <MyTaskListSection
@@ -86,28 +52,6 @@ export default function AccountTask({ auth, edit, statusOptions }) {
                         auth={auth}
                         edit={true}
                     ></MyTaskListSection>
-                    {/* {projects.length > 0 &&
-                        projects.map((project) => (
-                            <MyTaskListSection
-                                project={project}
-                                setProjects={setProjects}
-                                priorityOptions={priorityOptions}
-                                statusOptions={statusOptions}
-                                onProjectUpdated={fetchProjects}
-                                edit={edit}
-                                auth={auth}
-                            />
-                        ))}
-                    {hasMore && (
-                        <button
-                            onClick={() => {
-                                fetchProjects();
-                            }}
-                            className="bg-green-400 text-white w-2/6 rounded-xl self-center p-2 mt-3"
-                        >
-                            Load More Projects
-                        </button>
-                    )} */}
                 </div>
             </div>
         </>

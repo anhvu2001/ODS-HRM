@@ -16,7 +16,7 @@ export default function MyTask({ auth }) {
         <>
             <div className="flex border rounded-xl mb-6">
                 <div
-                    className={`w-1/2 text-center border-r-inherit border-r-2 p-2 cursor-pointer text-lg font-bold ${
+                    className={`w-1/2 text-center border-r-inherit border-r-2 p-2 cursor-pointer text-lg font-bold hover:bg-green-300 ${
                         selectedTab === "qcTaskList"
                             ? "bg-blue-500 text-white"
                             : ""
@@ -26,7 +26,7 @@ export default function MyTask({ auth }) {
                     Công việc cần kiểm tra
                 </div>
                 <div
-                    className={`w-1/2 text-center p-2 cursor-pointer font-bold text-lg ${
+                    className={`w-1/2 text-center p-2 cursor-pointer font-bold text-lg hover:bg-green-300 ${
                         selectedTab === "history"
                             ? "bg-blue-500 text-white"
                             : ""
