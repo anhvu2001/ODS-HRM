@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Department;
 use App\Models\Project;
 use App\Models\ProjectFile;
+use App\Models\StatusDetails;
 use App\Models\StepDetail;
 use App\Models\Task;
 use App\Models\TaskComment;

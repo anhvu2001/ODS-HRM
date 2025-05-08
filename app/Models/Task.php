@@ -34,7 +34,6 @@ class Task extends Model implements Auditable
         'task_step_flow',
         'feedback'
     ];
-
     // Liên kết đến task cha
     protected static function boot()
     {
@@ -84,18 +83,6 @@ class Task extends Model implements Auditable
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    // Liên kết đến trạng thái
-    // public function status()
-    // {
-    //     return $this->belongsTo(Status::class, 'step_id');
-    // }
-
-    // Liên kết đến độ ưu tiên
-    // public function priority()
-    // {
-    //     return $this->belongsTo(PriorityLevel::class, 'priority_id');
-    // }
-    // Phương thức này nếu cần tùy chỉnh các trường lưu vào audit
     public function getAuditData()
     {
         return [
@@ -109,25 +96,6 @@ class Task extends Model implements Auditable
     {
         return $this->belongsTo(Project::class, "project_id");
     }
-    // lấy cột lft trong database làm left
-    // public function getLftName()
-    // {
-    //     return 'lft';  // Change _lft to lft
-    // }
-    // // lấy cột rgt trong database làm right
-    // public function getRgtName()
-    // {
-    //     return 'rgt';  // Change _rgt to rgt
-    // }
-    // lấy cột parent_id làm parent 
-    // public function getParentIdName()
-    // {
-    //     return 'parent_id';
-    // }
-    // public function taskUser()
-    // {
-    //     return $this->hasOne(TaskUser::class, "task_id");
-    // }
     public function taskComments()
     {
         return $this->hasMany(TaskComment::class, "task_id");
@@ -156,19 +124,4 @@ class Task extends Model implements Auditable
     {
         return $this->belongsTo(StepDetail::class, 'step_id');
     }
-    // public function findFirstTaskByDepartmentRecursive($department)
-    // {
-    //     //
-    //     $parent = $this->parent;
-    //     if (!$parent) {
-    //         return null;
-    //     }
-    //     $parent_department = $parent['department_id'];
-    //     if ($parent_department !== $department) {
-    //         return $parent->findFirstTaskByDepartmentRecursive($department);
-    //     } else {
-    //         return $parent->parent;
-    //     }
-    //     // $parent_assignee=$parent->assignee();
-    // }
 }

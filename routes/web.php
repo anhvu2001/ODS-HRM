@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Comment\CommentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StepDetailsController;
 use App\Http\Controllers\TaskCategoriesController;
+use App\Http\Controllers\TaskWorkFlowController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -20,12 +22,16 @@ use App\Http\Controllers\Requests\ExcelController;
 use App\Http\Controllers\Requests\SearchRequestController;
 use App\Http\Controllers\Requests\UserRequestController;
 use App\Http\Controllers\Requests\PdfUserRequestController;
+use App\Http\Controllers\StatusDetailsController;
 use App\Http\Controllers\Tasks\TaskCommentController;
 use App\Http\Controllers\Tasks\TaskController;
 use App\Models\UserRequests;
 use App\Models\User;
 
 use App\Mail\HelloWorldEmail;
+use App\Models\StatusDetails;
+use App\Models\StepDetail;
+use App\Models\TaskWorkFlows;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
@@ -139,9 +145,38 @@ Route::middleware('auth')->group(function () {
             Route::post('/delete', [DepartmentController::class, 'delete'])->name("Delete_departments");
             Route::post("/get-department-member", [DepartmentController::class, 'getMember'])->name('get_department_member');
         });
-
+        Route::prefix("/project")->group(function () {
+            Route::get("/admin", [ProjectController::class, 'adminIndex'])->name("Project_admin");
+        });
+        // wrong status
+        // Route::prefix('/statusDetails')->group(function () {
+        // Route::get("get-status-details", [StatusDetailsController::class, 'getStatusDetail'])->name("get_task_status_detail");
+        // Route::post('/create-new-status', [StatusDetailsController::class, 'createNewStatus'])->name('create_new_task_status');
+        // Route::delete('/delete-status/{id}', [StatusDetailsController::class, 'deleteStatus'])->name('delete_task_status');
+        // Route::post('/update/{id}', [StatusDetailsController::class, 'update'])->name("edit_task_detail");
+        // });
+        // this
+        Route::prefix('/stepDetails')->group(function () {
+            Route::post('/create-new-status', [StepDetailsController::class, 'createNewStep'])->name('create_new_task_Step');
+            Route::get("/get-status-details", [StepDetailsController::class, 'getStepDetail'])->name("get_task_step_detail");
+            Route::post('/create-new-step', [StepDetailsController::class, 'createNewStep'])->name('create_new_task_status');
+            Route::post('/update/{id}', [StepDetailsController::class, 'update'])->name("edit_step_detail");
+            Route::delete('/delete-status/{id}', [StepDetailsController::class, 'deleteStatus'])->name('delete_task_step');
+        });
+        Route::prefix('/taskCategories')->group(function () {
+            Route::get("/get-all-task-categories", [TaskCategoriesController::class, 'getAllTaskCategories'])->name("Get_task_categories_option");
+            Route::get("/get-all-task-categories-include-children", [TaskCategoriesController::class, 'getAllCategoriesIncludeChildren'])->name("Get_all_task_categories");
+            Route::post('/create-new-category', [TaskCategoriesController::class, 'createNewCategory'])->name("create_new_task_categories");
+            Route::delete("/delete/{id}", [TaskCategoriesController::class, 'delete'])->name('delete_task_category');
+            Route::post("/update/{id}", [TaskCategoriesController::class, 'update'])->name("edit_task_category");
+        });
+        Route::prefix('/taskWorkflows')->group(function () {
+            Route::get("/get-all-workflows", [TaskWorkFlowController::class, 'fetchAllWorkflow'])->name('get_task_work_flow');
+            Route::post("/create-new-workflow", [TaskWorkFlowController::class, 'createNewWorkFlow'])->name('create_new_task_workflow');
+            Route::post("/update-workflow/{id}", [TaskWorkFlowController::class, 'update'])->name('update_task_workflow');
+            Route::delete("/delete-workflow/{id}", [TaskWorkFlowController::class, 'delete'])->name('delete_task_workflow');
+        });
         // task leader
-        Route::prefix("/tasks")->group(function () {});
     });
     Route::prefix('/departments')->group(function () {
         Route::get("/get-all-departments", [DepartmentController::class, "getAllDepartments"])->name('Get_all_departments');
@@ -206,9 +241,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('/delete/{id}', [TaskCommentController::class, 'delete'])->name("delete_task_comments");
         Route::get('/get-comment/{id}', [TaskCommentController::class, 'getAllComments'])->name("get_all_task_comments");
         Route::post("/edit", [TaskCommentController::class, 'edit'])->name("update_task_comment");
-    });
-    Route::prefix('/taskCategories')->group(function () {
-        Route::get("/get-all-task-categories", [TaskCategoriesController::class, 'getAllTaskCategories'])->name("Get_task_categories_option");
     });
 });
 

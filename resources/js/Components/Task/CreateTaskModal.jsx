@@ -68,6 +68,7 @@ export default function CreateTaskModal({
             category_id: selectedOption ? selectedOption.value : null, // Store only the ID
         }));
     };
+
     const submitForm = async (e) => {
         e.preventDefault();
         setIsCreating(true);

@@ -22,7 +22,6 @@ class ProjectController extends Controller
     }
     public function create(Request $request)
     {
-
         // Validate dữ liệu từ form
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -179,5 +178,10 @@ class ProjectController extends Controller
     {
         $project = Project::find($id);
         return response()->json($project['end_date']);
+    }
+    public function adminIndex()
+    {
+        $user = auth();
+        return Inertia::render('Projects/Admin');
     }
 }

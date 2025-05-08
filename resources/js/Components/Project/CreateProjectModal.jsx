@@ -62,7 +62,6 @@ export default function CreateProjectModal({
                 route("Create_Project"),
                 formData
             );
-            console.log(response.data.message);
             alert(response.data.message || "Project created successfully!");
             onProjectCreated();
             resetForm();
