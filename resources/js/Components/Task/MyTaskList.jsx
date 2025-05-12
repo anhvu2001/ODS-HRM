@@ -53,7 +53,7 @@ export default function MyTaskList({ auth, edit }) {
                                 Tên Công Việc
                             </div>
                             <div className="w-2/12 font-bold content-center">
-                                Tên Công Việc
+                                Phòng ban thực hiện
                             </div>
                             <div className="w-2/12 font-bold content-center">
                                 Tên Dự Án
