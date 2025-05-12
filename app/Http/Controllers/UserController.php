@@ -96,21 +96,21 @@ class UserController extends Controller
 
         return response()->json($users);
     }
-    public function addDepartment(Request $request, $id)
-    {
-        $user = User::find($id);
-        $department_id = $request->department_id;
-        if ($user) {
-            $user->update(
-                [
-                    'department' => $department_id,
-                ]
-            );
-        } else {
-            return response()->json(['error' => 'user not found.'], 404);
-        }
-        return redirect()->route('Detail_departments', $department_id);
-    }
+    // public function addDepartment(Request $request, $id)
+    // {
+    //     $user = User::find($id);
+    //     $department_id = $request->department_id;
+    //     if ($user) {
+    //         $user->update(
+    //             [
+    //                 'department' => $department_id,
+    //             ]
+    //         );
+    //     } else {
+    //         return response()->json(['error' => 'user not found.'], 404);
+    //     }
+    //     return redirect()->route('Detail_departments', $department_id);
+    // }
     public function removeDepartment(Request $request)
     {
         $user = User::find($request->id);

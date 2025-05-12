@@ -17,6 +17,7 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         'check.role' => \App\Http\Middleware\CheckRole::class,
         'check.account' => \App\Http\Middleware\checkAccount::class,
+        'check.departmentRole' => \App\Http\Middleware\CheckDepartmentRole::class,
     ];
     protected $middleware = [
         // \App\Http\Middleware\TrustHosts::class,

@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StepDetailsController;
 use App\Http\Controllers\TaskCategoriesController;
 use App\Http\Controllers\TaskWorkFlowController;
+use App\Http\Controllers\UserDepartmentsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -32,6 +33,7 @@ use App\Mail\HelloWorldEmail;
 use App\Models\StatusDetails;
 use App\Models\StepDetail;
 use App\Models\TaskWorkFlows;
+use App\Models\UserDepartment;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
@@ -96,13 +98,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/update-request-field', [UserRequestController::class, 'update_request_field'])->name('Update_Request_Field');
         Route::post('/update', [UserRequestController::class, 'update'])->name('Update_Request');
         Route::delete('/delete/{id}', [UserRequestController::class, 'delete'])->name('Delete_User_Request');
-        // Route::get('', [UserRequestController::class, 'index'])->name('Requests_list');
-
     });
 });
 
 Route::get('/reset-password-danh', function () {
-    // User::find(1)->update(['password' => Hash::make('Abc@123456')]);
     return response()->json(Hash::make('Abc@123456'));
 });
 
@@ -133,8 +132,15 @@ Route::middleware('auth')->group(function () {
     Route::middleware('check.role:99')->group(function () {
         // dvh 9/1/2025
         Route::prefix('/users')->group(function () {
-            Route::post('/add-department/{id}', [UserController::class, 'addDepartment'])->name("Add_department_users");
+            // Route::post('/add-department/{id}', [UserController::class, 'addDepartment'])->name("Add_department_users");
             Route::post('/removeDepartment', [UserController::class, 'removeDepartment'])->name("Remove_department_users");
+        });
+        Route::prefix("/user-department")->group(function () {
+            Route::get('/get-user-departments', [UserDepartmentsController::class, 'getUserDepartments'])->name('get_auth_department');
+
+            Route::post("/add-department-member/{id}", [UserDepartmentsController::class, 'addDepartment'])->name('Add_department_users');
+            Route::get("/get-department-member/{id}", [UserDepartmentsController::class, 'getMember'])->name('get_department_member');
+            Route::post('/remove-member', [UserDepartmentsController::class, 'removeMember'])->name('remove_member');
         });
         // department route
         Route::prefix('/departments')->group(function () {
@@ -143,19 +149,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/detail/{id}', [DepartmentController::class, 'view'])->name('Detail_departments');
             Route::post('/update/{id}', [DepartmentController::class, 'update'])->name('Update_departments');
             Route::post('/delete', [DepartmentController::class, 'delete'])->name("Delete_departments");
-            Route::post("/get-department-member", [DepartmentController::class, 'getMember'])->name('get_department_member');
         });
         Route::prefix("/project")->group(function () {
             Route::get("/admin", [ProjectController::class, 'adminIndex'])->name("Project_admin");
         });
-        // wrong status
-        // Route::prefix('/statusDetails')->group(function () {
-        // Route::get("get-status-details", [StatusDetailsController::class, 'getStatusDetail'])->name("get_task_status_detail");
-        // Route::post('/create-new-status', [StatusDetailsController::class, 'createNewStatus'])->name('create_new_task_status');
-        // Route::delete('/delete-status/{id}', [StatusDetailsController::class, 'deleteStatus'])->name('delete_task_status');
-        // Route::post('/update/{id}', [StatusDetailsController::class, 'update'])->name("edit_task_detail");
-        // });
-        // this
         Route::prefix('/stepDetails')->group(function () {
             Route::post('/create-new-status', [StepDetailsController::class, 'createNewStep'])->name('create_new_task_Step');
             Route::get("/get-status-details", [StepDetailsController::class, 'getStepDetail'])->name("get_task_step_detail");
@@ -164,8 +161,6 @@ Route::middleware('auth')->group(function () {
             Route::delete('/delete-status/{id}', [StepDetailsController::class, 'deleteStatus'])->name('delete_task_step');
         });
         Route::prefix('/taskCategories')->group(function () {
-            Route::get("/get-all-task-categories", [TaskCategoriesController::class, 'getAllTaskCategories'])->name("Get_task_categories_option");
-            Route::get("/get-all-task-categories-include-children", [TaskCategoriesController::class, 'getAllCategoriesIncludeChildren'])->name("Get_all_task_categories");
             Route::post('/create-new-category', [TaskCategoriesController::class, 'createNewCategory'])->name("create_new_task_categories");
             Route::delete("/delete/{id}", [TaskCategoriesController::class, 'delete'])->name('delete_task_category');
             Route::post("/update/{id}", [TaskCategoriesController::class, 'update'])->name("edit_task_category");
@@ -178,8 +173,15 @@ Route::middleware('auth')->group(function () {
         });
         // task leader
     });
+    Route::prefix('/taskCategories')->group(function () {
+        Route::get("/get-all-task-categories", [TaskCategoriesController::class, 'getAllTaskCategories'])->name("Get_task_categories_option");
+        Route::get("/get-all-task-categories-include-children", [TaskCategoriesController::class, 'getAllCategoriesIncludeChildren'])->name("Get_all_task_categories");
+    });
     Route::prefix('/departments')->group(function () {
         Route::get("/get-all-departments", [DepartmentController::class, "getAllDepartments"])->name('Get_all_departments');
+    });
+    Route::prefix("/user-department")->group(function () {
+        Route::get('/get-user-departments', [UserDepartmentsController::class, 'getUserDepartments'])->name('get_auth_department');
     });
     // projects
 
@@ -192,11 +194,11 @@ Route::middleware('auth')->group(function () {
         // lấy file cho task
         Route::get("/get-task-files/{id}", [TaskController::class, 'getTaskFiles'])->name("get_all_task_file");
         // Route::get("/get-updated-my-task/{id}", [TaskController::class, 'getUpdatedTask'])->name("get_update_my_task");
-        Route::get("/get-tasks-qc", [TaskController::class, 'getTaskQC'])->name('get_task_need_qc')->middleware('check.role:1,99');
+        Route::get("/get-tasks-qc", [TaskController::class, 'getTaskQC'])->name('get_task_need_qc')->middleware('check.departmentRole');
         // leader temp
         Route::get("/get-leader-task", [TaskController::class, 'getLeaderTask'])->name("get_leader_main_task");
         Route::post("/assign-task/{id}", [TaskController::class, "assignTask"])->name("leader_assign_task");
-        Route::get("/qc-history", [TaskController::class, 'getQCHistory'])->name("get_qc_history")->middleware('check.role:1,99');
+        Route::get("/qc-history", [TaskController::class, 'getQCHistory'])->name("get_qc_history")->middleware('check.departmentRole');
         Route::post("/task-qc/{id}", [TaskController::class, 'taskQC'])->name('task_qc');
         // member task
         Route::get("/get-member-task", [TaskController::class, 'getMemberTask'])->name("get_member_task");

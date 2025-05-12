@@ -41,8 +41,11 @@ export default function UniqueStatusTask({ auth, edit }) {
                         <div className="font-bold content-center  w-[50px] flex-shrink-0">
                             ID
                         </div>
-                        <div className="w-3/12 font-bold content-center">
+                        <div className="w-2/12 font-bold content-center">
                             Tên Công Việc
+                        </div>
+                        <div className="w-2/12 font-bold content-center">
+                            Phòng ban thực hiện
                         </div>
                         <div className="w-2/12 font-bold content-center">
                             Tên Dự Án
@@ -50,7 +53,7 @@ export default function UniqueStatusTask({ auth, edit }) {
                         <div className="w-1/12 content-center text-center font-bold">
                             Phân loại
                         </div>
-                        <div className="w-2/12 content-center text-center font-bold">
+                        <div className="w-1/12 content-center text-center font-bold">
                             Deadline
                         </div>
                         <div className="w-2/12 content-center text-center font-bold">

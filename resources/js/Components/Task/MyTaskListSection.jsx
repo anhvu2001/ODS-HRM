@@ -26,8 +26,11 @@ export default function MyTaskListSection({
                             <div className="content-center w-[50px] flex-shrink-0">
                                 {item.id}
                             </div>
-                            <div className="w-3/12 line-clamp-2 content-center">
+                            <div className="w-2/12 line-clamp-2 content-center">
                                 {item.name}
+                            </div>
+                            <div className="w-2/12 line-clamp-2 content-center">
+                                {item?.department?.department_name}
                             </div>
                             <div className="w-2/12 line-clamp-2 content-center">
                                 {item?.project?.name}
@@ -37,7 +40,7 @@ export default function MyTaskListSection({
                                 {item?.category?.name}
                             </div>
 
-                            <div className="w-2/12 text-center text-red-600  content-center">
+                            <div className="w-1/12 text-center text-red-600  content-center">
                                 {item.due_date}
                             </div>
                             <div

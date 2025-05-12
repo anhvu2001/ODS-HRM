@@ -1,18 +1,19 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import TextInput from "@/Components/TextInput";
+import React, { useState, useEffect } from "react";
+
 import { useForm } from "@inertiajs/react";
 import { Head } from "@inertiajs/react";
-import { Link } from "@inertiajs/react";
 export default function Department_detail({
     auth,
     department,
     manager,
     users,
 }) {
+    const [members, setMembers] = useState([]);
     const updateDepartment = (e) => {
         e.preventDefault();
         const updatedData = { ...data };
-
         post(route("Update_departments", { id: department.id }), updatedData, {
             preserveScroll: true,
             onSuccess: () => {
@@ -22,10 +23,21 @@ export default function Department_detail({
                 console.log(errors);
             },
         });
+        fetchMember();
     };
-    const confirmDelete = () => {
+    const confirmDelete = async (user) => {
         const isConfirmed = window.confirm("bạn có chắc muốn xóa");
         if (!isConfirmed) return;
+        try {
+            const { data } = await axios.post(route("remove_member"), {
+                department_id: department.id,
+                member_id: user.id,
+            });
+            alert(data.message);
+            fetchMember();
+        } catch (error) {
+            console.log(error);
+        }
     };
     const { data, setData, post, processing, reset, errors } = useForm({
         department_name: department.department_name || "",
@@ -35,16 +47,40 @@ export default function Department_detail({
     });
     const addMember = (e) => {
         e.preventDefault();
-        post(route("Add_department_users", { id: data.memberId }), data, {
-            preserveScroll: true,
-            onSuccess: () => {
-                console.log("ok");
-            },
-            onError: () => {
-                console.log(errors);
-            },
-        });
+        post(
+            route("Add_department_users", {
+                id: data.memberId,
+                department_id: data.department_id,
+            }),
+            data,
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    console.log("ok");
+                },
+                onError: () => {
+                    console.log(errors);
+                },
+            }
+        );
+        setData("memberId", "");
+
+        fetchMember();
     };
+    const fetchMember = async () => {
+        try {
+            const { data } = await axios.get(
+                route("get_department_member", department.id)
+            );
+            setMembers(data);
+            console.log(data);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    useEffect(() => {
+        fetchMember();
+    }, []);
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -142,7 +178,7 @@ export default function Department_detail({
                                     <div>Thêm thành viên</div>
                                     <div>
                                         <select
-                                            value={data.id}
+                                            value={data.memberId}
                                             className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                                             onChange={(e) =>
                                                 setData(
@@ -151,7 +187,7 @@ export default function Department_detail({
                                                 )
                                             }
                                         >
-                                            <option>chọn thành viên</option>
+                                            <option>Chọn thành viên</option>
                                             {users.map((user) => (
                                                 <option
                                                     key={user.id}
@@ -176,7 +212,7 @@ export default function Department_detail({
                                 Danh sách thành viên
                             </div>
                             <div>
-                                {users
+                                {/* {users
                                     .filter(
                                         (user) =>
                                             user.department === department.id
@@ -206,7 +242,30 @@ export default function Department_detail({
                                                 </div>
                                             </div>
                                         );
-                                    })}
+                                    })} */}
+                                {members.map((user) => {
+                                    return (
+                                        <div
+                                            key={user.id}
+                                            className="py-2 gap-4 grid grid-cols-4"
+                                        >
+                                            <div>{user.name}</div>
+                                            <div>
+                                                <button
+                                                    onClick={() =>
+                                                        confirmDelete(user)
+                                                    }
+                                                    // href="/users/removeDepartment"
+                                                    as="button"
+                                                    method="post"
+                                                    className="inline-flex items-center py-2 px-3 text-sm font-medium text-center text-white bg-gradient-to-br from-red-400 to-red-600 rounded-lg shadow-md shadow-gray-300 hover:scale-[1.02] transition-transform"
+                                                >
+                                                    Xóa
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>

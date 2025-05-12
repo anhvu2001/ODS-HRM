@@ -15,6 +15,7 @@ export default function TaskDetailModal({
     qcMode,
     auth,
 }) {
+    console.log(auth);
     const { errors, validate } = useTaskValidation();
     const [addedFiles, setAddedFiles] = useState([]);
     const [taskFiles, setTaskFiles] = useState([]);
@@ -30,7 +31,17 @@ export default function TaskDetailModal({
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
     const [deadline, setDeadline] = useState(null);
     const [processing, setProcessing] = useState(false);
-
+    const [authDepartment, setAuthDepartment] = useState([]);
+    const isAccount = authDepartment.includes(3);
+    console.log(authDepartment);
+    const fetchAuthDepartment = async () => {
+        try {
+            const { data } = await axios.get(route("get_auth_department"));
+            setAuthDepartment(data.departments);
+        } catch (error) {
+            console.log(error);
+        }
+    };
     const fetchParentTask = async () => {
         try {
             const { data } = await axios.get(
@@ -122,6 +133,7 @@ export default function TaskDetailModal({
 
     useEffect(() => {
         fetchDataComment();
+        fetchAuthDepartment();
     }, []);
     const [formData, setFormData] = useState({
         name: task.name,
@@ -276,6 +288,7 @@ export default function TaskDetailModal({
             setUpdating(false);
         } catch (error) {
             console.error();
+            console.log(error);
             setUpdating(false);
             alert("failed to update load more task ");
         }
@@ -298,10 +311,12 @@ export default function TaskDetailModal({
                 formDataObject
             );
             alert(response.data.message);
+            // console.log(response.data.message);
             handleModalClose();
             onTaskCreate();
         } catch (error) {
             console.error();
+            console.log(error);
             alert("Hãy nhập ghi chú");
         }
     };
@@ -378,21 +393,21 @@ export default function TaskDetailModal({
             alert("Không tồn tại");
         }
     };
-    const fetchProjectDeadline = async () => {
-        try {
-            const { data } = await axios.get(
-                route("get_project_deadline", task.project_id)
-            );
-            setDeadline(data);
-        } catch (error) {
-            console.error();
-        }
-    };
-    if (auth.user.department === 3) {
-        useEffect(() => {
-            fetchProjectDeadline();
-        }, []);
-    }
+    // const fetchProjectDeadline = async () => {
+    //     try {
+    //         const { data } = await axios.get(
+    //             route("get_project_deadline", task.project_id)
+    //         );
+    //         setDeadline(data);
+    //     } catch (error) {
+    //         console.error();
+    //     }
+    // };
+    // if (!isAccount) {
+    //     useEffect(() => {
+    //         fetchProjectDeadline();
+    //     }, []);
+    // }
     return (
         <div className="fixed flex top-0 right-0 w-3/5 h-full bg-white shadow-lg px-3 py-6 overflow-auto z-20 items-stretch">
             <TaskFlowProgress
@@ -605,9 +620,7 @@ export default function TaskDetailModal({
                             </label>
                             <input
                                 readOnly={
-                                    !edit ||
-                                    task.step_id !== 1 ||
-                                    auth.user.department !== 3 //only account can change deadline
+                                    !edit || task.step_id !== 1 || !isAccount //only account can change deadline
                                 }
                                 type="date"
                                 className="border rounded w-full p-2"
@@ -625,7 +638,7 @@ export default function TaskDetailModal({
                     </div>
 
                     {!qcMode &&
-                    auth.user.role &&
+                    auth.user.id === task.department.manager &&
                     (task.step_id === 2 || task.step_id === 5) &&
                     auth.user.id === task.next_assignee_id &&
                     task.status === 1 &&
@@ -640,20 +653,21 @@ export default function TaskDetailModal({
                             <Select
                                 options={task.department.members.map(
                                     (option) => ({
-                                        value: option.id,
-                                        label: option.name,
+                                        value: option.member.id,
+                                        label: option.member.name,
                                     })
                                 )}
                                 value={
                                     task.department.members.find(
-                                        (p) => p.id === formData.assignee
+                                        (p) => p.member.id === formData.assignee
                                     )
                                         ? {
                                               value: formData.assignee,
                                               label: task.department.members.find(
                                                   (p) =>
-                                                      p.id === formData.assignee
-                                              ).name,
+                                                      p.member.id ===
+                                                      formData.assignee
+                                              ).member.name,
                                           }
                                         : null
                                 }
@@ -676,9 +690,10 @@ export default function TaskDetailModal({
                 </div>
                 {/* neu user department la account thi co nut update va xoa */}
 
-                {((auth.user.department === 3 && task.step_id === 1) ||
+                {((isAccount && task.step_id === 1) ||
                     (task.next_assignee_id === auth.user.id &&
-                        task.status === 2)) && (
+                        task.status === 2 &&
+                        task.qc_status !== 1)) && (
                     <div className="mt-6 flex space-x-4">
                         <button
                             type="button"
@@ -688,7 +703,7 @@ export default function TaskDetailModal({
                         >
                             {updating ? "Updating task" : "Update task"}
                         </button>
-                        {auth.user.department == 3 && (
+                        {isAccount && (
                             <button
                                 type="button"
                                 className="bg-red-500 text-white px-4 py-2 rounded"

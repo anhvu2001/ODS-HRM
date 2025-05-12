@@ -28,12 +28,14 @@ export default function AccountTaskHistory({ auth }) {
                         Lịch sử các công việc
                     </div>
                     <div className="w-full flex gap-4 px-4 border h-12 bg-slate-200">
-                        {/* <div className="">Id</div> */}
                         <div className="font-bold content-center  w-[50px] flex-shrink-0">
                             ID
                         </div>
-                        <div className="w-3/12 font-bold content-center">
+                        <div className="w-2/12 font-bold content-center">
                             Tên Công Việc
+                        </div>
+                        <div className="w-2/12 font-bold content-center">
+                            Phòng ban thực hiện
                         </div>
                         <div className="w-2/12 font-bold content-center">
                             Tên Dự Án
@@ -41,8 +43,8 @@ export default function AccountTaskHistory({ auth }) {
                         <div className="w-1/12 text-center font-bold content-center">
                             Phân loại
                         </div>
-                        <div className="w-2/12 text-center font-bold content-center">
-                            Ngày kết thúc
+                        <div className="w-1/12 text-center font-bold content-center">
+                            Deadline
                         </div>
                         <div className="w-2/12 text-center font-bold content-center">
                             Ngày còn lại
@@ -61,7 +63,7 @@ export default function AccountTaskHistory({ auth }) {
                     {hasMore && (
                         <button
                             onClick={() => {
-                                fetchQCHistory();
+                                fetchTasks();
                             }}
                             className="bg-blue-600 text-white w-1/6 rounded-xl p-2 self-center"
                         >

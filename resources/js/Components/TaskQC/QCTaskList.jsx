@@ -9,6 +9,7 @@ export default function QCTaskList({ auth }) {
         try {
             const response = await axios.get(route("get_task_need_qc"));
             setProjects(response.data.qc_task);
+            console.log(response.data);
         } catch (error) {
             console.error("Error fetching projects:", error);
         }
@@ -27,8 +28,11 @@ export default function QCTaskList({ auth }) {
                 <div className="font-bold content-center  w-[50px] flex-shrink-0">
                     ID
                 </div>
-                <div className="w-3/12 font-bold content-center">
+                <div className="w-2/12 font-bold content-center">
                     Tên công việc
+                </div>
+                <div className="w-2/12 font-bold content-center">
+                    Phòng ban thực hiện
                 </div>
                 <div className="w-2/12 font-bold content-center">Tên Dự Án</div>
                 <div className="w-1/12 text-center font-bold content-center">
@@ -37,7 +41,7 @@ export default function QCTaskList({ auth }) {
                 <div className="w-2/12 font-bold content-center">
                     Người thực hiện
                 </div>
-                <div className="w-2/12 text-center font-bold content-center">
+                <div className="w-1/12 text-center font-bold content-center">
                     Deadline
                 </div>
                 <div className="w-2/12 text-center font-bold content-center">
@@ -59,8 +63,11 @@ export default function QCTaskList({ auth }) {
                                 <div className="content-center w-[50px] flex-shrink-0">
                                     {task.id}
                                 </div>
-                                <div className="w-3/12 line-clamp-2 content-center">
+                                <div className="w-2/12 line-clamp-2 content-center">
                                     {task.name}
+                                </div>
+                                <div className="w-2/12 line-clamp-2 content-center">
+                                    {task.department.department_name}
                                 </div>
                                 <div className="w-2/12 line-clamp-2 content-center">
                                     {task?.project?.name}
@@ -71,7 +78,7 @@ export default function QCTaskList({ auth }) {
                                 <div className="w-2/12 content-center">
                                     {task.assignee.name}
                                 </div>
-                                <div className="w-2/12 content-center text-red-600 text-center">
+                                <div className="w-1/12 content-center text-red-600 text-center">
                                     {task.due_date}
                                 </div>
                                 <div className="w-2/12 content-center text-center">

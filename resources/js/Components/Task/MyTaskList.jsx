@@ -7,6 +7,7 @@ export default function MyTaskList({ auth, edit }) {
     const fetchLeaderTasks = async () => {
         try {
             const { data } = await axios.get(route("get_leader_main_task"));
+            console.log(data);
             setLeaderTasks(data.tasks);
         } catch (error) {
             console.error();
@@ -16,6 +17,7 @@ export default function MyTaskList({ auth, edit }) {
         try {
             const { data } = await axios.get(route("get_member_task"));
             setTasks(data.tasks);
+            console.log(data);
         } catch (error) {
             console.error();
         }
@@ -47,7 +49,10 @@ export default function MyTaskList({ auth, edit }) {
                             <div className="font-bold content-center w-[50px] flex-shrink-0">
                                 ID
                             </div>
-                            <div className="w-3/12 font-bold content-center">
+                            <div className="w-2/12 font-bold content-center">
+                                Tên Công Việc
+                            </div>
+                            <div className="w-2/12 font-bold content-center">
                                 Tên Công Việc
                             </div>
                             <div className="w-2/12 font-bold content-center">
@@ -56,7 +61,7 @@ export default function MyTaskList({ auth, edit }) {
                             <div className="w-1/12 text-center font-bold content-center">
                                 Phân loại
                             </div>
-                            <div className="w-2/12 text-center font-bold content-center">
+                            <div className="w-1/12 text-center font-bold content-center">
                                 Deadline
                             </div>
                             <div className="w-2/12 text-center font-bold content-center">
@@ -84,8 +89,11 @@ export default function MyTaskList({ auth, edit }) {
                         <div className="font-bold content-center  w-[50px] flex-shrink-0">
                             ID
                         </div>
-                        <div className="w-3/12 font-bold content-center">
+                        <div className="w-2/12 font-bold content-center">
                             Tên Công Việc
+                        </div>
+                        <div className="w-2/12 font-bold content-center">
+                            Phòng ban thực hiện
                         </div>
                         <div className="w-2/12 font-bold content-center">
                             Tên Dự Án
@@ -93,7 +101,7 @@ export default function MyTaskList({ auth, edit }) {
                         <div className="w-1/12 text-center font-bold content-center">
                             Phân Loại
                         </div>
-                        <div className="w-2/12 text-center font-bold content-center">
+                        <div className="w-1/12 text-center font-bold content-center">
                             Deadline
                         </div>
                         <div className="w-2/12 text-center font-bold content-center">

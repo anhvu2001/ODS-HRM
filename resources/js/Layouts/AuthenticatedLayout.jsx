@@ -226,13 +226,13 @@ export default function Authenticated({ user, header, children }) {
                                                 >
                                                     Danh sách dự án
                                                 </Dropdown.Link>
-                                                <Dropdown.Link
+                                                {/* <Dropdown.Link
                                                     href={route(
                                                         "Project_admin"
                                                     )}
                                                 >
                                                     Admin
-                                                </Dropdown.Link>
+                                                </Dropdown.Link> */}
                                             </Dropdown.Content>
                                         </Dropdown>
                                     </div>

@@ -26,17 +26,20 @@ export default function AccountTask({ auth }) {
                         <div className="font-bold content-center  w-[50px] flex-shrink-0">
                             ID
                         </div>
-                        <div className="w-3/12 font-bold content-center">
+                        <div className="w-2/12 font-bold content-center">
                             Tên Công Việc
+                        </div>
+                        <div className="w-2/12 font-bold content-center">
+                            Phòng ban thực hiện
                         </div>
                         <div className="w-2/12 font-bold content-center">
                             Tên Dự Án
                         </div>
-                        <div className="w-2/12 text-center font-bold content-center">
+                        <div className="w-1/12 text-center font-bold content-center">
                             Phân loại
                         </div>
-                        <div className="w-2/12 text-center font-bold content-center">
-                            Ngày kết thúc
+                        <div className="w-1/12 text-center font-bold content-center">
+                            Deadline
                         </div>
                         <div className="w-2/12 text-center font-bold content-center">
                             Ngày còn lại

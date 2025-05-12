@@ -10,6 +10,7 @@ use App\Models\ProjectParticipant;
 use App\Models\Status;
 use App\Models\StatusDetails;
 use App\Models\TaskUser;
+use App\Models\UserDepartment;
 use Beste\Json;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,7 +19,8 @@ class ProjectController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Projects/MainLayout');
+        $userDepartments = UserDepartment::where('user_id', auth()->id())->pluck('department_id');
+        return Inertia::render('Projects/MainLayout', ['authDepartments' => $userDepartments]);
     }
     public function create(Request $request)
     {

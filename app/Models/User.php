@@ -57,9 +57,26 @@ class User extends Authenticatable
     {
         return $this->belongsTo(User::class, 'direct_manager');
     }
-    public function departmentModel()
+    // public function departmentModel()
+    // {
+    //     return $this->belongsTo(Department::class, "department");
+    // }
+    public function department()
     {
-        return $this->belongsTo(Department::class, "department");
+        return $this->hasMany(UserDepartment::class, 'user_id')->with('department');
+    }
+    public function userDepartment()
+    {
+        return $this->hasMany(UserDepartment::class, 'user_id');
+    }
+    public function departmentIds()
+    {
+        return $this->userDepartment()->pluck('department_id');
+    }
+    public function isDepartment($departmentId)
+    {
+        $departments = $this->departmentIds()->toArray();
+        return in_array($departmentId, $departments);
     }
     public function TaskComment()
     {

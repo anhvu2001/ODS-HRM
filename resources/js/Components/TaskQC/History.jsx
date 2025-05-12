@@ -11,7 +11,7 @@ export default function History({ auth }) {
     const fetchQCHistory = async () => {
         try {
             const response = await axios.get(route("get_qc_history", { page }));
-            setTasks(response.data.qc_task_history);
+            setTasks((prev) => [...prev, ...response.data.qc_task_history]);
             setPage(page + 1);
             setHasMore(response.data.has_more);
         } catch (error) {
@@ -22,7 +22,7 @@ export default function History({ auth }) {
     useEffect(() => {
         fetchQCHistory();
     }, []);
-    console.log(tasks);
+    // console.log(tasks);
 
     return (
         <div className="flex flex-col gap-4">
@@ -30,14 +30,17 @@ export default function History({ auth }) {
                 <div className="font-bold content-center w-[50px] flex-shrink-0">
                     ID
                 </div>
-                <div className="w-3/12 font-bold content-center">
+                <div className="w-2/12 font-bold content-center">
                     Tên Công Việc
+                </div>
+                <div className="w-2/12 font-bold content-center">
+                    Phòng ban thực hiện
                 </div>
                 <div className="w-2/12 font-bold content-center">Tên Dự Án</div>
                 <div className="w-1/12 text-center font-bold content-center">
                     Phân loại
                 </div>
-                <div className="w-2/12 text-center font-bold content-center">
+                <div className="w-1/12 text-center font-bold content-center">
                     Deadline
                 </div>
                 <div className="w-2/12 text-center font-bold content-center">
@@ -62,8 +65,11 @@ export default function History({ auth }) {
                             <div className="content-center w-[50px] flex-shrink-0">
                                 {item.id}
                             </div>
-                            <div className="w-3/12 line-clamp-2 content-center">
+                            <div className="w-2/12 line-clamp-2 content-center">
                                 {item.name}
+                            </div>
+                            <div className="w-2/12 line-clamp-2 content-center">
+                                {item.department.department_name}
                             </div>
                             <div className="w-2/12 line-clamp-2 content-center">
                                 {item?.project?.name}
@@ -71,7 +77,7 @@ export default function History({ auth }) {
                             <div className="w-1/12  content-center text-center">
                                 {item.category.name}
                             </div>
-                            <div className="w-2/12 text-center text-red-600  content-center">
+                            <div className="w-1/12 text-center text-red-600  content-center">
                                 {item.due_date}
                             </div>
                             <div

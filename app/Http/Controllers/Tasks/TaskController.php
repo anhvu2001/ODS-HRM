@@ -13,6 +13,7 @@ use App\Models\TaskComment;
 use App\Models\TaskUser;
 use App\Models\TaskWorkFlows;
 use App\Models\User;
+use App\Models\UserDepartment;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
@@ -142,7 +143,10 @@ class TaskController extends Controller
     public function update(Request $request, $id)
     {
         $user = auth()->user();
+        $isAccount =  $user->isDepartment(3);
+        // return response()->json(['message' =>  $user->isDepartment(4)]);
         $task = Task::find($id);
+
         if ($task->qc_status) {
             return response()->json(["message" => "Công việc đã được xác nhận không được sửa"]);
         }
@@ -157,7 +161,8 @@ class TaskController extends Controller
 
         $task->name = $validated['name'];
         $task->description = $validated['description'];
-        if ($user['role'] && $user['department'] == 3) {
+        // 
+        if ($user['role'] && $isAccount) {
             $task->due_date = $validated['due_date'];
         }
         $task->save();
@@ -262,7 +267,7 @@ class TaskController extends Controller
     {
         $page = $request->page > 0 ? $request->page : 0;
         $user = auth()->user();
-        $tasks = Task::with(["category", "creator", "assignee", "statusDetails", 'project'])
+        $tasks = Task::with(["category", "creator", "assignee", "statusDetails", 'project', 'department'])
             ->whereIn('step_id', [2, 3, 5, 6])
             ->whereIn('status', [2, 5])
             ->where('next_assignee_id', $user['id'])
@@ -278,7 +283,7 @@ class TaskController extends Controller
     {
         $page = $request->page > 0 ? $request->page : 1;
         $user = auth()->user();
-        $tasks = Task::with(["category", "creator", "assignee", "statusDetails", 'project'])
+        $tasks = Task::with(["category", "creator", "assignee", "statusDetails", 'project', 'department'])
             ->whereIn('step_id', [2, 3, 5, 6])
             ->whereIn('status', [2, 5])
             ->where('next_assignee_id', $user['id'])
@@ -298,9 +303,6 @@ class TaskController extends Controller
     public function getLeaderTask(Request $request)
     {
         $user = auth()->user();
-        if (!$user->role) {
-            return response()->json(['message' => 'bạn không thể xem trang này']);
-        }
         $tasks = Task::with(["department.members", "category", "creator", "assignee", "statusDetails", 'project'])
             ->where('next_assignee_id', $user->id)
             ->where("status", 1)
@@ -313,7 +315,7 @@ class TaskController extends Controller
     public function getMemberTask(Request $request)
     {
         $user = auth()->user();
-        $tasks = Task::with(["category", "creator", 'assignee', "statusDetails", 'project'])
+        $tasks = Task::with(["category", "creator", 'assignee', "statusDetails", 'project', 'department'])
             ->where('next_assignee_id', '=', $user->id)
             ->whereIn('step_id', [3, 6]) // content member và design làm task
             ->whereIn('status', [1, 3, 4])
@@ -501,7 +503,13 @@ class TaskController extends Controller
         $nextLeaderStep = TaskWorkFlows::where('category_id', $newTask['category_id'])
             ->where('step_order', $newTask['step_order'] + 1)->first();
         $nextLeaderDepartment = $nextLeaderStep->currentDepartment()->first();
-        $nextLeader = $nextLeaderDepartment->manager()->first();
+        // kiểm tra xem bước sau phải account không, nếu lá account thì lấy người tạo task lớn thay vì leader
+        if ($nextLeaderDepartment['id'] === 3) {
+            $parentTask = $this->getParentTask($newTask);
+            $nextLeader = $parentTask->creator;
+        } else {
+            $nextLeader = $nextLeaderDepartment->manager()->first();
+        }
         $memberFlow = $this->addTaskStepFlow($previousTask, $newTask, null, $nextLeader);
         // xử lý file nếu có 
 
@@ -591,24 +599,21 @@ class TaskController extends Controller
             where('status', [1, 3, 4])
             ->whereIn('step_id', [4, 7])
             ->where('next_assignee_id',   $user['id'])
-            ->with(['creator', 'project', 'category', 'assignee'])
+            ->with(['creator', 'project', 'category', 'assignee', 'department'])
             ->orderby('updated_at', "desc")
             ->orderBy('due_date', 'asc')
-
             ->get();
         return response()->json(['qc_task' => $qcTasks]);
     }
     // update qc_status cho task 
     public function taskQC(Request $request, $id)
     {
-
         $isApproved = filter_var($request->approve, FILTER_VALIDATE_BOOL);
         $validated = $request->validate([
             'qc_note' => [Rule::requiredIf(!$isApproved), 'string'],
             'description' => 'nullable|string',
             'name' => 'required|string|max:255',
         ]);
-
         // leader qc task
         $task = Task::find($id);
         //lấy task của member vừa làm
@@ -667,6 +672,9 @@ class TaskController extends Controller
                     $nextStep = TaskWorkFlows::where('category_id', $task['category_id'])->where('step_order', $nextStepOrder)->first();
                     // find the next step department
                     $nextDepartment = Department::find($nextStep['department']);
+                    // gửi cho người tạo task
+
+
                     // kiểm tra bước tiếp theo phải là phòng account hay không
                     $isAccount = $nextDepartment['id'] === 3;
                     // return response()->json(['message' =>   $isAccount], 200);
@@ -675,7 +683,6 @@ class TaskController extends Controller
                         $parentTask = Task::find($task['parent_task_id']);
                         $parentTaskCreator = $parentTask['created_by'];
                     }
-
                     $newTask = Task::create([
                         'parent_id' => $task['id'],
                         'project_id' => $task['project_id'],
@@ -729,7 +736,7 @@ class TaskController extends Controller
         // lấy các task có parent thuộc task đã qc
         $tasksHistory = Task::whereIn('parent_id', $qcTasks)
             ->where('next_assignee_id', $user['id'])
-            ->with(['creator', 'project', 'category', 'assignee', 'statusDetails'])
+            ->with(['creator', 'project', 'category', 'assignee', 'statusDetails', 'department'])
             ->orderby('updated_at', "desc")
             ->orderBy('due_date', 'asc')
             ->skip(15 * $request->page)
@@ -743,7 +750,10 @@ class TaskController extends Controller
     public function getAccountTask(Request $request)
     {
         $user = auth()->user();
-        if ($user["department"] !== 3) {
+        $isAccountMember = UserDepartment::where('user_id', auth()->id())
+            ->where('department_id', 3)
+            ->first();
+        if (empty($isAccountMember)) {
             return response()->json(['message' => 'Bạn không thể vào trang này']);
         }
         $tasks = Task::with(["department.members", "category", "creator", "assignee", 'statusDetails', 'project'])
@@ -935,6 +945,14 @@ class TaskController extends Controller
             return $projectFiles;
         } else {
             return;
+        }
+    }
+    // Lấy task lớn
+    public function getParentTask(Task $task)
+    {
+        $parentTask = Task::where('id', $task['parent_task_id'])->first();
+        if ($parentTask) {
+            return $parentTask;
         }
     }
 }

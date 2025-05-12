@@ -22,6 +22,6 @@ class Department extends Model
     }
     public function members()
     {
-        return $this->hasMany(User::class, "department");
+        return $this->hasMany(UserDepartment::class, 'department_id')->with('member');
     }
 }
