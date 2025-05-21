@@ -18,22 +18,19 @@ let sidebarItems = [
 ];
 
 export default function MainLayout({ auth, authDepartments }) {
-    // console.log(authDepartments.includes(3));
-
-    // const [userDepartment, setUserDepartment] = useState();
-    // const fetchUserDepartment
-    const defaultComponent = authDepartments.includes(3)
-        ? "projects"
-        : "mytask";
+    const isAccount = authDepartments.some((dept) => dept.department_id === 3);
+    const isLeader = authDepartments.some(
+        (dept) => dept.role_code === "leader"
+    );
+    const defaultComponent = isAccount ? "projects" : "mytask";
     const [activeComponent, setActiveComponent] = useState(defaultComponent);
 
     const handleSidebarClick = (component) => {
         setActiveComponent(component);
     };
     let filterSideBarItems = [];
-    // auth.user.role != 1 && auth.user.role != 99
     // kiểm tra user có thuộc phòng account
-    if (!authDepartments.includes(3)) {
+    if (!isAccount) {
         filterSideBarItems = sidebarItems.filter(
             (item) => item.name !== "projects" && item.name !== "accountTask"
         );
@@ -41,7 +38,7 @@ export default function MainLayout({ auth, authDepartments }) {
         filterSideBarItems = sidebarItems;
     }
 
-    if (!auth.user.role) {
+    if (!isLeader) {
         filterSideBarItems = filterSideBarItems.filter(
             (item) => item.name !== "taskQC"
         );

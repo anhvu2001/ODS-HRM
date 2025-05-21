@@ -18,6 +18,18 @@ export default function History({ auth }) {
             console.error("Error fetching projects:", error);
         }
     };
+    const tasksOnUpdate = async () => {
+        try {
+            const response = await axios.get(
+                route("get_n_qc_history", { page })
+            );
+            setTasks(response.data.qc_task_history);
+            // setPage(page + 1);
+            setHasMore(response.data.has_more);
+        } catch (error) {
+            console.error("Error fetching projects:", error);
+        }
+    };
 
     useEffect(() => {
         fetchQCHistory();
@@ -112,9 +124,9 @@ export default function History({ auth }) {
                                     handleModalClose={() =>
                                         setSelectedTask(null)
                                     }
-                                    onTaskCreate={fetchQCHistory}
+                                    onTaskCreate={tasksOnUpdate}
                                     auth={auth}
-                                    edit={false}
+                                    edit={true}
                                     task={item}
                                     qcMode={true}
                                 />

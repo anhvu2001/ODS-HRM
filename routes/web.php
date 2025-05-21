@@ -4,6 +4,7 @@ use App\Http\Controllers\Comment\CommentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StepDetailsController;
 use App\Http\Controllers\TaskCategoriesController;
+use App\Http\Controllers\TaskMailController;
 use App\Http\Controllers\TaskWorkFlowController;
 use App\Http\Controllers\UserDepartmentsController;
 use Illuminate\Foundation\Application;
@@ -30,8 +31,10 @@ use App\Models\UserRequests;
 use App\Models\User;
 
 use App\Mail\HelloWorldEmail;
+use App\Mail\MyTestEmail;
 use App\Models\StatusDetails;
 use App\Models\StepDetail;
+use App\Models\Task;
 use App\Models\TaskWorkFlows;
 use App\Models\UserDepartment;
 use Illuminate\Support\Facades\Hash;
@@ -137,7 +140,6 @@ Route::middleware('auth')->group(function () {
         });
         Route::prefix("/user-department")->group(function () {
             Route::get('/get-user-departments', [UserDepartmentsController::class, 'getUserDepartments'])->name('get_auth_department');
-
             Route::post("/add-department-member/{id}", [UserDepartmentsController::class, 'addDepartment'])->name('Add_department_users');
             Route::get("/get-department-member/{id}", [UserDepartmentsController::class, 'getMember'])->name('get_department_member');
             Route::post('/remove-member', [UserDepartmentsController::class, 'removeMember'])->name('remove_member');
@@ -171,6 +173,9 @@ Route::middleware('auth')->group(function () {
             Route::post("/update-workflow/{id}", [TaskWorkFlowController::class, 'update'])->name('update_task_workflow');
             Route::delete("/delete-workflow/{id}", [TaskWorkFlowController::class, 'delete'])->name('delete_task_workflow');
         });
+        Route::prefix('/tasks')->group(function () {
+            Route::get("/get-all-tasks", [TaskController::class, 'fetchAllTask'])->name('get_all_tasks');
+        });
         // task leader
     });
     Route::prefix('/taskCategories')->group(function () {
@@ -199,6 +204,7 @@ Route::middleware('auth')->group(function () {
         Route::get("/get-leader-task", [TaskController::class, 'getLeaderTask'])->name("get_leader_main_task");
         Route::post("/assign-task/{id}", [TaskController::class, "assignTask"])->name("leader_assign_task");
         Route::get("/qc-history", [TaskController::class, 'getQCHistory'])->name("get_qc_history")->middleware('check.departmentRole');
+        Route::get('/n-qc-history', [TaskController::class, 'getNQCHistory'])->name('get_n_qc_history');
         Route::post("/task-qc/{id}", [TaskController::class, 'taskQC'])->name('task_qc');
         // member task
         Route::get("/get-member-task", [TaskController::class, 'getMemberTask'])->name("get_member_task");
@@ -206,6 +212,7 @@ Route::middleware('auth')->group(function () {
         Route::get("/get-task-by-id/{id}", [TaskController::class, 'getTaskById'])->name("get_task_by_id");
         Route::get('/update-task/{id}', [TaskController::class, 'updateTask'])->name('update_task_by_id');
         Route::get("/get-n-page-status-task", [TaskController::class, 'getNPageUserTasks'])->name('get_task_after_change');
+        Route::post('/update-all-task-deadline/{id}', [TaskController::class, 'updateAllTaskDeadline'])->name('update_deadline_all_task');
     });
     // 
     // Route::middleware('check.accountLeader')->group(function () {
@@ -243,6 +250,13 @@ Route::middleware('auth')->group(function () {
         Route::delete('/delete/{id}', [TaskCommentController::class, 'delete'])->name("delete_task_comments");
         Route::get('/get-comment/{id}', [TaskCommentController::class, 'getAllComments'])->name("get_all_task_comments");
         Route::post("/edit", [TaskCommentController::class, 'edit'])->name("update_task_comment");
+    });
+    // Route::get("/testroute", function () {
+    //     $name = "dvh";
+    //     Mail::to("duongvihien01@gmail.com")->send(new MyTestEmail($name));
+    // });
+    Route::prefix('/taskMail')->group(function () {
+        Route::get('/testroute', [TaskMailController::class, 'testmail'])->name('test-mail');
     });
 });
 

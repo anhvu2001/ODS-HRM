@@ -1,6 +1,7 @@
 import Task from "./Task";
 
 export default function TaskListSection({
+    projectDeadline,
     tasks,
     projectParticipants,
     onTaskCreate,
@@ -35,6 +36,7 @@ export default function TaskListSection({
                 <div className="">
                     <div>
                         <Task
+                            projectDeadline={projectDeadline}
                             key={tasks[0].id}
                             task={tasks[0]}
                             projectParticipants={projectParticipants}
@@ -61,6 +63,7 @@ export default function TaskListSection({
                     >
                         {tasks.slice(1).map((task) => (
                             <Task
+                                projectDeadlin={projectDeadline}
                                 key={task.id}
                                 task={task}
                                 projectParticipants={projectParticipants}

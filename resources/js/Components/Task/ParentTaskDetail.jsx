@@ -9,34 +9,6 @@ export default function ParentTaskDetail({
     auth,
     renderQCstatus,
 }) {
-    // const renderQCstatus = () => {
-    //     if (task.qc_status === 1) {
-    //         return (
-    //             <div className="text-green-600 font-bold text-xl">
-    //                 Task Completed
-    //             </div>
-    //         );
-    //     } else if (task.qc_status === 0) {
-    //         return (
-    //             <div>
-    //                 <div className="text-red-600 font-bold text-xl">
-    //                     Task Rejected
-    //                 </div>
-    //                 <div>
-    //                     <div className="font-bold text-red-600 ">Lí do:</div>
-    //                     <textarea
-    //                         className=" w-full border-red-500 rounded"
-    //                         readOnly
-    //                         value={task?.qc_note}
-    //                         rows={2}
-    //                     ></textarea>
-    //                 </div>
-    //             </div>
-    //         );
-    //     } else {
-    //         return <></>;
-    //     }
-    // };
     const [dataComment, setDataComment] = useState([]);
     const fetchDataComment = async () => {
         try {

@@ -2,32 +2,44 @@ import { Head } from "@inertiajs/react";
 import React, { lazy, Suspense, useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 const componentMap = {
+    taskList: lazy(() =>
+        import("../../Components/Project/Admin/AdminTaskList.jsx")
+    ),
     taskStatus: lazy(() =>
         import("../../Components/Project/Admin/AdminTaskSteps.jsx")
     ),
     taskCategories: lazy(() =>
         import("../../Components/Project/Admin/AdminTaskCategories.jsx")
     ),
-    workflow: lazy(() =>
+    workFlow: lazy(() =>
         import("../../Components/Project/Admin/AdminTaskWorkflow.jsx")
     ),
-    // taskQC: lazy(() => import("../../Components/TaskQC/TaskQC.jsx")),
-    // accountTask: lazy(() =>
-    //     import("../../Components/CompletedTask/AccountTab.jsx")
-    // ),
 };
-let filterSideBarItems = [
-    { name: "taskStatus", label: "Task Status" },
-    { name: "taskCategories", label: "Task Categories" },
-    { name: "workflow", label: "Task Workflow" },
+let sideBarItems = [
+    { name: "taskList", label: "Danh sách Công việc" },
+    // tạm thời
+    // { name: "taskStatus", label: "Task Status" },
+    // { name: "taskCategories", label: "Task Categories" },
+    // { name: "workFlow", label: "Task Workflow" },
 ];
-export default function Admin({ auth }) {
-    const defaultComponent = "taskStatus";
-    const [activeComponent, setActiveComponent] = useState(defaultComponent);
 
+export default function Admin({ auth }) {
+    let filterSideBarItems = [];
+    if (auth.user.role !== "99") {
+        filterSideBarItems = sideBarItems.filter("taskList");
+    } else {
+        filterSideBarItems = sideBarItems;
+    }
+    const defaultComponent = auth.user.role == "99" ? "taskList" : "";
+    // const defaultComponent = "taskList";
+
+    const [activeComponent, setActiveComponent] = useState(defaultComponent);
     const handleSidebarClick = (component) => {
         setActiveComponent(component);
     };
+    // filterSideBarItems = sidebarItems.filter(
+    //     (item) => item.name !== "projects" && item.name !== "accountTask"
+    // );
     const ActiveComponent = componentMap[activeComponent];
     return (
         <>
