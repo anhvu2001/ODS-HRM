@@ -35,7 +35,7 @@ export default function AdminTaskList({ auth }) {
                     <div className="font-bold text-lg text-black">
                         Danh sách các công việc
                     </div>
-                    <div className="w-full flex gap-4 px-4 border h-12 bg-slate-200 text-center">
+                    <div className="w-full flex gap-4 px-4 border h-12 bg-slate-200 text-center items-center">
                         <div className="font-bold content-center w-[50px] flex-shrink-0">
                             ID
                         </div>
@@ -72,7 +72,7 @@ export default function AdminTaskList({ auth }) {
                         {tasks.map((item) => (
                             <div key={item.id}>
                                 <div
-                                    className="flex w-full gap-4 px-4 cursor-pointer rounded duration-150 hover:bg-amber-200 h-[70px] py-1 text-sm text-center"
+                                    className="flex w-full gap-4 px-4 items-center cursor-pointer rounded duration-150 hover:bg-amber-200 h-[70px] py-1 text-sm text-center"
                                     onClick={() => {
                                         setselectedTask(item.id);
                                     }}
