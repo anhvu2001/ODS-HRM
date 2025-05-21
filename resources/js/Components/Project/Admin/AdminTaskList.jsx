@@ -27,7 +27,7 @@ export default function AdminTaskList({ auth }) {
     useEffect(() => {
         fetchTasks();
     }, []);
-
+    console.log(tasks);
     return (
         <>
             <div className="relative my-10">
@@ -39,28 +39,31 @@ export default function AdminTaskList({ auth }) {
                         <div className="font-bold content-center w-[50px] flex-shrink-0">
                             ID
                         </div>
-                        <div className="w-2/12 font-bold content-center">
+                        <div className="w-[10%] font-bold content-center">
                             Tên Công Việc
                         </div>
-                        <div className="w-1/12 font-bold content-center">
+                        <div className="w-[10%] font-bold content-center">
                             Phòng ban
                         </div>
-                        <div className="w-2/12 font-bold content-center">
+                        <div className="w-[10%] font-bold content-center">
                             Dự Án
                         </div>
-                        <div className="w-2/12 text-center font-bold content-center">
+                        <div className="w-[10%] text-center font-bold content-center">
                             Người thực hiện
                         </div>
-                        <div className="w-1/12 text-center font-bold content-center">
+                        <div className="w-[10%] text-center font-bold content-center">
                             Phân loại
                         </div>
-                        <div className="w-1/12 text-center font-bold content-center">
+                        <div className="w-[10%] text-center font-bold content-center">
+                            Nhiệm vụ
+                        </div>
+                        <div className="w-[10%] text-center font-bold content-center">
                             Deadline
                         </div>
-                        <div className="w-1/12 text-center font-bold content-center">
+                        <div className="w-[10%] text-center font-bold content-center">
                             Ngày còn lại
                         </div>
-                        <div className="w-2/12 text-center font-bold content-center">
+                        <div className="w-[10%] text-center font-bold content-center">
                             Trạng thái
                         </div>
                     </div>
@@ -69,7 +72,7 @@ export default function AdminTaskList({ auth }) {
                         {tasks.map((item) => (
                             <div key={item.id}>
                                 <div
-                                    className="flex w-full gap-4 px-4 cursor-pointer rounded duration-150 hover:bg-amber-200 h-[60px] py-1 text-sm text-center"
+                                    className="flex w-full gap-4 px-4 cursor-pointer rounded duration-150 hover:bg-amber-200 h-[70px] py-1 text-sm text-center"
                                     onClick={() => {
                                         setselectedTask(item.id);
                                     }}
@@ -77,27 +80,29 @@ export default function AdminTaskList({ auth }) {
                                     <div className="content-center w-[50px] flex-shrink-0">
                                         {item.id}
                                     </div>
-                                    <div className="w-2/12 line-clamp-2 content-center">
+                                    <div className="w-[10%] line-clamp-2 content-center">
                                         {item.name}
                                     </div>
-                                    <div className="w-1/12 line-clamp-2 content-center">
+                                    <div className="w-[10%] line-clamp-2 content-center">
                                         {item?.department?.department_name}
                                     </div>
-                                    <div className="w-2/12 line-clamp-2 content-center">
+                                    <div className="w-[10%] line-clamp-2 content-center">
                                         {item?.project?.name}
                                     </div>
-                                    <div className="w-2/12 text-center content-center">
+                                    <div className="w-[10%] text-center content-center">
                                         {item?.assignee?.name || "none"}
                                     </div>
-                                    <div className="w-1/12  content-center text-center">
+                                    <div className="w-[10%]  content-center text-center">
                                         {item?.category?.name}
                                     </div>
-
-                                    <div className="w-1/12 text-center text-red-600  content-center">
+                                    <div className="w-[10%]  content-center text-center line-clamp-3 h-fit">
+                                        {item?.step_detail?.name}
+                                    </div>
+                                    <div className="w-[10%] text-center text-red-600  content-center">
                                         {item.due_date}
                                     </div>
                                     <div
-                                        className={`w-1/12 text-center content-center ${
+                                        className={`w-[10%] text-center content-center ${
                                             item.due_date == 0
                                                 ? "text-red-600"
                                                 : "text-black"
@@ -106,9 +111,9 @@ export default function AdminTaskList({ auth }) {
                                         {remainingDay(item.due_date)}
                                         <span> ngày</span>
                                     </div>
-                                    <div className="w-2/12 h-12 content-center">
+                                    <div className="w-[10%] h-12 content-center">
                                         <p
-                                            className={`font-bold w-full text-base p-2 rounded-2xl text-center 
+                                            className={`font-bold w-full text-sm p-2 rounded-2xl text-center 
                                                                 ${getStatusColor(
                                                                     item.status
                                                                 )}

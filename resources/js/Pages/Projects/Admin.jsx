@@ -55,7 +55,7 @@ export default function Admin({ auth }) {
                 <div className="flex justify-center pt-10">
                     <div className="w-full max-w-8xl flex">
                         {/* Sidebar bên trái */}
-                        <aside className="w-1/5 bg-gray-200 p-6">
+                        <aside className="w-[15%] bg-gray-200 p-6">
                             <ul className="space-y-4 h-[600px] overflow-hidden">
                                 {filterSideBarItems.map((item) => (
                                     <li key={item.name}>
@@ -76,7 +76,7 @@ export default function Admin({ auth }) {
                             </ul>
                         </aside>
                         {/* Nội dung bên phải */}
-                        <main className="w-4/5 bg-white p-6">
+                        <main className="w-[85%] bg-white p-6">
                             <div className=" overflow-x-auto ">
                                 <Suspense fallback={<p>Loading...</p>}>
                                     <ActiveComponent auth={auth} />

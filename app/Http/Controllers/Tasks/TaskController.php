@@ -1119,7 +1119,7 @@ class TaskController extends Controller
     public function fetchAllTask(Request $request)
     {
         $page = $request->page;
-        $tasks = Task::with(["category", "creator", 'assignee', "statusDetails", 'project', 'department'])
+        $tasks = Task::with(["category", "creator", 'assignee', "statusDetails", 'project', 'department', 'stepDetail'])
             ->orderBy('created_at', 'desc')
             ->skip(15 * $page)
             ->take(16)
