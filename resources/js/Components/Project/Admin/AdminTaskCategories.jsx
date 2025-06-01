@@ -194,7 +194,7 @@ export default function adminTaskStatus({}) {
                         // get the manager user
                         return (
                             <tr
-                                className="divide-y divide-gray-200"
+                                className="divide-y divide-gray-200 "
                                 key={item.id}
                             >
                                 <td className="whitespace-nowrap px-4 py-2 font-medium text-gray-900 w-2/6 ">

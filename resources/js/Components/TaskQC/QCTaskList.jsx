@@ -9,7 +9,6 @@ export default function QCTaskList({ auth }) {
         try {
             const response = await axios.get(route("get_task_need_qc"));
             setProjects(response.data.qc_task);
-            console.log(response.data);
         } catch (error) {
             console.error("Error fetching projects:", error);
         }
@@ -76,7 +75,7 @@ export default function QCTaskList({ auth }) {
                                     {task.category.name}
                                 </div>
                                 <div className="w-2/12 content-center">
-                                    {task.assignee.name}
+                                    {task.creator.name}
                                 </div>
                                 <div className="w-1/12 content-center text-red-600 text-center">
                                     {task.due_date}

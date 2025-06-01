@@ -164,7 +164,8 @@ export default function TaskComments({ user, taskId }) {
                         </div>
                         <button
                             className="text-red-700 pl-3"
-                            onClick={() => {
+                            onClick={(e) => {
+                                e.stopPropagation();
                                 setFileUploaded(null);
                             }}
                         >

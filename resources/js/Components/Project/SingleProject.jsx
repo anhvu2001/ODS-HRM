@@ -143,6 +143,7 @@ export default function ProjectsList({
                     >
                         <TaskListSection
                             tasks={project.tasks}
+                            projectDeadline={project.end_date}
                             projectParticipants={participants}
                             onTaskCreate={onProjectUpdated}
                             edit={edit}

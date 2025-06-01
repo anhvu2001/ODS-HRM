@@ -8,6 +8,7 @@ export default function Task({
     onTaskCreate,
     edit,
     auth,
+    projectDeadline,
 }) {
     const [taskDetailModal, setTaskDetailModal] = useState(false);
     const showTaskDetailModal = () => {
@@ -56,6 +57,7 @@ export default function Task({
                         }}
                     ></div>
                     <TaskDetailModal
+                        projectDeadline={projectDeadline}
                         task={task}
                         handleModalClose={() => setTaskDetailModal(false)}
                         projectParticipants={projectParticipants}

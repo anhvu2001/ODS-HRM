@@ -19,7 +19,7 @@ class ProjectController extends Controller
 {
     public function index()
     {
-        $userDepartments = UserDepartment::where('user_id', auth()->id())->pluck('department_id');
+        $userDepartments = UserDepartment::where('user_id', auth()->id())->get();
         return Inertia::render('Projects/MainLayout', ['authDepartments' => $userDepartments]);
     }
     public function create(Request $request)

@@ -6,6 +6,8 @@ import TaskComments from "../TaskComments/TaskComments";
 import TaskFlowProgress from "./TaskFlowProgress";
 import CkeditorComponent from "../CkeditorComponent";
 import ParentTaskDetail from "./ParentTaskDetail";
+import UpdateDeadlineDialog from "./UpdateDeadlineDialog";
+import { update } from "firebase/database";
 
 export default function TaskDetailModal({
     task,
@@ -14,8 +16,8 @@ export default function TaskDetailModal({
     edit,
     qcMode,
     auth,
+    projectDeadline,
 }) {
-    console.log(auth);
     const { errors, validate } = useTaskValidation();
     const [addedFiles, setAddedFiles] = useState([]);
     const [taskFiles, setTaskFiles] = useState([]);
@@ -33,7 +35,9 @@ export default function TaskDetailModal({
     const [processing, setProcessing] = useState(false);
     const [authDepartment, setAuthDepartment] = useState([]);
     const isAccount = authDepartment.includes(3);
-    console.log(authDepartment);
+    // open and close dialog
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
     const fetchAuthDepartment = async () => {
         try {
             const { data } = await axios.get(route("get_auth_department"));
@@ -109,6 +113,7 @@ export default function TaskDetailModal({
     };
     const handleFeedback = async () => {
         try {
+            setUpdating(true);
             const { data } = await axios.post(
                 route("send_task_feedback", {
                     id: task.id,
@@ -116,9 +121,12 @@ export default function TaskDetailModal({
                 })
             );
             alert(data.message);
+            setUpdating(false);
+
             setShowFeedbackModal(false);
             onTaskCreate();
         } catch (error) {
+            setUpdating(false);
             console.error("error sending feedback");
         }
     };
@@ -144,6 +152,7 @@ export default function TaskDetailModal({
         parent_id: task?.parent_id,
         assignee: null,
         project_id: task.project_id,
+        member_due_date: null,
     });
     const handleAssigneeChange = (selectedOption) => {
         setFormData((prev) => ({
@@ -166,7 +175,7 @@ export default function TaskDetailModal({
             formDataObject.append("category_id", formData.category_id);
             formDataObject.append("step_order", formData.step_order);
             formDataObject.append("description", formData.description);
-            formDataObject.append("due_date", formData.due_date);
+            formDataObject.append("due_date", formData.member_due_date);
             formDataObject.append("parent_id", formData.parent_id);
             formDataObject.append("assignee", formData.assignee);
             formDataObject.append("project_id", formData.project_id);
@@ -226,6 +235,7 @@ export default function TaskDetailModal({
             onTaskCreate();
         } catch (error) {
             setUpdating(false);
+            console.log(error);
         }
     };
     const handleComplete = async () => {
@@ -258,7 +268,14 @@ export default function TaskDetailModal({
             const formDataObject = new FormData();
             formDataObject.append("name", formData.name);
             formDataObject.append("description", formData.description);
-            formDataObject.append("due_date", formData.due_date);
+            if (!task.parent_id) {
+                formDataObject.append("due_date", formData.due_date);
+            } else {
+                formDataObject.append(
+                    "member_due_date",
+                    formData.member_due_date
+                );
+            }
             formDataObject.append("parent_id", formData.parent_id);
             formDataObject.append("project_id", formData.project_id);
             formDataObject.append("category_id", formData.category_id);
@@ -275,11 +292,15 @@ export default function TaskDetailModal({
                 });
             }
 
-            const response = await axios.post(
+            const { data } = await axios.post(
                 route("Update_task", task.id),
                 formDataObject
             );
-            alert(response.data.message);
+            if (data.deadlineConflict) {
+                setIsDialogOpen(true);
+            } else {
+                alert("Cập nhật thành công");
+            }
             onTaskCreate();
             setAddedFiles([]);
             setDeletedFiles([]);
@@ -296,6 +317,13 @@ export default function TaskDetailModal({
 
     const handleQC = async (isApproved) => {
         try {
+            setUpdating(true);
+            if (!qcNote && !isApproved) {
+                alert("Hãy nhập ghi chú");
+                setUpdating(false);
+
+                return;
+            }
             const formDataObject = new FormData();
             formDataObject.append("approve", isApproved);
             formDataObject.append("qc_note", qcNote);
@@ -314,7 +342,9 @@ export default function TaskDetailModal({
             // console.log(response.data.message);
             handleModalClose();
             onTaskCreate();
+            setUpdating(false);
         } catch (error) {
+            setUpdating(false);
             console.error();
             console.log(error);
             alert("Hãy nhập ghi chú");
@@ -393,27 +423,13 @@ export default function TaskDetailModal({
             alert("Không tồn tại");
         }
     };
-    // const fetchProjectDeadline = async () => {
-    //     try {
-    //         const { data } = await axios.get(
-    //             route("get_project_deadline", task.project_id)
-    //         );
-    //         setDeadline(data);
-    //     } catch (error) {
-    //         console.error();
-    //     }
-    // };
-    // if (!isAccount) {
-    //     useEffect(() => {
-    //         fetchProjectDeadline();
-    //     }, []);
-    // }
+
     return (
         <div className="fixed flex top-0 right-0 w-3/5 h-full bg-white shadow-lg px-3 py-6 overflow-auto z-20 items-stretch">
             <TaskFlowProgress
                 currentTaskFlow={task.task_step_flow}
             ></TaskFlowProgress>
-            <div className="flex flex-col w-4/5 border-l border-gray-400 pl-4 h-fit">
+            <div className="flex flex-col w-4/5 border-l border-gray-400 pl-4 h-fit relative">
                 <button
                     type="button"
                     className="text-red-500 mb-2 w-full font-extrabold text-end"
@@ -421,6 +437,13 @@ export default function TaskDetailModal({
                 >
                     Close
                 </button>
+                <UpdateDeadlineDialog
+                    task={task}
+                    deadline={formData.due_date}
+                    setIsDialogOpen={setIsDialogOpen}
+                    isDialogOpen={isDialogOpen}
+                    onTaskCreate={onTaskCreate}
+                ></UpdateDeadlineDialog>
 
                 {task.parent_id && (
                     <div className="mt-6 flex space-x-4 justify-center">
@@ -624,7 +647,7 @@ export default function TaskDetailModal({
                                 }
                                 type="date"
                                 className="border rounded w-full p-2"
-                                value={formData.due_date}
+                                value={formData?.due_date}
                                 onChange={(e) => {
                                     setFormData({
                                         ...formData,
@@ -632,7 +655,7 @@ export default function TaskDetailModal({
                                     });
                                 }}
                                 min={new Date().toISOString().split("T")[0]}
-                                max={deadline}
+                                max={projectDeadline}
                             />
                         </div>
                     </div>
@@ -640,39 +663,44 @@ export default function TaskDetailModal({
                     {!qcMode &&
                     auth.user.id === task.department.manager &&
                     (task.step_id === 2 || task.step_id === 5) &&
-                    auth.user.id === task.next_assignee_id &&
+                    // auth.user.id === task.next_assignee_id &&
+                    task.department.members &&
                     task.status === 1 &&
                     edit ? (
-                        <div>
-                            <label
-                                htmlFor="participant"
-                                className="block mb-2 font-medium"
-                            >
-                                Assignee
-                            </label>
-                            <Select
-                                options={task.department.members.map(
-                                    (option) => ({
-                                        value: option.member.id,
-                                        label: option.member.name,
-                                    })
-                                )}
-                                value={
-                                    task.department.members.find(
-                                        (p) => p.member.id === formData.assignee
-                                    )
-                                        ? {
-                                              value: formData.assignee,
-                                              label: task.department.members.find(
-                                                  (p) =>
-                                                      p.member.id ===
-                                                      formData.assignee
-                                              ).member.name,
-                                          }
-                                        : null
-                                }
-                                onChange={handleAssigneeChange}
-                            />
+                        <div className="flex gap-2">
+                            <div className="w-1/2">
+                                <label
+                                    htmlFor="participant"
+                                    className="block mb-2 font-medium "
+                                >
+                                    Assignee
+                                </label>
+                                <Select
+                                    options={task.department.members.map(
+                                        (option) => ({
+                                            value: option.member.id,
+                                            label: option.member.name,
+                                        })
+                                    )}
+                                    value={
+                                        task.department.members.find(
+                                            (p) =>
+                                                p.member.id ===
+                                                formData.assignee
+                                        )
+                                            ? {
+                                                  value: formData.assignee,
+                                                  label: task.department.members.find(
+                                                      (p) =>
+                                                          p.member.id ===
+                                                          formData.assignee
+                                                  ).member.name,
+                                              }
+                                            : null
+                                    }
+                                    onChange={handleAssigneeChange}
+                                />
+                            </div>
                         </div>
                     ) : (
                         <div className="pb-3 mt-0">
@@ -687,9 +715,46 @@ export default function TaskDetailModal({
                             />
                         </div>
                     )}
+                    {!qcMode &&
+                        auth.user.id === task.department.manager &&
+                        task.qc_status !== 1 &&
+                        (task.step_id === 2 || task.step_id === 5) &&
+                        edit && (
+                            <div className="flex gap-2 pb-3">
+                                <div className="w-1/2">
+                                    <label
+                                        htmlFor="MemberDeadline"
+                                        className="block mb-2 font-medium"
+                                    >
+                                        Deadline cho người được giao việc
+                                    </label>
+                                    <input
+                                        type="date"
+                                        className="border rounded w-full p-2 h-10"
+                                        // value={formData.due_date}
+                                        onChange={(e) => {
+                                            setFormData({
+                                                ...formData,
+                                                member_due_date: e.target.value,
+                                            });
+                                        }}
+                                        min={
+                                            new Date()
+                                                .toISOString()
+                                                .split("T")[0]
+                                        }
+                                        max={task.due_date}
+                                    />
+                                    {errors.due_date && (
+                                        <p className="text-red-500 text-sm">
+                                            {errors.due_date}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                 </div>
                 {/* neu user department la account thi co nut update va xoa */}
-
                 {((isAccount && task.step_id === 1) ||
                     (task.next_assignee_id === auth.user.id &&
                         task.status === 2 &&
@@ -703,7 +768,7 @@ export default function TaskDetailModal({
                         >
                             {updating ? "Updating task" : "Update task"}
                         </button>
-                        {isAccount && (
+                        {!task.parent_task_id && (
                             <button
                                 type="button"
                                 className="bg-red-500 text-white px-4 py-2 rounded"
@@ -806,8 +871,13 @@ export default function TaskDetailModal({
                                         type="button"
                                         className="bg-blue-500 text-white px-4 py-2 rounded"
                                         onClick={() => handleQC(true)}
+                                        disabled={updating}
                                     >
-                                        Approve
+                                        {`${
+                                            updating
+                                                ? `Submitting...`
+                                                : `Approve`
+                                        }`}
                                     </button>
                                     <button
                                         type="button"
@@ -871,10 +941,11 @@ export default function TaskDetailModal({
                                 />
                                 <button
                                     type="button"
-                                    className="bg-red-500 text-white px-4 py-2 rounded w-24 self-end"
+                                    className="bg-red-500 text-white px-4 py-2 rounded w-32 self-end"
                                     onClick={() => handleQC(false)}
+                                    disabled={updating}
                                 >
-                                    Submit
+                                    {`${updating ? `Submitting...` : `Submit`}`}
                                 </button>
                             </div>
                         </div>
@@ -911,10 +982,11 @@ export default function TaskDetailModal({
                                 />
                                 <button
                                     type="button"
-                                    className="bg-green-600 text-white px-4 py-2 rounded w-24 self-end"
+                                    className="bg-green-600 text-white px-4 py-2 rounded w-32 self-end"
                                     onClick={handleFeedback}
+                                    disabled={updating}
                                 >
-                                    Submit
+                                    {`${updating ? `Submitting...` : `Submit`}`}
                                 </button>
                             </div>
                         </div>

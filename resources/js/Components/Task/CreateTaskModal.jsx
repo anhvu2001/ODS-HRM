@@ -100,6 +100,7 @@ export default function CreateTaskModal({
             setIsCreating(false);
         } catch (error) {
             console.error();
+            console.log(error);
             setIsCreating(false);
 
             alert("failed to create task ");
@@ -172,7 +173,7 @@ export default function CreateTaskModal({
                             classNamePrefix="select"
                             placeholder="Select departments..."
                         />
-                        {errors.name && (
+                        {errors.department && (
                             <p className="text-red-500 text-sm">
                                 {errors.department}
                             </p>
@@ -206,7 +207,7 @@ export default function CreateTaskModal({
                             classNamePrefix="select"
                             placeholder="Select task categories"
                         />
-                        {errors.name && (
+                        {errors.category_id && (
                             <p className="text-red-500 text-sm">
                                 {errors.category_id}
                             </p>

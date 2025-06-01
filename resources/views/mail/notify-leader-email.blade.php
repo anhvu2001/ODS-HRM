@@ -1,0 +1,1 @@
+Công việc mới "{{$task->name}}" cho team {{$department}} vừa được tạo bởi {{$creator->name}}. 

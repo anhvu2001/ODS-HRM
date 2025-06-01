@@ -7,7 +7,6 @@ export default function MyTaskList({ auth, edit }) {
     const fetchLeaderTasks = async () => {
         try {
             const { data } = await axios.get(route("get_leader_main_task"));
-            console.log(data);
             setLeaderTasks(data.tasks);
         } catch (error) {
             console.error();
@@ -16,8 +15,8 @@ export default function MyTaskList({ auth, edit }) {
     const fetchTasks = async () => {
         try {
             const { data } = await axios.get(route("get_member_task"));
+
             setTasks(data.tasks);
-            console.log(data);
         } catch (error) {
             console.error();
         }
